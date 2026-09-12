@@ -1,7 +1,7 @@
 # PLANO DE TESTE DE BANCADA (FASE 4)
 
 **Projeto:** drone 4×ESC trifásico + ESP32-S3 na mesma PCB · LiPo 6S (19,8 / 22,2 / 25,2 V)
-**Pasta:** `/opt/jupyter/work/drone/fase4_entrega/` · **Data:** 2026-09-11
+**Pasta:** `fase4_entrega/` · **Data:** 2026-09-11
 
 ## Regra deste documento
 

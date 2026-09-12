@@ -2,12 +2,13 @@
 """FASE 1 v2 - esquemas com geometria planejada.
 Regra verificada: posicao_absoluta_do_pino = ponto_de_colocacao + offset_local (anchors),
 com slots de IcPin contando DE BAIXO PARA CIMA.
-Saidas em /opt/jupyter/work/drone/fase1_esquema/
+Saidas em fase1_esquema/
 """
+import os
 import matplotlib; matplotlib.use("Agg")
 import schemdraw, schemdraw.elements as elm
 
-D = "/opt/jupyter/work/drone/fase1_esquema/"
+D = os.path.dirname(os.path.abspath(__file__)) + "/"
 d = None
 
 def novo(unit=0.75, fs=9):

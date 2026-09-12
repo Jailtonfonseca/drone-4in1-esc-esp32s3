@@ -9,7 +9,7 @@ amp, correntes nominais de conector, Vf de diodo) entram aqui como PREMISSA
 explicita, nunca como "dado de datasheet". A confirmacao experimental acontece
 na Fase 2 (ngspice) e na bancada (Fase 4).
 """
-import json, math, sys
+import json, math, os, sys
 
 R = {}          # resultados
 P = {}          # premissas
@@ -244,6 +244,6 @@ res = dict(premissas=P, tensoes=dict(vmax=Vmax, vnom=Vnom, vmin=Vmin),
            p_cond_total=24*(irms_fet(30)**2*P["P05_rds_on"]),
            i12=t12, i33=t3v3, i5=t5,
            bucks=dict(b12=b12, b5=b5, b33=b33))
-with open("/opt/jupyter/work/drone/fase0_especificacao/dimensionamento_fase0.json", "w") as f:
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "dimensionamento_fase0.json"), "w") as f:
     json.dump(res, f, indent=2)
 print("\n[JSON salvo em dimensionamento_fase0.json]")

@@ -4,7 +4,7 @@
 ORCAMENTO DE COMPONENTES -- projeto drone (ESC 4x + ESP32-S3 na mesma PCB)
 
 Fontes de verdade:
-  - Quantidades: /opt/jupyter/work/drone/fase0_especificacao/lista_componentes_fase0.csv
+  - Quantidades: fase0_especificacao/lista_componentes_fase0.csv
     (lida linha a linha; a tabela de precos abaixo e' indexada na MESMA ordem
      e o script FALHA se o nome do item nao bater -> nao existe preco orfao)
   - Dolar: R$ 5,1312 / US$  (Bloomberg Linea, 11/09/2026)
@@ -23,7 +23,7 @@ Saida: orcamento_detalhado.csv, orcamento_por_bloco.csv, custo_por_bloco.png, OR
 """
 import csv, io, os, re
 
-BASE = "/opt/jupyter/work/drone"
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BOM = os.path.join(BASE, "fase0_especificacao", "lista_componentes_fase0.csv")
 OUT = os.path.join(BASE, "orcamento")
 

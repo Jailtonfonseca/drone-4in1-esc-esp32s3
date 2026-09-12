@@ -11,7 +11,7 @@ import os
 import pcbnew
 
 LIB = "/usr/share/kicad/modules/"
-OUT = "/opt/jupyter/work/drone/fase3_pcb/v3"
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "v3")
 os.makedirs(OUT, exist_ok=True)
 
 BRD = pcbnew.BOARD()

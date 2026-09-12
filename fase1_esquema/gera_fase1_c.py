@@ -2,10 +2,11 @@
 """FASE 1 v3: fig 1 (entrada, P-FET horizontal) e fig 5 (half-bridge com driver desenhado
 como retangulo + stubs de pino controlados por mim). Corrige tambem o divisor de BEMF,
 que deve ser referenciado ao GND (nao a fase)."""
+import os
 import matplotlib; matplotlib.use("Agg")
 import schemdraw, schemdraw.elements as elm
 
-D = "/opt/jupyter/work/drone/fase1_esquema/"
+D = os.path.dirname(os.path.abspath(__file__)) + "/"
 d = None
 
 def novo(unit=0.75, fs=9):

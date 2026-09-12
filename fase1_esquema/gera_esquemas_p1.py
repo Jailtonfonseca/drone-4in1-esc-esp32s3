@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Fase 1 - esquemas por bloco (schemdraw headless)."""
+import os
 import matplotlib; matplotlib.use("Agg")
 import schemdraw, schemdraw.elements as elm
 
-D = "/opt/jupyter/work/drone/fase1_esquema/"
+D = os.path.dirname(os.path.abspath(__file__)) + "/"
 def novo(unit=1.7, fs=9):
     d = schemdraw.Drawing(show=False)
     d.config(unit=unit, fontsize=fs, lw=1.3)

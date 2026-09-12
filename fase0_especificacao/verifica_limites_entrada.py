@@ -6,6 +6,7 @@ regra analitica simples (esperado x calculado). Continua sendo analitico/numeric
 NAO substitui bancada.
 """
 import math
+import os
 import numpy as np
 
 L = []
@@ -111,4 +112,4 @@ p("\n" + "=" * 78)
 p("FIM DA VERIFICACAO DE LIMITES -- tudo acima e' calculo/numerico, nada foi medido em bancada")
 p("=" * 78)
 
-open("/opt/jupyter/work/drone/fase0_especificacao/verifica_limites_entrada_saida.txt", "w").write("\n".join(L) + "\n")
+open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "verifica_limites_entrada_saida.txt"), "w").write("\n".join(L) + "\n")

@@ -80,7 +80,7 @@ riscos.
 
 ## ARQUIVOS E PASTA
 
-Salve **tudo** em `/opt/jupyter/work/drone/`, em subpastas por fase
+Salve **tudo** na raiz do projeto, em subpastas por fase
 (`fase0_especificacao/`, `fase1_esquema/`, `fase2_simulacao/`, `fase3_pcb/`,
 `fase4_entrega/`). Não sobrescreva nada: se precisar refazer, crie `_v2`, `_v3`.
 

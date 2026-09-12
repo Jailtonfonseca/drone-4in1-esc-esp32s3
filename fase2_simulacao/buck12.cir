@@ -3,7 +3,7 @@
 *   Vin = 19.8 V | D = 0.606 | fsw = 500 kHz (Tsw = 2 us)   [PREMISSA P-08]
 *   L = 89 uH com DCR = 30 mOhm | Cout = 2 x 22 uF (ESR 5 mOhm cada)
 *   Carga 0.60 A  ->  R = 20 ohm
-* Maquina: Orange Pi 3B, Debian aarch64, ngspice-34
+* Maquina: Linux aarch64, ngspice-34
 * Execucao:  ngspice -b buck12.cir > buck12.log 2>&1
 * --------------------------------------------------------------------------
 * FORMULA DO VALOR ESPERADO (analitico - calculado a mao, nao medido)

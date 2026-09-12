@@ -2,12 +2,13 @@
 """FASE 1 - gerador de esquemas. Metodo: TODO elemento e posicionado em coordenada
 absoluta (.at/.to) e os pinos de CI/FET sao calculados como at + offset_local
 (comportamento verificado nesta maquina com dots de conferencia).
-Saidas: esq1..esq8 .png em /opt/jupyter/work/drone/fase1_esquema/
+Saidas: esq1..esq8 .png em fase1_esquema/
 """
+import os
 import matplotlib; matplotlib.use("Agg")
 import schemdraw, schemdraw.elements as elm
 
-D = "/opt/jupyter/work/drone/fase1_esquema/"
+D = os.path.dirname(os.path.abspath(__file__)) + "/"
 d = None
 
 def novo(unit=0.75, fs=9):

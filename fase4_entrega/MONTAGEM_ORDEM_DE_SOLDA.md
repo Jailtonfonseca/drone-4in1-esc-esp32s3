@@ -1,8 +1,8 @@
 # MONTAGEM — ORDEM DE SOLDA (FASE 4)
 
 **Projeto:** drone 4×ESC trifásico + ESP32-S3 em PCB única · pack LiPo 6S (19,8 / 22,2 / 25,2 V)
-**Pasta:** `/opt/jupyter/work/drone/fase4_entrega/` · **Data:** 2026-09-11
-**Máquina:** Orange Pi 3B, Debian Bullseye aarch64 (headless)
+**Pasta:** `fase4_entrega/` · **Data:** 2026-09-11
+**Máquina:** Linux aarch64 (headless)
 
 ## Como ler este documento (etiquetas)
 
@@ -20,7 +20,7 @@
 
 Isto é obrigatório ler antes de comprar estêncil ou pasta.
 
-`[DISCO]` `/opt/jupyter/work/drone/fase3_pcb/v6/verificacao_v6.txt`:
+`[DISCO]` `fase3_pcb/v6/verificacao_v6.txt`:
 
 ```
 nets com pad      : 426

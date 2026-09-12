@@ -4,7 +4,7 @@
 *   L = 5 uH (DCR nao informado -> 0)
 *   Cout = 2 x 22 uF (ESR 5 mOhm cada)
 *   Carga 1.5 A  ->  R = 2.2 ohm
-* Maquina: Orange Pi 3B, Debian aarch64, ngspice-34
+* Maquina: Linux aarch64, ngspice-34
 * Execucao:  ngspice -b buck3v3.cir > buck3v3.log 2>&1
 * --------------------------------------------------------------------------
 * FORMULA DO VALOR ESPERADO (analitico)

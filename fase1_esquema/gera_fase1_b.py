@@ -2,10 +2,11 @@
 """FASE 1 - figuras 5..9 (entrada v3, ESC detalhe, ESC visao geral, MCU, arvore de energia).
 Metodo: coordenadas absolutas; pinos de CI calculados por at+offset_local (offsets medidos
 antes de desenhar, com a funcao offsets())."""
+import os
 import matplotlib; matplotlib.use("Agg")
 import schemdraw, schemdraw.elements as elm
 
-D = "/opt/jupyter/work/drone/fase1_esquema/"
+D = os.path.dirname(os.path.abspath(__file__)) + "/"
 d = None
 
 def novo(unit=0.75, fs=9):

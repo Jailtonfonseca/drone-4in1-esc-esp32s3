@@ -3,8 +3,8 @@
 """
 FASE 3 -- roteamento automatico PROPRIO (A* em grade) + verificacao geometrica.
 
-Entrada : /opt/jupyter/work/drone/fase3_pcb/v7/v7_drone.kicad_pcb
-Saida   : /opt/jupyter/work/drone/fase3_pcb/v8/  (v8_drone.kicad_pcb, Gerbers,
+Entrada : fase3_pcb/v7/v7_drone.kicad_pcb
+Saida   : fase3_pcb/v8/  (v8_drone.kicad_pcb, Gerbers,
           Excellon, verificacao_v8.txt)
 
 O que este script faz, em ordem:
@@ -31,7 +31,7 @@ import heapq
 import numpy as np
 import pcbnew
 
-BASE = "/opt/jupyter/work/drone/fase3_pcb"
+BASE = os.path.dirname(os.path.abspath(__file__))
 SRC = BASE + "/v7/v7_drone.kicad_pcb"
 OUT = BASE + "/v8"
 os.makedirs(OUT, exist_ok=True)

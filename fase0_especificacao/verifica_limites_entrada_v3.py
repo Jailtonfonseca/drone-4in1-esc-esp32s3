@@ -6,6 +6,7 @@ sem efeito na fisica). Agora em mV de verdade.
 Novo: C6) ripple AGREGADO dos 4 motores -- sincronizado vs. portadoras intercaladas 90 graus.
 """
 import math
+import os
 import numpy as np
 L = []
 def p(s=""):
@@ -92,4 +93,4 @@ p(f"  FETs: {pc_h:.2f} W | conversores: {conv:.2f} W (entrada) | TOTAL ~ {p_h+pc
 p("\n" + "="*78)
 p("FIM v3 -- 100% calculo numerico. Nenhuma medicao de bancada.")
 p("="*78)
-open("/opt/jupyter/work/drone/fase0_especificacao/verifica_limites_saida_v3.txt","w").write("\n".join(L)+"\n")
+open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "verifica_limites_saida_v3.txt"),"w").write("\n".join(L)+"\n")

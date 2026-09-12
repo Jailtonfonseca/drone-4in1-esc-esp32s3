@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Fase 1 - FIG 4: ESC trifasico completo (1 motor). Geometria explicita.
 FET: elm.NFet().at((x,y)) -> drain=(x,y), source=(x,y-1,5), gate=(x+1,37,y-0,75)."""
+import os
 import matplotlib; matplotlib.use("Agg")
 import schemdraw, schemdraw.elements as elm
 
-D = "/opt/jupyter/work/drone/fase1_esquema/"
+D = os.path.dirname(os.path.abspath(__file__)) + "/"
 d = schemdraw.Drawing(show=False); d.config(unit=1.7, fontsize=8.5, lw=1.2)
 
 def W(*pts, color='black', lw=1.2, ls='-'):

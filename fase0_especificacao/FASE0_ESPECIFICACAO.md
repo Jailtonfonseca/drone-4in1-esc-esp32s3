@@ -2,8 +2,8 @@
 
 **Projeto:** drone completo em PCB única — 4 inversores trifásicos, gate drivers,
 sensoriamento de corrente, MCU com WiFi, IMU, barômetro, USB e toda a regulação de energia.
-**Máquina:** Orange Pi 3B, Debian Bullseye aarch64, headless (`/usr/bin/python3.9` + KiCad 5.1.9, ngspice 34, gerbv 2.7.0, iverilog 11).
-**Data:** 2026-09-11 · **Pasta:** `/opt/jupyter/work/drone/fase0_especificacao/`
+**Máquina:** Linux aarch64 headless (`/usr/bin/python3.9` + KiCad 5.1.9, ngspice 34, gerbv 2.7.0, iverilog 11).
+**Data:** 2026-09-11 · **Pasta:** `fase0_especificacao/`
 **Status:** Fase 0 entregue — **aguardando seu OK para a Fase 1**.
 
 ---
@@ -30,7 +30,7 @@ Todos os números vêm dos três scripts listados abaixo (todos executados com s
 
 Comando executado (exemplo real):
 ```
-$ cd /opt/jupyter/work/drone/fase0_especificacao && python3 dimensionamento_fase0.py
+$ cd fase0_especificacao && python3 dimensionamento_fase0.py
 ```
 Exemplo de saída real:
 ```

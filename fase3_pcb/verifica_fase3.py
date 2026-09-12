@@ -3,7 +3,7 @@
 """Verificacao do PCB v3: contagens, nets roteadas x nao roteadas, planos."""
 import pcbnew, io, collections, os
 
-OUT = "/opt/jupyter/work/drone/fase3_pcb/v4"
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "v4")
 b = pcbnew.LoadBoard(OUT + "/v4_drone.kicad_pcb")
 o = io.StringIO()
 def P(*a):

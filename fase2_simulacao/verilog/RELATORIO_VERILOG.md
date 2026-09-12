@@ -1,8 +1,8 @@
 # RELATÓRIO — Fase 2: PWM 12 canais com dead-time em Verilog
 
-**Data:** 2026-09-11 · **Máquina:** Orange Pi, Debian 11 (aarch64), kernel 5.10.160-rockchip-rk356x
+**Data:** 2026-09-11 · **Máquina:** Linux ARM (aarch64)
 **Ferramentas:** Icarus Verilog 11.0 (stable), vvp, Yosys 0.9 (git sha1 1979e0b), Python 3 + matplotlib 3.11.1
-**Pasta:** `/opt/jupyter/work/drone/fase2_simulacao/verilog/`
+**Pasta:** `fase2_simulacao/verilog/`
 
 > **Regra cumprida:** nenhum número abaixo foi calculado "no papel". Todos vêm de `tb_pwm.log`,
 > `yosys.log` ou do próprio `tb_pwm.vcd` (re-lido por um parser Python independente).
@@ -175,7 +175,7 @@ Sem sobreposição de traços.
 ```
 $ iverilog -g2005 -o /dev/null pwm_deadtime.v      -> exit 0 (sem erro/warning)
 $ yosys -p 'read_verilog pwm_deadtime.v; synth; stat' > yosys.log 2>&1
-  -> exit 0, 428 s nesta Orange Pi (ARM), pico de ~1,25 GB de RAM
+  -> exit 0, 428 s nesta máquina (ARM), pico de ~1,25 GB de RAM
   -> 0 WARNING, 0 ERROR, 0 latch inferido, 0 memória
 ```
 

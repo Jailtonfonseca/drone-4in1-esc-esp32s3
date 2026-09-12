@@ -1,8 +1,8 @@
 # RESULTADOS FASE 2 — Simulação SPICE (ngspice)
 
 **Projeto:** Drone 4xESC + ESP32-S3 — pack LiPo 6S (25,2 V máx / 19,8 V mín)
-**Pasta:** `/opt/jupyter/work/drone/fase2_simulacao/`
-**Máquina:** Orange Pi 3B · Debian Bullseye **aarch64** · **ngspice-34**
+**Pasta:** `fase2_simulacao/`
+**Máquina:** Linux **aarch64** · **ngspice-34**
 **Data da rodada:** 2026-09-11
 **Ferramentas usadas:** somente `ngspice -b`. **Não** foram usados LTspice, Proteus,
 PSpice, Multisim nem qualquer ferramenta x86/Windows (não existem nesta máquina).
@@ -328,7 +328,7 @@ lendo os logs), `_testes/` (testes de sintaxe e a rodada de controle de 20 ms).
 ## 7. Reproduzir
 
 ```sh
-cd /opt/jupyter/work/drone/fase2_simulacao
+cd fase2_simulacao
 for f in buck12 buck5 buck3v3 divisor_vbat bemf_div gate_drive shunt_amp prot_inversao; do
     ngspice -b $f.cir > $f.log 2>&1
 done

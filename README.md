@@ -4,9 +4,9 @@ Projeto de **uma única PCB** que concentra: 4 inversores trifásicos (ESC), gat
 sensoriamento de corrente, MCU com WiFi (ESP32-S3), IMU, barômetro, USB e toda a regulação
 de energia a partir de pack LiPo 6S (25,2 V máx / 19,8 V mín).
 
-Todo o projeto foi feito **100 % headless** nesta máquina (Orange Pi 3B, Debian Bullseye
-aarch64, sem desktop): script + CLI + PNG, com KiCad 5.1.9 via `pcbnew` (Python), ngspice 34,
-Icarus Verilog 11, Yosys 0.9, gerbv 2.7.0 e matplotlib.
+Todo o projeto foi feito **100 % headless** nesta máquina (Linux aarch64, sem desktop):
+script + CLI + PNG, com KiCad 5.1.9 via `pcbnew` (Python), ngspice 34, Icarus Verilog 11,
+Yosys 0.9, gerbv 2.7.0 e matplotlib.
 
 > **Regra de honestidade do projeto:** todo número afirmado nos relatórios vem de um arquivo
 > de log gerado de verdade por uma ferramenta executada nesta máquina, e cada afirmação tem

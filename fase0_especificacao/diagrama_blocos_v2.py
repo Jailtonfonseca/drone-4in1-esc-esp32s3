@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Fase 0 - diagrama de blocos v2 (v1 tinha blocos sobrepostos: caixa de energia em cima dos ESCs)."""
+import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -109,5 +110,5 @@ ax.text(50, 0.9, "Fase 0 -- rascunho de arquitetura. Numeros conforme dimensiona
                  "verifica_limites_saida_v4.txt. Nenhum valor medido em bancada.",
         ha="center", fontsize=7.4, color="#777")
 plt.tight_layout()
-plt.savefig("/opt/jupyter/work/drone/fase0_especificacao/diagrama_blocos_fase0_v2.png", dpi=150)
+plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "diagrama_blocos_fase0_v2.png"), dpi=150)
 print("ok")

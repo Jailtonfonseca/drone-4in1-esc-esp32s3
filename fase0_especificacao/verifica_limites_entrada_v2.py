@@ -12,6 +12,7 @@ Correcoes em relacao a v1 (registradas no relatorio):
 Tudo continua sendo calculo numerico -- nada foi medido em bancada.
 """
 import math
+import os
 import numpy as np
 
 L = []
@@ -128,4 +129,4 @@ p("\n" + "=" * 78)
 p("FIM -- calculo numerico. Nenhuma medicao de bancada foi feita.")
 p("=" * 78)
 
-open("/opt/jupyter/work/drone/fase0_especificacao/verifica_limites_saida_v2.txt", "w").write("\n".join(L) + "\n")
+open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "verifica_limites_saida_v2.txt"), "w").write("\n".join(L) + "\n")

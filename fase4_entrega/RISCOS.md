@@ -1,7 +1,7 @@
 # RISCOS DO PROJETO (FASE 4)
 
 **Projeto:** drone 4×ESC trifásico + ESP32-S3 na mesma PCB · LiPo 6S
-**Pasta:** `/opt/jupyter/work/drone/fase4_entrega/` · **Data:** 2026-09-11
+**Pasta:** `fase4_entrega/` · **Data:** 2026-09-11
 
 ## Como usar esta tabela
 
