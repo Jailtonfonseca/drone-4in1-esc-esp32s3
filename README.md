@@ -145,4 +145,16 @@ cd orcamento && python3 orcamento.py
 
 ## Licença
 
-Sem licença definida até o momento — todos os direitos reservados ao autor.
+Distribuído sob a **licença MIT** — texto completo em [`LICENSE`](LICENSE).
+
+A licença cobre todo o conteúdo do repositório: o software (scripts Python e Verilog),
+os arquivos de projeto (esquemas, layout KiCad, Gerbers) e a documentação.
+
+Como toda licença permissiva, a MIT é fornecida **"como está", sem garantia de qualquer
+espécie**. Isso pesa aqui mais que o normal: este é um projeto de eletrônica de potência
+**em andamento e não validado em bancada**, então a ausência de garantia e a limitação de
+responsabilidade valem integralmente (ver os avisos no topo deste README).
+
+> **Nota sobre os datasheets:** os PDFs em `datasheets/` são material de terceiros
+> (Espressif, TDK/InvenSense), incluídos apenas como referência de projeto e **não**
+> são cobertos pela licença MIT deste repositório.
