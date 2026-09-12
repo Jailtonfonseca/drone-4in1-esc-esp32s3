@@ -1,0 +1,41 @@
+==============================================================================
+FASE 0 -- LIMITES CRITICOS (v3, final)
+==============================================================================
+
+1. UM MOTOR -- ripple de corrente no barramento (PWM resolvido, 250 ns/amostra)
+  I_med=18.01 A (analitico (3/4)*m*Ipk=18.00 A, erro 0.042 %) | RMS(ac)=13.12 A | |I_ac|max=18.01 A
+
+    C [uF]  ESR [mOhm] |  dV_C pkpk  dV_ESR pk  dV_TOTAL pkpk | 'I*t/C'
+       470        15.0 |       870mV       270mV          1140mV |  3.191 V
+      1000        12.0 |       409mV       216mV           625mV |  1.500 V
+      2200        10.0 |       186mV       180mV           366mV |  0.682 V
+      4400         8.0 |        93mV       144mV           237mV |  0.341 V
+
+2. QUATRO MOTORES NO MESMO BARRAMENTO -- o caso que decide a bancada de capacitores
+  portadoras SINCRONIZADAS      : I_med=  72.03 A | RMS(ac)= 52.47 A | |I_ac|max= 72.03 A
+  portadoras INTERCALADAS 90o   : I_med=  71.95 A | RMS(ac)= 11.77 A | |I_ac|max= 21.98 A
+  Ganho do intercalamento no ripple RMS: 4.46x  (52.47 A -> 11.77 A)
+  >>> DECISAO DE PROJETO: os 4 MCPWM/LEDC devem ter portadoras defasadas de 90 graus entre motores.
+      Isso reduz a corrente RMS no banco de capacitores ~2x e e' de graca (e' configuracao de timer).
+
+  Banco adotado (4x 470 uF polimero, ESR 15 mOhm): com 1 cap por motor, cada cap ve ~1 motor.
+    cap dedicado por motor (adotado): dV_C=870 mV + dV_ESR=270 mV = 1140 mV pk-pk (4525.6 % de 25.2 V)
+  >>> Com 100 nF + 10 uF ceramico colados a cada par de MOSFETs, o cap eletrolitico deixa de ver
+      o degrau de fsw e passa a ver so' o envelope -> este numero e' o PIOR caso (sem os ceramicos).
+      Layout e' o que prova isso: Fase 3, e bancada na Fase 4.
+
+3. TERMICA (Rth_ja PREMISSA) / VIAS / GATE / ADC -- resumo
+  cruzeiro (5 A fase) : P/FET=0.016 W -> 24 FETs= 0.39 W | Tj(Rth=60C/W, Ta=25C) = 26.0 C
+  nominal (15 A)      : P/FET=0.146 W -> 24 FETs= 3.50 W | Tj(Rth=60C/W, Ta=25C) = 33.7 C
+  pico (30 A)         : P/FET=0.583 W -> 24 FETs=13.99 W | Tj(Rth=60C/W, Ta=25C) = 60.0 C
+  Via 0.3 mm: R=1.168 mOhm -> 40 vias a 30 A: queda 0.876 mV, P=26 mW total
+  Gate: Z0=3.16 ohm -> Rg>=6.3 ohm (adotado 10 ohm) | f_ring=25.2 MHz
+  ADC: janela 2 us = 4.0 % do periodo de 50 us | dead-time 520 ns = 1.0 % de duty
+
+4. BALANCO NO CRUZEIRO (carga real, nao nominal)
+  Helice: 167 W | I_barra 7.5 A | I_fase pico 12.5 A
+  FETs: 1.88 W | conversores: 4.00 W (entrada) | TOTAL ~ 173 W (3.5 % acima do ideal de helice)
+
+==============================================================================
+FIM v3 -- 100% calculo numerico. Nenhuma medicao de bancada.
+==============================================================================

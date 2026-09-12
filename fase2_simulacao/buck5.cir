@@ -1,0 +1,87 @@
+* ==========================================================================
+* buck5.cir -- Buck SINCRONO (2o estagio da cadeia, projeto Drone)
+*   Vin = 12 V | D = 0.417 | fsw = 500 kHz (Tsw = 2 us)   [PREMISSA P-08]
+*   L = 17 uH (DCR nao informado -> 0, declarado abaixo)
+*   Cout = 2 x 22 uF (ESR 5 mOhm cada, igual ao buck12)
+*   Carga 2.0 A  ->  R = 2.5 ohm
+* Maquina: Orange Pi 3B, Debian aarch64, ngspice-34
+* Execucao:  ngspice -b buck5.cir > buck5.log 2>&1
+* --------------------------------------------------------------------------
+* FORMULA DO VALOR ESPERADO (analitico)
+*   [E1] Vout ideal = D * Vin = 0.417 * 12 = 5.004 V
+*   [E2] Ton = D / fsw = 0.417 / 500k = 0.834 us
+*   [E3] Vout com perdas: Vout = 5.004 - I*(Ron), I = Vout/2.5
+*            => Vout * 1.0004 = 5.004  =>  Vout = 5.0019992 V
+*            => I = 2.0007997 A
+*   [E4] dIL = (Vin - I*Ron - Vout) * Ton / L
+*            = (12 - 0.002001 - 5.001999) * 0.834e-6 / 17e-6
+*            = 6.996 * 0.834e-6 / 17e-6
+*            = 0.3432153 A pk-pk
+*       *** ATENCAO / DIVERGENCIA NO ENUNCIADO ***
+*       O enunciado pede "dIL = 0.246 A pk-pk". Com os dados dados
+*       (Vin=12, D=0.417, L=17 uH, fsw=500 kHz) a formula acima da
+*       0.3432 A. Para dar 0.246 A seria preciso L = 23.7 uH (ou
+*       fsw = 698 kHz, ou D = 0.299). Reporto 0.3432 A como ESPERADO
+*       (calculado da formula com os parametros dados) e sinalizo a
+*       inconsistencia do numero citado.
+*   [E5] ripple capacitivo = dIL/(8*Cout*fsw), Cout = 44u
+*            = 0.3432153/(8*44e-6*500e3) = 1.950 mV pk-pk
+*   [E6] ripple ESR = dIL * 2.5m = 0.858 mV pk-pk
+*   [E7] ripple total pk-pk (soma com fase real, ponto a ponto) =
+*        2.0472 mV pk-pk   (script minimiza_ripple.py; somar os dois pp
+*        daria 2.808 mV -- sobrestima)
+* --------------------------------------------------------------------------
+* MODELAGEM / PREMISSAS DECLARADAS
+*   [M1] Chave ideal S-model SW(Ron=1m Roff=1meg Vt=0.5 Vh=0).
+*   [M2] Acionamento complementar EXATO (dead-time = 0).
+*   [M3] Diodos de corpo explicitos Is=1e-12 (FET real [N/D offline]).
+*   [M4] DCR do indutor NAO foi informado para este estagio -> modelado
+*        como 0 (indutor ideal). Se o indutor real tiver DCR, Vout cai
+*        I*DCR: 2 A * 30 mOhm = 60 mV (1.2%).
+*   [M5] Condicao inicial analitica de regime permanente:
+*            v(out) = 5.0019992 V ; i(L1) = 2.0007997 - 0.1716077
+*                   = 1.8291920 A
+*        MOTIVO: Q = R*sqrt(C/L) = 2.5*sqrt(44u/17u) = 4.02 ainda
+*        subamortecido (tau ~ 0.22 ms), partida em 200 us nao assenta.
+*        PROVA: janelas sucessivas coincidem no log.
+* ==========================================================================
+Vin   vin 0  12
+
+Vg1   g1  0  PULSE(0 1 0       1p 1p 0.834u  2u)
+Vg2   g2  0  PULSE(0 1 0.834u  1p 1p 1.166u  2u)
+
+S1    vin sw  g1 0  SWQ
+S2    0   sw  g2 0  SWQ
+.model SWQ SW(Ron=1m Roff=1meg Vt=0.5 Vh=0)
+
+D1    0   sw  DBDY
+D2    sw  vin DBDY
+.model DBDY D(Is=1e-12 N=1)
+
+* L ideal (DCR = 0, ver M4)
+L1    sw  out 17u  ic=1.8291920
+C1    out nc1 22u
+Res1  nc1 0   5m
+C2    out nc2 22u
+Res2  nc2 0   5m
+
+Rl    out 0   2.5
+
+.ic v(out)=5.0019992
+
+.tran 20n 2m 0 20n uic
+
+.meas tran Vout_jan1 AVG v(out) FROM=100u TO=110u
+.meas tran Vout_jan2 AVG v(out) FROM=1000u TO=1010u
+.meas tran Vout_jan3 AVG v(out) FROM=1990u TO=2000u
+.meas tran Vout_med AVG v(out) FROM=1900u TO=2000u
+.meas tran Vout_max MAX v(out) FROM=1998u TO=2000u
+.meas tran Vout_min MIN v(out) FROM=1998u TO=2000u
+.meas tran Vout_pp  PP  v(out) FROM=1998u TO=2000u
+.meas tran dIL_pp   PP  i(L1)  FROM=1998u TO=2000u
+.meas tran iL_max   MAX i(L1)  FROM=1998u TO=2000u
+.meas tran iL_min   MIN i(L1)  FROM=1998u TO=2000u
+.meas tran iL_med   AVG i(L1)  FROM=1900u TO=2000u
+.meas tran iD1_max  MAX @d1[id] FROM=1900u TO=2000u
+.meas tran iD2_max  MAX @d2[id] FROM=1900u TO=2000u
+.end

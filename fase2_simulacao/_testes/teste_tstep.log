@@ -1,0 +1,51 @@
+Warning: vg2: no DC value, transient time 0 value used
+Warning: vg1: no DC value, transient time 0 value used
+
+No compatibility mode selected!
+
+
+Circuit: * sensibilidade do resultado ao passo maximo (buck ideal 19.8->12, 500khz)
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using transient initial conditions
+ Reference value :  5.86849e-05 Reference value :  1.38923e-04 Reference value :  2.10000e-04 Reference value :  2.83535e-04Warning: vg2: no DC value, transient time 0 value used
+Warning: vg1: no DC value, transient time 0 value used
+
+No. of Data Rows : 24669
+a20                 =  1.193600e+01 from=  2.900000e-04 to=  3.000000e-04
+p20                 =  9.613968e-04 from=  2.900000e-04 to=  3.000000e-04
+
+Error: measure  v0_20  (AT) : out of interval
+ meas tran v0_20 find v(out) at=0 failed!
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using transient initial conditions
+ Reference value :  1.84256e-05 Reference value :  4.54676e-05 Reference value :  7.26612e-05 Reference value :  9.64062e-05 Reference value :  1.21006e-04 Reference value :  1.46496e-04 Reference value :  1.74000e-04 Reference value :  2.01453e-04 Reference value :  2.29303e-04 Reference value :  2.54671e-04 Reference value :  2.82241e-04Warning: vg2: no DC value, transient time 0 value used
+Warning: vg1: no DC value, transient time 0 value used
+
+No. of Data Rows : 69069
+a5                  =  1.193600e+01 from=  2.900000e-04 to=  3.000000e-04
+p5                  =  9.614563e-04 from=  2.900000e-04 to=  3.000000e-04
+
+Error: measure  v0_5  (AT) : out of interval
+ meas tran v0_5 find v(out) at=0 failed!
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using transient initial conditions
+ Reference value :  4.13511e-06 Reference value :  1.60851e-05 Reference value :  2.71671e-05 Reference value :  3.83831e-05 Reference value :  4.98591e-05 Reference value :  6.14631e-05 Reference value :  7.28911e-05 Reference value :  8.35131e-05 Reference value :  9.48028e-05 Reference value :  1.06465e-04 Reference value :  1.18307e-04 Reference value :  1.29549e-04 Reference value :  1.40827e-04 Reference value :  1.51725e-04 Reference value :  1.63179e-04 Reference value :  1.74207e-04 Reference value :  1.84431e-04 Reference value :  1.95149e-04 Reference value :  2.05995e-04 Reference value :  2.16919e-04 Reference value :  2.27455e-04 Reference value :  2.38799e-04 Reference value :  2.48945e-04 Reference value :  2.59951e-04 Reference value :  2.70579e-04 Reference value :  2.81221e-04 Reference value :  2.92623e-04Warning: vg2: no DC value, transient time 0 value used
+Warning: vg1: no DC value, transient time 0 value used
+
+No. of Data Rows : 158619
+a2                  =  1.193600e+01 from=  2.900000e-04 to=  3.000000e-04
+p2                  =  9.614649e-04 from=  2.900000e-04 to=  3.000000e-04
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using transient initial conditions
+ Reference value :  1.85741e-06 Reference value :  7.54856e-06 Reference value :  1.30646e-05 Reference value :  1.87994e-05 Reference value :  2.41554e-05 Reference value :  3.00000e-05 Reference value :  3.60356e-05 Reference value :  4.14214e-05 Reference value :  4.73166e-05 Reference value :  5.30544e-05 Reference value :  5.80000e-05 Reference value :  6.36436e-05 Reference value :  6.97346e-05 Reference value :  7.36516e-05 Reference value :  7.96826e-05 Reference value :  8.55514e-05 Reference value :  9.10726e-05 Reference value :  9.68526e-05 Reference value :  1.02452e-04 Reference value :  1.07616e-04 Reference value :  1.12978e-04 Reference value :  1.18467e-04 Reference value :  1.24019e-04 Reference value :  1.29408e-04 Reference value :  1.34745e-04 Reference value :  1.40211e-04 Reference value :  1.45734e-04 Reference value :  1.50773e-04 Reference value :  1.55287e-04 Reference value :  1.60261e-04 Reference value :  1.65776e-04 Reference value :  1.71216e-04 Reference value :  1.76978e-04 Reference value :  1.82079e-04 Reference value :  1.87739e-04 Reference value :  1.93754e-04 Reference value :  1.99876e-04 Reference value :  2.05559e-04 Reference value :  2.11212e-04 Reference value :  2.17042e-04 Reference value :  2.22562e-04 Reference value :  2.28692e-04 Reference value :  2.34154e-04 Reference value :  2.39645e-04 Reference value :  2.45864e-04 Reference value :  2.52169e-04 Reference value :  2.58299e-04 Reference value :  2.64583e-04 Reference value :  2.70900e-04 Reference value :  2.76877e-04 Reference value :  2.81565e-04 Reference value :  2.87207e-04 Reference value :  2.92594e-04 Reference value :  2.98000e-04Note: No ".plot", ".print", or ".fourier" lines; no simulations run
+
+No. of Data Rows : 308319
+a1                  =  1.193600e+01 from=  2.900000e-04 to=  3.000000e-04
+p1                  =  9.614655e-04 from=  2.900000e-04 to=  3.000000e-04

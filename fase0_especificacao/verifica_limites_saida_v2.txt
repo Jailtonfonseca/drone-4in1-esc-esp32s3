@@ -1,0 +1,67 @@
+==============================================================================
+VERIFICACAO DE LIMITES CRITICOS -- Fase 0 (v2)
+==============================================================================
+
+1. CAPACITOR DE ENTRADA -- modelo numerico COM comutacao PWM resolvida
+  Modelo: 20 kHz PWM, 300 Hz eletrico, m=0.80, Ipk=30 A, 13333 amostras (250 ns)
+  I_barramento: media =  18.01 A | pico =  30.00 A | RMS(ac) =  13.12 A | I_pk(ac) =  18.01 A
+  Conferencia analitica: I_med = (3/4)*m*Ipk = 18.00 A  | erro = 0.042 %
+
+         C     ESR |  dV_C(pk-pk)  dV_ESR(pk)  dV_total | regra I*t/C
+       470   15.0m |       870.3mV      270.1mV      1.1mV |  3.191 V
+      1000   12.0m |       409.1mV      216.1mV      0.6mV |  1.500 V
+      2200   10.0m |       185.9mV      180.1mV      0.4mV |  0.682 V
+      4400    8.0m |        93.0mV      144.1mV      0.2mV |  0.341 V
+  Leitura: a regra 'I*t/C' (ultima coluna) da' VOLTS; o ripple real fica em mV. O que manda e'
+  ESR do cap + ESL do layout. Nao ha trilha de cobre que salve um cap ruim.
+  L_cabo= 100 nH, di=30 A em dt=50 ns -> V_spike = L*di/dt =    60 V (ESTOURA o MOSFET de 40 V)
+  L_cabo= 500 nH, di=30 A em dt=50 ns -> V_spike = L*di/dt =   300 V (ESTOURA o MOSFET de 40 V)
+  >>> Conclusao de projeto: 4x470 uF polimero (low-ESR) + 10 uF + 100 nF POR MOSFET PAR,
+      a <2 mm do par, com o loop de comutacao minimizado no layout.
+
+2. TERMICA DO MOSFET -- dois pontos de operacao (Rth_ja e' PREMISSA)
+  cruzeiro (~5 A de fase pico): P_cond=   12.5 mW, P_sw=   3.7 mW -> P= 0.02 W/FET -> 24 FETs =  0.39 W
+      Rth_ja= 30 C/W -> Tj=  25.5 C 
+      Rth_ja= 60 C/W -> Tj=  26.0 C 
+      Rth_ja=100 C/W -> Tj=  26.6 C 
+  nominal (15 A)            : P_cond=  112.5 mW, P_sw=  33.2 mW -> P= 0.15 W/FET -> 24 FETs =  3.50 W
+      Rth_ja= 30 C/W -> Tj=  29.4 C 
+      Rth_ja= 60 C/W -> Tj=  33.7 C 
+      Rth_ja=100 C/W -> Tj=  39.6 C 
+  pico (30 A)               : P_cond=  450.0 mW, P_sw= 133.0 mW -> P= 0.58 W/FET -> 24 FETs = 13.99 W
+      Rth_ja= 30 C/W -> Tj=  42.5 C 
+      Rth_ja= 60 C/W -> Tj=  60.0 C 
+      Rth_ja=100 C/W -> Tj=  83.3 C 
+  >>> Rth_ja vem da AREA DE COBRE do layout -> a temperatura e' decidida no PCB (Fase 3)
+      e comprovada com termopar (Fase 4). Nada aqui e' medicao.
+
+3. VIAS DE POTENCIA
+  drill 0.30 mm / parede 25 um / placa 1.6 mm -> R = 1.168 mOhm | 30 vias em paralelo = 0.039 mOhm -> queda a 30 A = 1.168 mV, P_total = 35.0 mW
+  drill 0.45 mm / parede 25 um / placa 1.6 mm -> R = 0.779 mOhm | 30 vias em paralelo = 0.026 mOhm -> queda a 30 A = 0.779 mV, P_total = 23.4 mW
+  drill 0.60 mm / parede 25 um / placa 1.6 mm -> R = 0.584 mOhm | 30 vias em paralelo = 0.019 mOhm -> queda a 30 A = 0.584 mV, P_total = 17.5 mW
+  Adotado: 40 vias de costura (0.3 mm) por transicao de camada. NAO medido.
+
+4. LOOP DE GATE
+  L_loop=20 nH, Ciss=2.0 nF -> f_ring=25.2 MHz, Z0=3.16 ohm
+  Rg=10 ohm >= 2*Z0=6.3 ohm -> AMORTECIDO
+
+5. JANELA DE ADC x PWM
+  T_PWM = 50.0 us
+  janela 1 us ->  2.0 % do periodo (precisa >= 1 us de settling do amp -> risco)
+  janela 2 us ->  4.0 % do periodo (precisa >= 1 us de settling do amp -> ok)
+  janela 4 us ->  8.0 % do periodo (precisa >= 1 us de settling do amp -> ok)
+  tempo morto ~520 ns (premissa de driver single-input) -> 1.0 % de duty perdido
+  taxa de amostragem: 1 amostra/ciclo = 20 ksps (FOC ok); 2 amostras = 40 ksps
+
+6. BALANCO DE POTENCIA -- CARGA REAL, nao nominal
+  Empuxo p/ sustentar 750 g: 167 W -> I_barra = 7.5 A -> I_fase(pico) = 12.5 A
+  Perdas de conducao nos 24 FETs (cruzeiro): 1.88 W
+  Conversores (MCU+radio 0.55 A@3.3, gate 49 mA@12, aux 0.20 A@5): 4.00 W na entrada
+  TOTAL da placa no cruzeiro = 167 W (helice) + 1.88 W + 4.00 W = 173 W  (3.5 % acima do ideal)
+  No PICO (4x30 A): so' a conducao dos FETs = 10.8 W + comutacao ~3.2 W + helice (I^2) -> regime termico de rajada, NAO continuo.
+  >>> Rendimento da helice (g/W) e' PREMISSA. O numero que importa (temperatura real em voo)
+      nao existe nesta maquina: exige tunel de vento/bancada.
+
+==============================================================================
+FIM -- calculo numerico. Nenhuma medicao de bancada foi feita.
+==============================================================================

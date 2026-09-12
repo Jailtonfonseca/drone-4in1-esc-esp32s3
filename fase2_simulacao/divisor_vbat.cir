@@ -1,0 +1,55 @@
+* ==========================================================================
+* divisor_vbat.cir -- Divisor de tensao para monitorar a tensao do pack
+*   R1 = 100k (topo) | R2 = 13.7k (base) | C = 100 nF em paralelo com R2
+*   Vin = 25.2 V (LiPo 6S carregado)
+* Execucao:  ngspice -b divisor_vbat.cir > divisor_vbat.log 2>&1
+* --------------------------------------------------------------------------
+* FORMULA DO VALOR ESPERADO (analitico)
+*   [E1] .op  (DC, sem carga no no de saida -- so a entrada do ADC)
+*          Vout = Vin * R2/(R1+R2) = 25.2 * 13.7/(100+13.7)
+*               = 25.2 * 0.12049252
+*               = 3.0364116 V        (o enunciado cita 3.036 V)
+*   [E2] .ac
+*          C esta em paralelo com R2, logo
+*              H(s) = Vout/Vin = [R2/(R1+R2)] / (1 + s*(R1||R2)*C)
+*          com  R1||R2 = 100k*13.7k/(100k+13.7k) = 12049.2524 ohm
+*              fc = 1/(2*pi*(R1||R2)*C)
+*                 = 1/(2*pi*12049.2524*100e-9)
+*                 = 1/7.5708062e-3
+*                 = 132.0861 Hz       (o enunciado cita 132.1 Hz)
+*   [E3] ganho DC em dB = 20*log10(13.7/113.7) = -18.38179 dB
+*        -> -3 dB (queda de 3.0103 dB) em -21.39209 dB
+* --------------------------------------------------------------------------
+* MODELAGEM: R e C ideais, sem carga no no de saida (ADC de alta
+*   impedancia), sem fuga de placa. Tolerancia dos resistores NAO e
+*   simulada (comparacao e contra o valor nominal).
+* ==========================================================================
+Vin in  0 dc 25.2 ac 1
+R1  in  out 100k
+R2  out 0   13.7k
+C1  out 0   100n
+
+.control
+  echo ""
+  echo "########## (a) .op  com Vin = 25.2 V ##########"
+  op
+  print v(in) v(out)
+
+  echo ""
+  echo "########## (b) .ac dec 20 1 100k  (como pedido) ##########"
+  ac dec 20 1 100k
+  meas ac Hdc_dB    FIND vdb(out) AT=1
+  meas ac fc_limiar WHEN vdb(out)=-21.3921
+  let vth = Hdc_dB - 3.0103
+  meas ac fc_3dB    WHEN vdb(out)=vth
+  echo "--- tabela (frequencia, |H| em dB, fase em graus) ---"
+  print vdb(out) vp(out)
+
+  echo ""
+  echo "########## (b2) .ac dec 1000 1 10k  (varredura FINA) ##########"
+  ac dec 1000 1 10k
+  meas ac Hdc_dB_f  FIND vdb(out) AT=1
+  let vth2 = Hdc_dB_f - 3.0103
+  meas ac fc_3dB_f  WHEN vdb(out)=vth2
+.endc
+.end

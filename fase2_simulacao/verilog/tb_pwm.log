@@ -1,0 +1,37 @@
+VCD info: dumpfile tb_pwm.vcd opened for output.
+================================================================
+ tb_pwm -- pwm_deadtime  (clk 160 MHz, PERIOD=8000 -> 20 kHz)
+ dead-time programado = 83 ciclos = 518.75 ns
+================================================================
+
+--- Varredura de duty (12 canais iguais) ---
+[SWEEP] duty_in=   0/4095 (  0.000 %) -> pwm_o[0] alto     0/40000 =   0.000 %  (max=0)
+[SWEEP] duty_in=  10/4095 (  0.244 %) -> pwm_o[0] alto   795/40000 =   1.988 %  (max=159)
+[SWEEP] duty_in= 205/4095 (  5.006 %) -> pwm_o[0] alto  1995/40000 =   4.987 %  (max=399)
+[SWEEP] duty_in=2047/4095 ( 49.988 %) -> pwm_o[0] alto 19985/40000 =  49.962 %  (max=3997)
+[SWEEP] duty_in=3850/4095 ( 94.017 %) -> pwm_o[0] alto 37595/40000 =  93.987 %  (max=7519)
+[SWEEP] duty_in=4095/4095 (100.000 %) -> pwm_o[0] alto 37985/40000 =  94.963 %  (max=7597)
+
+--- Dead-time efetivo (canal 0 @ 50% duty) ---
+[DEADTIME] subida : lo cai em 1537571.875 ns, hi sobe em 1538090.625 ns -> dt = 518.750 ns
+[DEADTIME] descida: hi cai em 1512553.125 ns, lo sobe em 1513071.875 ns -> dt = 518.750 ns
+
+--- Frequencia real (periodo entre subidas de hi_o[0]) ---
+[FREQ] periodo medido = 50000.000 ns  ->  f = 20000.0 Hz  (20.0000 kHz)
+
+--- Defasagem das 4 portadoras (grupos 0,3,6,9) ---
+[PHASE] grupo0->3 = 37500.000 ns (270.000 graus)
+[PHASE] grupo0->6 = 25000.000 ns (180.000 graus)
+[PHASE] grupo0->9 = 12500.000 ns (90.000 graus)
+
+--- Programabilidade do dead-time (40 ciclos = 250 ns) ---
+[DEADTIME] 40 ciclos -> medido 250.000 ns
+
+--- Estresse: duty pseudo-aleatorio (12 canais) + dead-time 0..255 ciclos ---
+[STRESS] 60000 ciclos com duty/dead-time aleatorios -> violacoes ate aqui = 0
+
+================================================================
+ [RESULTADO] violacoes de shoot-through (hi & lo) = 0
+ [RESULTADO] tempo total simulado = 2262.872 us  (362060 ciclos de 6,25 ns @160 MHz)
+ [RESULTADO] checagem executada em TODOS os 362060 ciclos
+================================================================

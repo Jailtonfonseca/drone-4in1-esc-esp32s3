@@ -1,0 +1,88 @@
+* ==========================================================================
+* prot_inversao.cir -- Protecao contra inversao de polaridade com P-MOSFET
+*   PMOS modelo nivel 1, Vto = -2 V (generico; componente real [N/D offline])
+*   Carga 10 ohm.  (a) Vin = +19.8 V    (b) Vin = -19.8 V
+* Execucao:  ngspice -b prot_inversao.cir > prot_inversao.log 2>&1
+* --------------------------------------------------------------------------
+* TOPOLOGIA (classica de protecao reversa com P-FET no lado alto):
+*     dreno  -> Vin        (lado da bateria)
+*     source -> carga      (lado da carga)
+*     gate   -> GND
+*     bulk   -> source     (como num FET discreto de 3 terminais)
+*     diodo de corpo explicito: anodo = dreno, catodo = source
+*   No PMOS o corpo e N e fica ligado ao source; a juncao P(dreno)/N(corpo)
+*   conduz de dreno para source quando Vdreno > Vsource.
+*
+* FORMULA DO VALOR ESPERADO (analitico)
+*  (a) Vin = +19.8 V
+*      - Primeiro o DIODO DE CORPO conduz e leva o source a ~Vin - 0.7 V.
+*        Com o source alto, Vgs = Vg - Vs = 0 - 19.1 = -19.1 V, muito
+*        abaixo de Vto = -2 V -> o canal abre e curto-circuita o diodo.
+*      - Em triodo profundo (|Vds| << |Vgs|-|Vto|):
+*          Id = KP*(W/L)*[(|Vgs|-|Vto|)*|Vds| - Vds^2/2]
+*          Rds_on = 1/(KP*(W/L)*(|Vgs|-|Vto|))
+*        com KP*(W/L) = 28.125m * (1000u/10u) = 2.8125 A/V^2  :
+*          Rds_on = 1/(2.8125 * (19.76-2.0)) = 1/49.95 = 20.02 mOhm
+*      - I_load = 19.8/(10 + 0.02002) = 1.97604 A   (esperado "~2 A")
+*      - QUEDA = I*Rds_on = 1.97604 * 0.02002 = 39.56 mV  ("< 0.5 V")
+*  (b) Vin = -19.8 V
+*      - Vgs = Vg - Vs = 0 - 0 = 0 V  >  Vto = -2 V  ->  CANAL DESLIGADO
+*      - o diodo de corpo fica REVERSAMENTE polarizado (anodo no dreno a
+*        -19.8 V, catodo no source a 0 V) -> so fuga inversa
+*      - esperado: I ~ Is = 1e-12 A, ou seja, muito abaixo de 1 mA
+*
+* POR QUE O DIODO DE CORPO CORTA NO CASO (b):
+*   E uma juncao PN com anodo no dreno (lado P) e catodo no corpo/source
+*   (lado N). Com a bateria invertida, o anodo fica ~20 V NEGATIVO em
+*   relacao ao catodo -> polarizacao reversa -> o diodo bloqueia. E no
+*   caso (a) ele fica diretamente polarizado e conduz. Como o gate esta em
+*   0 V (referenciado ao terminal mais positivo, o source na carga), o
+*   canal P tambem esta desligado no caso (b) (Vgs = 0 > Vto = -2 V).
+*   Os dois mecanismos somam: nenhum caminho de conducao em polaridade
+*   invertida.
+* --------------------------------------------------------------------------
+* MODELAGEM / PREMISSAS DECLARADAS
+*   [M1] PMOS nivel 1 (Shockley). O componente real e [N/D offline] ->
+*        modelo generico: SEM avalanche, SEM breakdown dreno-source,
+*        SEM zener de gate, SEM capacitancia de gate, SEM resistencia de
+*        gate. Uma simulacao de avalanche/breakdown daria outro numero.
+*   [M2] W/L = 1000u/10u (razao efetiva 100) e KP = 28.125 mA/V^2:
+*        valores escolhidos APENAS para resultar em Rds_on = 20 mOhm com
+*        |Vgs| ~ 19.8 V. NAO sao parametros de datasheet.
+*   [M3] O DIODO DE CORPO FOI ADICIONADO EXPLICITAMENTE (Dbd, Is = 1e-12)
+*        porque o diodo interno do MOS1 do ngspice tem sua corrente
+*        controlada pelas areas AS/AD/PS/PD -- nao especificadas aqui, o
+*        que deixa o diodo interno praticamente sem corrente. O diodo
+*        explicito garante que o mecanismo de bloqueio apareca.
+*   [M4] No caso (a) Vgs chega a -19.8 V. Isso excede o Vgs maximo de
+*        qualquer MOSFET real (tipicamente +/-20 V e ja no limite, e
+*        semicondutores reais costumam usar 10 V). Numa montagem real
+*        haveria um resistor + Zener no gate. O modelo nivel 1 nao rompe
+*        o oxido, entao a simulacao NAO acusa esse problema -- registrado
+*        aqui como limitacao, nao como resultado.
+*   [M5] Rds_on do FET real, diodo real, e o resto: [N/D offline].
+* ==========================================================================
+V1   vin 0    dc 19.8
+M1   vin 0    load load PMOS1 W=1000u L=10u
+.model PMOS1 PMOS (LEVEL=1 VTO=-2.0 KP=28.125m LAMBDA=0)
+* diodo de corpo explicito (anodo = dreno/vin, catodo = source/load)
+Dbd  vin load DBDY
+.model DBDY D(Is=1e-12 N=1)
+* carga
+Rl   load 0   10
+
+.control
+  echo ""
+  echo "########## (a) polaridade NORMAL   Vin = +19.8 V ##########"
+  op
+  print v(vin) v(load) v(vin)-v(load)
+  print i(V1) @rl[i] @dbd[id]
+
+  echo ""
+  echo "########## (b) polaridade INVERTIDA  Vin = -19.8 V ##########"
+  alter V1 dc = -19.8
+  op
+  print v(vin) v(load) v(vin)-v(load)
+  print i(V1) @rl[i] @dbd[id]
+.endc
+.end

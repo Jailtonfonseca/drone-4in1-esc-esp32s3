@@ -1,0 +1,114 @@
+* ==========================================================================
+* buck12.cir -- Buck SINCRONO (cadeia 4xESC, projeto Drone)
+*   Vin = 19.8 V | D = 0.606 | fsw = 500 kHz (Tsw = 2 us)   [PREMISSA P-08]
+*   L = 89 uH com DCR = 30 mOhm | Cout = 2 x 22 uF (ESR 5 mOhm cada)
+*   Carga 0.60 A  ->  R = 20 ohm
+* Maquina: Orange Pi 3B, Debian aarch64, ngspice-34
+* Execucao:  ngspice -b buck12.cir > buck12.log 2>&1
+* --------------------------------------------------------------------------
+* FORMULA DO VALOR ESPERADO (analitico - calculado a mao, nao medido)
+*
+*   [E1] Vout ideal = D * Vin = 0.606 * 19.8 = 11.9988 V
+*   [E2] Ton = D / fsw = 0.606 / 500k = 1.212 us
+*   [E3] Vout com perdas (balance de volts-segundo no indutor):
+*          D*Vin - I*Ron - Vout - I*DCR = 0        (Ron = 1m do S-model)
+*          I = Vout / R = Vout / 20
+*          => Vout = 11.9988 - I*(0.001 + 0.030)
+*          => Vout * 1.00155 = 11.9988
+*          => Vout = 11.980229 V     e     I = 0.5990115 A
+*   [E4] dIL = (Vin - I*Ron - Vout - I*DCR) * Ton / L
+*            = (19.8 - 0.000599 - 11.980229 - 0.017970) * 1.212e-6 / 89e-6
+*            = 7.801202 * 1.212e-6 / 89e-6
+*            = 0.1062364 A pk-pk
+*       (o enunciado cita 0.1064 A -- usa Vout ideal em vez de Vout com
+*        perdas; diferenca 0.15%, mesma grandeza)
+*   [E5] ripple capacitivo = dIL / (8 * Cout * fsw) , Cout = 2*22u = 44u
+*            = 0.1062364 / (8 * 44e-6 * 500e3) = 603.6 uV pk-pk
+*   [E6] ripple ESR = dIL * ESR ; 2 caps em paralelo -> ESR = 5m/2 = 2.5m
+*            = 0.1062364 * 2.5e-3 = 265.6 uV pk-pk
+*       (o enunciado cita 0.53 mV = dIL*5m, isto e, ESR de 5 m em UM cap
+*        so; aqui os dois caps de 22u estao em paralelo, ESR efetiva 2.5 m)
+*   [E7] ripple TOTAL pk-pk: v_C (parabolico, 603.6 uV pp) e v_ESR
+*        (triangular, 265.6 uV pp) NAO atingem o maximo no mesmo instante.
+*        Somando as duas formas de onda ponto a ponto (script
+*        minimiza_ripple.py, anexo, 200000 pontos por periodo):
+*            Vpp_total = 634.2 uV pk-pk
+*        Ou seja o ripple total NAO e 603.6+265.6 = 869.2 uV.
+* --------------------------------------------------------------------------
+* MODELAGEM / PREMISSAS DECLARADAS
+*   [M1] Chave ideal: S-model do ngspice, SW(Ron=1m Roff=1meg Vt=0.5 Vh=0).
+*   [M2] Acionamento COMPLEMENTAR EXATO (dead-time = 0). Assim <Vsw> = D*Vin
+*        e o resultado casa com a formula de livro. Um sincrono real com
+*        dead-time de 20-40 ns roda o diodo de corpo nesse intervalo e
+*        perde da ordem de 1-2% em Vout -- NAO incluido aqui.
+*   [M3] Diodos de corpo dos MOSFETs explicitos (Is=1e-12, N=1). O diodo do
+*        FET real e [N/D offline] -> modelo generico Shockley nivel 0.
+*        Com acionamento complementar exato eles ficam sempre reversos
+*        (max |vD| ~ 0.6 mV no lado baixo) e nao conduzem -- ver iD1/iD2 no log.
+*   [M4] Condicao inicial ANALITICA (uic + .ic) igual ao ponto de operacao de
+*        regime permanente [E3] e ao vale do ripple [E4]:
+*            v(out) = 11.980229 V
+*            i(L1)  = I - dIL/2 = 0.5990115 - 0.0531182 = 0.5458933 A
+*        MOTIVO: o filtro LC de saida e SUBAMORTECIDO (Q = R*sqrt(C/L) = 14.1),
+*        a oscilacao de partida tem tau ~ 1.7 ms. Uma janela de 200-400 us
+*        mede o TRANSITORIO de partida, nao o regime permanente.
+*        PROVA de que estamos em regime: as medias de 4 janelas sucessivas
+*        (100-110us, 200-210us, 300-310us, 300-400us) coincidem no log.
+*   [M5] Sem ESR/ESL de trilha, sem capacitancia parasita de chave, sem
+*        resistencia/tempo-morto do driver. Simulacao de nivel de circuito.
+* ==========================================================================
+* --------------------------------------------------------------------------
+* REDE
+* --------------------------------------------------------------------------
+Vin   vin 0  19.8
+
+* acionamento complementar exato (duty 0.606 -> Ton = 1.212 us de 2 us)
+Vg1   g1  0  PULSE(0 1 0       1p 1p 1.212u  2u)
+Vg2   g2  0  PULSE(0 1 1.212u  1p 1p 0.788u  2u)
+
+* chave alta e chave baixa ideais
+S1    vin sw  g1 0  SWQ
+S2    0   sw  g2 0  SWQ
+.model SWQ SW(Ron=1m Roff=1meg Vt=0.5 Vh=0)
+
+* diodos de corpo explicitos (anodo no lado do dreno, catodo no source)
+D1    0   sw  DBDY
+D2    sw  vin DBDY
+.model DBDY D(Is=1e-12 N=1)
+
+* filtro LC de saida: L + DCR + 2 capacitores com ESR
+L1    sw  nL  89u   ic=0.5458933
+Rd    nL  out 30m
+C1    out nc1 22u
+Res1  nc1 0   5m
+C2    out nc2 22u
+Res2  nc2 0   5m
+
+* carga 0.60 A em 12 V
+Rl    out 0   20
+
+.ic v(out)=11.980229
+
+.tran 20n 5m 0 20n uic
+
+* --- medicao (tudo extraido do log pelo proprio ngspice) ---------------
+* jan1..jan4 = medias de janelas sucessivas. Se coincidirem, o circuito
+* esta em REGIME PERMANENTE (foi essa a prova usada para dispensar um
+* transitorio de partida de ~10 ms).
+.meas tran Vout_jan1 AVG v(out) FROM=100u TO=110u
+.meas tran Vout_jan2 AVG v(out) FROM=1000u TO=1010u
+.meas tran Vout_jan3 AVG v(out) FROM=3000u TO=3010u
+.meas tran Vout_jan4 AVG v(out) FROM=4990u TO=5000u
+.meas tran Vout_med AVG v(out) FROM=4900u TO=5000u
+.meas tran Vout_max MAX v(out) FROM=4998u TO=5000u
+.meas tran Vout_min MIN v(out) FROM=4998u TO=5000u
+.meas tran Vout_pp  PP  v(out) FROM=4998u TO=5000u
+.meas tran dIL_pp   PP  i(L1)  FROM=4998u TO=5000u
+.meas tran iL_max   MAX i(L1)  FROM=4998u TO=5000u
+.meas tran iL_min   MIN i(L1)  FROM=4998u TO=5000u
+.meas tran iL_med   AVG i(L1)  FROM=4900u TO=5000u
+.meas tran Vsw_med  AVG v(sw)  FROM=4900u TO=5000u
+.meas tran iD1_max  MAX @d1[id] FROM=4900u TO=5000u
+.meas tran iD2_max  MAX @d2[id] FROM=4900u TO=5000u
+.meas tran iL_init  FIND i(L1) AT=1n
+.end

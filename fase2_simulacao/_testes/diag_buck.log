@@ -1,0 +1,28 @@
+Warning: vg2: no DC value, transient time 0 value used
+Warning: vg1: no DC value, transient time 0 value used
+
+No compatibility mode selected!
+
+
+Circuit: * diagnostico: evolucao da media de v(out) em funcao da janela
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using transient initial conditions
+ Reference value :  7.03049e-05 Reference value :  1.46002e-04 Reference value :  2.25005e-04 Reference value :  3.02783e-04 Reference value :  3.80823e-04 Reference value :  4.57212e-04 Reference value :  5.35123e-04 Reference value :  6.12845e-04 Reference value :  6.93025e-04 Reference value :  7.73212e-04 Reference value :  8.49277e-04 Reference value :  9.28365e-04 Reference value :  1.00731e-03 Reference value :  1.08521e-03 Reference value :  1.16344e-03 Reference value :  1.24000e-03 Reference value :  1.31996e-03 Reference value :  1.39852e-03 Reference value :  1.47400e-03 Reference value :  1.54933e-03 Reference value :  1.62921e-03 Reference value :  1.70987e-03 Reference value :  1.79000e-03 Reference value :  1.86791e-03 Reference value :  1.94121e-03Note: No ".plot", ".print", or ".fourier" lines; no simulations run
+
+No. of Data Rows : 163580
+w1                  =  1.201544e+01 from=  1.000000e-05 to=  2.000000e-05
+w2                  =  1.205929e+01 from=  6.000000e-05 to=  7.000000e-05
+w3                  =  1.206477e+01 from=  1.100000e-04 to=  1.200000e-04
+w4                  =  1.203078e+01 from=  1.600000e-04 to=  1.700000e-04
+w5                  =  1.197953e+01 from=  2.100000e-04 to=  2.200000e-04
+w6                  =  1.194212e+01 from=  2.600000e-04 to=  2.700000e-04
+w7                  =  1.205359e+01 from=  4.900000e-04 to=  5.000000e-04
+w8                  =  1.199070e+01 from=  9.900000e-04 to=  1.000000e-03
+w9                  =  1.199216e+01 from=  1.900000e-03 to=  2.000000e-03
+v10                 =  1.200986e+01
+v100                =  1.206790e+01
+v200                =  1.199491e+01
+v290                =  1.193605e+01
+v1500               =  1.196947e+01

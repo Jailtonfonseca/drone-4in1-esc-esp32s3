@@ -1,0 +1,44 @@
+﻿bloco;item;valor_especificacao;qtd;footprint_kicad_5.1;existe_no_kicad;observacao_de_compra
+ENTRADA;Conector de bateria;XT60 macho+femea, 60 A [N/D offline];1;Connector_AMASS:AMASS_XT60-F_1x02_P7.20mm_Vertical;SIM;solda em furo - verificar corrente nominal no datasheet do fabricante
+PROTECAO;TVS unidirecional;standoff >= 30 V, clamp ~38 V [N/D offline];1;Diode_SMD:D_SMB;SIM;comprar com Vbr acima de 25,2 V (nao conduzir em operacao)
+PROTECAO;P-FET anti-inversao;canal P, Vds >= 30 V, Rds < 10 mOhm [N/D offline];1;Package_TO_SOT_SMD:TO-252-2_TabPin1;SIM;evita 3,8 W de perda que um diodo Schottky causaria (calculado)
+PROTECAO;Resistor de gate do P-FET + zenner;10k + 12 V;2;Resistor_SMD:R_0603_1608Metric;SIM;clamp Vgs
+BANCO;Capacitor de entrada;470 uF / 35 V polimero low-ESR;6;Capacitor_SMD:CP_Elec_8x10;SIM;ESR e' o parametro critico (<= 20 mOhm)
+BANCO;Ceramico de alta freq.;10 uF / 50 V X7R;12;Capacitor_SMD:C_1206_3216Metric;SIM;1 por par de MOSFET
+BANCO;Ceramico de alta freq.;100 nF / 50 V X7R;48;Capacitor_SMD:C_0402_1005Metric;SIM;colado ao par (loop minimo)
+POTENCIA;MOSFET N;Vds >= 40 V, Rds <= 3 mOhm @10V, Qg <= 60 nC [PREMISSA];24;Package_TO_SOT_SMD:TO-252-3_TabPin2;SIM;24 unidades = 4 motores x 6; alternativa PowerPAK 5x6 se couber
+POTENCIA;Dissipador / area de cobre;2 oz, poligono no dreno;-;GERADO NO LAYOUT;N/A;temperatura e' decidida no PCB (Rth_ja)
+GATE DRIVE;Driver half-bridge single-input;bootstrap, dead-time interno ~520 ns, Vcc 12 V [N/D offline];12;Package_SO:SOIC-8_3.9x4.9mm_P1.27mm;SIM;1 por half-bridge; exige entrada unica p/ caber em 12 PWMs
+GATE DRIVE;Resistor de gate;10 ohm (Rg >= 2*Z0 = 6,3 ohm calculado);24;Resistor_SMD:R_0805_2012Metric;SIM;valores 4,7-22 ohm para ajuste em bancada
+GATE DRIVE;Resistor de gate (desliga);2,2 ohm;24;Resistor_SMD:R_0805_2012Metric;SIM;opcional: turn-off mais rapido + diodo
+GATE DRIVE;Capacitor de bootstrap;1 uF / 25 V X7R (>= 20*Qg calculado);12;Capacitor_SMD:C_0805_2012Metric;SIM;queda calculada 40 mV por ciclo
+GATE DRIVE;Diodo de bootstrap;ultrarrapido 100 V / 1 A [N/D offline];12;Diode_SMD:D_SOD-123;SIM;
+GATE DRIVE;Capacitor local do driver;10 uF / 25 V X7R;12;Capacitor_SMD:C_1206_3216Metric;SIM;fornece a corrente de pico de gate (1,2 A calculado)
+CORRENTE;Shunt de fase;0,5 mOhm 2 W 2512 manganina (112 mW continuo calculado);12;Resistor_SMD:R_2512_6332Metric;SIM;3 por motor
+CORRENTE;Amplificador diferencial;ganho 50, CMVR >= 30 V, largura de banda >= 400 kHz [N/D offline];12;Package_SO:SOIC-8-1EP_3.9x4.9mm_EP2.41x3.81mm;SIM;1 por shunt; saida centrada em 1,65 V
+CORRENTE;Divisor de referencia;10k/10k 1% + 100 nF;12;Resistor_SMD:R_0603_1608Metric;SIM;gera 1,65 V de offset
+BEMF;Divisor de fase;8,2k/1,0k 1% (25,2 V -> 3,07 V calculado);12;Resistor_SMD:R_0603_1608Metric;SIM;3 por motor
+BEMF;Filtro + clamp;1 nF + diodo clamp 3,3 V / zenner;12;Capacitor_SMD:C_0402_1005Metric;SIM;
+ADC;ADC externo SPI;16 canais, >= 200 ksps, 12 bits [N/D offline];1;Package_DFN_QFN / Package_SO conforme CI;SIM (generico);obrigatorio: ADC do ESP32 nao cobre 26 canais (calculado)
+ADC;Mux analogico (se usar 2x CI de 8 canais);[N/D offline];2;Package_SO:SOIC-16;SIM (generico);alternativa ao ADC de 16 canais
+MCU;Modulo ESP32-S3-WROOM-1;WiFi 2,4 GHz + USB nativo;1;NAO EXISTE NO KICAD 5.1 - GERAR POR SCRIPT;NAO;preciso do mechanical drawing p/ gerar a pegada (41 pads castelados)
+MCU;Botao BOOT + EN;tatico 2 pinos;2;Button_SMD / SW_SPST;SIM;
+MCU;Pull-ups de I2C;4,7k;2;Resistor_SMD:R_0603_1608Metric;SIM;
+MCU;Pads de programacao;UART0 TX/RX + pads 1,27 mm;-;TestPoint:TestPoint_Loop_D2.50mm_Drill1.0mm;SIM;
+IMU;IMU 6 eixos;SPI/I2C, QFN-24 3x3 [confirmar CI exato];1;Sensor_Motion:InvenSense_QFN-24_3x3mm_P0.4mm;SIM (generico);datasheet nao disponivel offline
+BAROMETRO;Barometro;I2C, LGA-8;1;NAO EXISTE - GERAR LGA-8;NAO;nao ha pegada no KiCad 5.1
+ENERGIA;Buck 12 V;0,60 A, L=89 uH, Cout=2x22 uF (calculado);1;Inductor_SMD:L_12x12mm_H6mm;SIM;alimenta os 12 gate drivers (49 mA calculado)
+ENERGIA;Buck 5 V;2,00 A, L=17 uH, Cout=2x22 uF (calculado);1;Inductor_SMD:L_Bourns_SRR1210A;SIM;
+ENERGIA;Buck 3,3 V;1,50 A, L=5 uH, Cout=2x22 uF (calculado);1;Inductor_SMD:L_Bourns-SRN8040_8x8.15mm;SIM;entrada vinda do trilho de 5 V
+ENERGIA;LDO 3,3 V_A;150 mA, baixo ruido (Pdiss 255 mW calculado);1;Package_TO_SOT_SMD:SOT-23;SIM;analogico: IMU + barometro
+ENERGIA;Indutor de saida;22 uH (12 V e 5 V) / 5 uH (3,3 V);3;Inductor_SMD:L_12x12mm_H6mm;SIM;corrente de saturacao >= 2x a nominal
+ENERGIA;Capacitor de saida;22 uF / 25 V X7R;6;Capacitor_SMD:C_1210;SIM;2 por buck
+MOTOR;Conector de motor;MR30 3 pinos (fases U/V/W);4;Connector_AMASS:AMASS_MR30PW-FB_1x03_P3.50mm_Horizontal;SIM;alternativa: bloco terminal 3,5 mm
+USB;Receptaculo USB-C;16 pinos, so' programacao;1;Connector_USB:USB_C_Receptacle_GCT_USB4085;SIM;com protecao ESD e ideal diode
+USB;Protecao ESD USB;array ESD [N/D offline];1;Package_SO:SOT-23-6;SIM;
+USB;Ideal diode do VBUS;P-FET + controlador [N/D offline];1;Package_TO_SOT_SMD:SOT-23-6;SIM;permite alimentar a placa sem bateria
+EXTRA;LED de status;verde 0805 + resistor 1k;1;LED_SMD:LED_0805_2012Metric;SIM;
+EXTRA;Buzzer;SMD 4 kHz;1;Buzzer:Buzzer_CUI_CPT-9019S-SMT;SIM;com transistor de acionamento
+EXTRA;Watchdog externo (opcional);corte de motores independente do firmware;1;Package_SO:SOIC-8;SIM (generico);recomendado para failsafe
+EXTRA;Fusivel/e-fuse de entrada;30 A [N/D offline];1;Fuse:Fuse_1206;SIM;recomendado - decisao pendente do Jailton
+MECANICO;PCB;4 camadas, 2 oz nas externas, ~40x60 mm (estimativa);1;GERADO NA FASE 3;N/A;tamanho definido no layout

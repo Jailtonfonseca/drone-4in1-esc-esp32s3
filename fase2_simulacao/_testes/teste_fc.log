@@ -1,0 +1,26 @@
+
+No compatibility mode selected!
+
+
+Circuit: * comparacao de metodo p/ medir fc: -45 graus (exato p/ 1 polo) vs -3db
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+
+No. of Data Rows : 101
+hdc                 =  -1.838105e+01
+
+Error: measure  fc_ph  (WHEN) : out of interval
+ meas ac fc_ph when vp(out)=-45 failed!
+
+fc_3db20            =  1.318054e+02
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+
+No. of Data Rows : 10001
+
+Error: measure  fc_ph_f  (WHEN) : out of interval
+ meas ac fc_ph_f when vp(out)=-45 failed!
+
+Note: No ".plot", ".print", or ".fourier" lines; no simulations run
+fc_3db_f            =  1.318042e+02

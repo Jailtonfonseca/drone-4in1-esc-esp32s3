@@ -1,0 +1,36 @@
+circuito,grandeza,esperado,medido,erro_relativo_pct,fonte_do_esperado,log,chave_no_log
+buck12,"Vout media (D*Vin, ideal)",11.9988,11.98023,0.154765,D*Vin = 0.606*19.8,buck12.log,vout_med
+buck12,Vout media (com Ron+DCR),11.98023064,11.98023,5.36304e-06,D*Vin/(1+(Ron+DCR)/R); I=Vout/R,buck12.log,vout_med
+buck12,dIL pk-pk,0.1062365663,0.1062386,0.00191432,(Vin-I*Ron-Vout-I*DCR)*Ton/L,buck12.log,dil_pp
+buck12,Ripple saida pk-pk,0.0006342085,0.0006340322,0.0277984,vC+vESR ponto a ponto (minimiza_ripple.py),buck12.log,vout_pp
+buck12,iL media (=Iout),0.5990115321,0.5990108,0.000122222,I = Vout/R,buck12.log,il_med
+buck12,Vsw media,11.99820099,11.9982,8.23847e-06,D*Vin - I*Ron,buck12.log,vsw_med
+buck12,Corrente max diodo de corpo D1,0,0,n/a (esperado=0),acionamento complementar exato -> nunca conduz,buck12.log,id1_max
+buck12,Corrente max diodo de corpo D2,0,0,n/a (esperado=0),acionamento complementar exato -> nunca conduz,buck12.log,id2_max
+buck5,Vout media (com Ron),5.0019992,5.001999,4.0048e-06,D*Vin/(1+Ron/R),buck5.log,vout_med
+buck5,"Vout media (D*Vin, ideal)",5.004,5.001999,0.039988,D*Vin = 0.417*12,buck5.log,vout_med
+buck5,dIL pk-pk (calculado dos parametros dados),0.3432155294,0.3432523,0.0107136,(Vin-I*Ron-Vout)*Ton/L,buck5.log,dil_pp
+buck5,dIL pk-pk (numero citado no enunciado),0.246,0.3432523,39.5335,"VALOR DO ENUNCIADO - inconsistente, ver relatorio",buck5.log,dil_pp
+buck5,Ripple saida pk-pk,0.0020471545,0.002045111,0.0998215,minimiza_ripple.py,buck5.log,vout_pp
+buck5,iL media (=Iout),2.00079968,2.0008,1.59872e-05,I = Vout/R,buck5.log,il_med
+buck3v3,Vout media (com Ron),3.298500682,3.298501,9.65565e-06,D*Vin/(1+Ron/R),buck3v3.log,vout_med
+buck3v3,"Vout media (D*Vin, ideal)",3.3,3.298501,0.0454242,D*Vin = 0.66*5,buck3v3.log,vout_med
+buck3v3,dIL pk-pk (calculado dos parametros dados),0.4488,0.4489519,0.0338458,(Vin-I*Ron-Vout)*Ton/L,buck3v3.log,dil_pp
+buck3v3,dIL pk-pk (numero citado no enunciado),0.178,0.4489519,152.22,"VALOR DO ENUNCIADO - inconsistente, ver relatorio",buck3v3.log,dil_pp
+buck3v3,Ripple saida pk-pk,0.0026875125,0.002685359,0.0801299,minimiza_ripple.py,buck3v3.log,vout_pp
+buck3v3,iL media (=Iout),1.499318492,1.499318,3.27879e-05,I = Vout/R,buck3v3.log,il_med
+divisor_vbat,Vout .op (Vin=25.2 V),3.036411609,3.036412,1.28606e-05,Vin*R2/(R1+R2),divisor_vbat.log,v(out)
+divisor_vbat,Ganho DC,-18.38079795,-18.38105,0.00137126,20*log10(R2/(R1+R2)),divisor_vbat.log,hdc_db
+divisor_vbat,fc (-3 dB),132.0869856,132.0947,0.00584038,1/(2*pi*(R1||R2)*C),divisor_vbat.log,fc_3db_f
+bemf_div,Vout .op (Vin=25.2 V),2.739130435,2.73913,1.5873e-05,Vin*R2/(R1+R2),bemf_div.log,v(out)
+bemf_div,Ganho DC,-19.27575655,-19.27576,1.79142e-05,20*log10(R2/(R1+R2)),bemf_div.log,hdc_db
+bemf_div,fc (-3 dB),178564.0825,178564.2,6.58064e-05,1/(2*pi*(R1||R2)*C),bemf_div.log,fc_3db_f
+gate_drive,Tempo de subida do gate 10-90%,8.788898309e-08,8.788888e-08,0.0001173,Rg*Ciss*ln(9) = 2.1972*40n,gate_drive.log,tg_10_90
+gate_drive,Droop do bootstrap em 50 us,0.065,0.065,0,(Iq*ton + Qg)/Cboot = 65nC/1uF,gate_drive.log,droop
+shunt_amp,Tensao no shunt,0.015,0.015,0,I*Rsh = 30*0.5m,shunt_amp.log,vshunt
+shunt_amp,Vout (ganho ideal 50),0.75,0.7496177,0.0509733,50*Vshunt (valor do enunciado),shunt_amp.log,vout
+shunt_amp,Vout (com ganho finito A=1e5),0.749617695,0.7496177,6.70267e-07,G/(1+1/(A*beta)); beta=1/51,shunt_amp.log,vout
+shunt_amp,Corrente no shunt (derivada de Vshunt/Rsh),30,30,0,I nominal da fonte PULSE,shunt_amp.log,ishunt_der
+prot_inversao,Caso (a) corrente na carga,1.976052828,1.976048,0.000244341,19.8/(10+Rds_on); Rds_on=1/(KP*(W/L)*(|Vgs|-|Vto|)),prot_inversao.log,@rl[i]
+prot_inversao,Caso (a) queda dreno-source,0.03947171692,0.03951546,0.110821,I*Rds_on = 1.976*20.02m,prot_inversao.log,v(vin)-v(load)
+prot_inversao,Caso (b) corrente na carga (bloqueio),1e-12,-4.061e-11,4161,Is do diodo de corpo reverso (criterio: < 1 mA),prot_inversao.log,@rl[i]

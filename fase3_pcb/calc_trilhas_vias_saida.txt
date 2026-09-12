@@ -1,0 +1,29 @@
+==============================================================================
+FASE 3 -- CALCULO DE TRILHAS (IPC-2221) E VIAS  [CALC]
+==============================================================================
+Formula IPC-2221 (externa): A[mil^2] = (I/(k*dT^0.44))^(1/0.725), k=0.048
+Cobre: 1 oz = 1,378 mil = 35 um ; logo 2 oz = 2,756 mil = 70 um
+
+NET                                        I[A] 2oz dT10 2oz dT20
+------------------------------------------------------------------------------
+VBAT continuo (cruzeiro 4 motores)         7.50    2.42mm    1.59mm
+VBAT pico (rajada, <1 s)                  30.00   16.37mm   10.75mm
+Fase do motor (RMS)                       15.00    6.29mm    4.13mm
+Trilho 5 V (buck)                          2.00    0.39mm    0.26mm
+Trilho 3,3 V (buck)                        1.50    0.26mm    0.17mm
+Trilho 12 V (gate drivers)                 0.60    0.07mm    0.05mm
+Gate drive (pico, 1 ciclo)                 1.20    0.19mm    0.13mm
+
+Regra de ouro adotada no layout:
+  - trilhas de potencia: 2 oz, dT alvo = 10 C  (conservador)
+  - VBAT: nao usar trilha p/ os 30 A; usar POLIGONO de cobre + transicao por via
+
+VIAS de transicao (parede 25 um, dT=10 C, k interno 0,024):
+  drill 0.30 mm -> I/via = 1.00 A  ->  30 A precisam de 30 vias
+  drill 0.40 mm -> I/via = 1.20 A  ->  30 A precisam de 25 vias
+  drill 0.50 mm -> I/via = 1.39 A  ->  30 A precisam de 22 vias
+  drill 0.60 mm -> I/via = 1.57 A  ->  30 A precisam de 20 vias
+
+>> ADOTADO: 0,3 mm drill / 0,6 mm pad -> 40 vias por transicao de VBAT/GND
+   (regra pratica ~1 A/via conferida em bancada, margem 1,3x)
+   [NAO VERIFICADO nesta maquina: termografia/termopar -> Fase 4]

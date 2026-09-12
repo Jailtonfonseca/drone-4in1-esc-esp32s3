@@ -1,0 +1,53 @@
+* ==========================================================================
+* bemf_div.cir -- Divisor do sinal de BEMF / tensao de fase (Drone)
+*   R1 = 8.2k (topo) | R2 = 1.0k (base) | C = 1 nF em paralelo com R2
+*   Vin = 25.2 V
+* Execucao:  ngspice -b bemf_div.cir > bemf_div.log 2>&1
+* --------------------------------------------------------------------------
+* FORMULA DO VALOR ESPERADO (analitico)
+*   [E1] .op (DC)
+*          Vout = 25.2 * 1.0/(8.2+1.0) = 25.2/9.2 = 2.7391304 V
+*        (o enunciado cita 2.74 V)
+*   [E2] .ac
+*          H(s) = [R2/(R1+R2)] / (1 + s*(R1||R2)*C)
+*          R1||R2 = 8200*1000/9200 = 891.30435 ohm
+*          fc = 1/(2*pi*891.30435*1e-9)
+*             = 1/5.5996224e-6
+*             = 178583.6 Hz       (o enunciado cita 178 kHz)
+*   [E3] ganho DC = 1/9.2 = 0.10869565  ->  -19.27577 dB
+*        -> -3 dB em -22.28607 dB
+* Nota: a varredura precisa ir ate BEM acima de fc; usa-se 10 MHz.
+* --------------------------------------------------------------------------
+* MODELAGEM: R e C ideais. O AMOSTRADOR/ADC e o driver de BEMF reais
+*   entram como alta impedancia e nao sao modelados (sem carga no no out).
+* ==========================================================================
+Vin in  0 dc 25.2 ac 1
+R1  in  out 8.2k
+R2  out 0   1.0k
+C1  out 0   1n
+
+.control
+  echo ""
+  echo "########## (a) .op  com Vin = 25.2 V ##########"
+  op
+  print v(in) v(out)
+
+  echo ""
+  echo "########## (b) .ac dec 20 1 10meg ##########"
+  ac dec 20 1 10meg
+  meas ac Hdc_dB    FIND vdb(out) AT=1
+  meas ac fc_limiar WHEN vdb(out)=-22.2861
+  let vth = Hdc_dB - 3.0103
+  meas ac fc_3dB    WHEN vdb(out)=vth
+  echo "--- tabela (frequencia, |H| em dB) ---"
+  print vdb(out)
+
+  echo ""
+  echo "########## (b2) .ac dec 1000 1 10meg  (varredura FINA) ##########"
+  ac dec 1000 1 10meg
+  meas ac Hdc_dB_f  FIND vdb(out) AT=1
+  let vth2 = Hdc_dB_f - 3.0103
+  meas ac fc_3dB_f  WHEN vdb(out)=vth2
+  meas ac fc_limiar_f WHEN vdb(out)=-22.2861
+.endc
+.end

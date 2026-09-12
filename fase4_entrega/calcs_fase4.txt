@@ -1,0 +1,45 @@
+========================================================================
+CALCULOS DE APOIO DA FASE 4  [CALC, executado nesta maquina]
+========================================================================
+
+[DIVISOR VBAT] relacao = 13,7k/(100k+13,7k) = 0.1204925242
+   Vin =  25.2 V -> Vout = 3.036412 V
+   Vin =  22.2 V -> Vout = 2.674934 V
+   Vin =  19.8 V -> Vout = 2.385752 V
+   cheque Fase 2: 25,2 V -> 3,036412 V (simulado 3,036412 V)
+
+[BEMF] relacao = 1,0k/(8,2k+1,0k) = 0.1086956522
+   Vfase =  25.2 V -> Vout = 2.739130 V
+   Vfase =  22.2 V -> Vout = 2.413043 V
+   Vfase =  19.8 V -> Vout = 2.152174 V
+   cheque Fase 2: 25,2 V -> 2,739130 V (simulado 2,739130 V)
+
+[SHUNT 0,5 mOhm, ganho 50 ideal / 49,9745 real]
+   I =  5 A -> Vshunt =   2.500 mV -> Vout(ideal) = 0.1250 V | Vout(real A=1e5) = 0.124936 V
+   I = 15 A -> Vshunt =   7.500 mV -> Vout(ideal) = 0.3750 V | Vout(real A=1e5) = 0.374809 V
+   I = 30 A -> Vshunt =  15.000 mV -> Vout(ideal) = 0.7500 V | Vout(real A=1e5) = 0.749617 V
+
+[BUCKS - atencao: na Fase 2 a simulacao e' MALHA ABERTA, duty fixo]
+   buck12  D=0.606  Vout(Vin) = D*Vin/1.00155 = 0.6051*Vin
+        Vin =  19.8 V -> Vout(malha aberta) =  11.9802 V
+        Vin =  22.2 V -> Vout(malha aberta) =  13.4324 V
+        Vin =  25.2 V -> Vout(malha aberta) =  15.2476 V
+   buck5   D=0.417  Vout(Vin) = D*Vin/1.00040 = 0.4168*Vin
+        Vin =  19.8 V -> Vout(malha aberta) =   8.2533 V
+        Vin =  22.2 V -> Vout(malha aberta) =   9.2537 V
+        Vin =  25.2 V -> Vout(malha aberta) =  10.5042 V
+   buck3v3 D=0.660  Vout(Vin) = D*Vin/1.00045 = 0.6597*Vin
+        Vin =  19.8 V -> Vout(malha aberta) =  13.0621 V
+        Vin =  22.2 V -> Vout(malha aberta) =  14.6453 V
+        Vin =  25.2 V -> Vout(malha aberta) =  16.6244 V
+   (num buck real COM realimentacao o CI regula o nominal; os valores da Fase 2
+    so valem como referencia se testados no MESMO Vin do .cir)
+
+[CONFERENCIAS RAPIDAS]
+   6S min = 6 x 3,30 V = 19.8 V | nom 6 x 3,70 = 22.2 V | max 6 x 4,20 = 25.2 V
+   shunt 0,5 mOhm em 30 A -> P = I^2*R = 0.450 W (resistor 2512 de 2 W)
+   shunt 0,5 mOhm em 15 A -> P = I^2*R = 0.113 W
+   gate: t = Rg*Ciss*ln(9) = 10*4n*2,1972246 = 87.889 ns
+   bootstrap: dV = (Iq*ton + Qg)/C = (0,5m*50u + 40n)/1u = 65.0 mV
+   janela de amostragem do ADC: 2 us / 50 us = 4.0 % do periodo
+   dead-time RTL: 83 ciclos de 6,25 ns = 518.750 ns

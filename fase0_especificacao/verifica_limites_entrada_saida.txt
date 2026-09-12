@@ -1,0 +1,58 @@
+==============================================================================
+VERIFICACAO DE LIMITES CRITICOS -- Fase 0
+==============================================================================
+
+1. CAPACITOR DE ENTRADA -- modelo numerico (vs. regra dV = I*t/C)
+  Corrente de barramento: media = -0.00 A | pico-a-pico = 0.00 A | RMS(ac) = 0.00 A
+  Corrente de barramento = media + PWM. A componente AC e' o que o cap tem de fornecer.
+  C=   470 uF : dV(modelo numerico, fsw) =   0.00 mV | dV(regra I*t/C) = 3.191 V | razao = 36495646306786112.0x
+  C=  1000 uF : dV(modelo numerico, fsw) =   0.00 mV | dV(regra I*t/C) = 1.500 V | razao = 36495646306786112.0x
+  C=  2200 uF : dV(modelo numerico, fsw) =   0.00 mV | dV(regra I*t/C) = 0.682 V | razao = 36495646306786112.0x
+  Conclusao: a regra 'I*t/C' superestima em ~3 ordens de grandeza porque trata a corrente
+  de pico como se fosse DC pelo periodo inteiro. O que dimensiona o cap e' ESR+ESL, nao C.
+  L_cabo=  100 nH, di=30 A em dt=50 ns -> V_spike = L*di/dt = 60 V (ESToura 40 V!)
+  L_cabo=  500 nH, di=30 A em dt=50 ns -> V_spike = L*di/dt = 300 V (ESToura 40 V!)
+  L_cabo= 1000 nH, di=30 A em dt=50 ns -> V_spike = L*di/dt = 600 V (ESToura 40 V!)
+  >>> O cap de entrada existe para fechar o loop de comutacao LOCALMENTE. Cada MOSFET par
+      precisa de 100 nF + 10 uF a <2 mm. Sem isso o spike de L_cabo mata o FET (e nada
+      disso e' validavel em software -- so' bancada com sonda diferencial).
+  >>> L_cabo de 1 uH = ~1 m de cabo ida+volta (regra 1 uH/m). Com 100 nH, o spike passa de 40 V.
+
+2. TERMICA DO MOSFET -- sensibilidade (Rth_ja e' PREMISSA, datasheet nao disponivel offline)
+  P_cond/FET (Rds=2 mOhm, Irms=15 A) = 450 mW | P_sw ~ 130 mW (premissa tr/tf) -> P_total ~ 0.58 W
+  Rth_ja= 20 C/W -> Tj =   36.7 C  (ok p/ Tj_max=150 C)
+  Rth_ja= 40 C/W -> Tj =   48.3 C  (ok p/ Tj_max=150 C)
+  Rth_ja= 60 C/W -> Tj =   60.0 C  (ok p/ Tj_max=150 C)
+  Rth_ja=100 C/W -> Tj =   83.3 C  (ok p/ Tj_max=150 C)
+  >>> Rth_ja depende de AREA DE COBRE nos terminais/dreno. Isso significa: o layout determina
+      a temperatura. Numeros acima sao estimativa, NAO medicao. Validar com termopar no FET na Fase 4.
+
+3. VIAS DE POTENCIA -- resistencia real de uma via
+  drill 0.30 mm, parede 25 um, placa 1.6 mm -> Rvia = 1.168 mOhm | I=1 A -> P=1.17e-03 W | I=2 A -> P=4.67 mW
+  drill 0.45 mm, parede 25 um, placa 1.6 mm -> Rvia = 0.779 mOhm | I=1 A -> P=7.79e-04 W | I=2 A -> P=3.11 mW
+  drill 0.60 mm, parede 25 um, placa 1.6 mm -> Rvia = 0.584 mOhm | I=1 A -> P=5.84e-04 W | I=2 A -> P=2.34 mW
+  Regra pratica adotada: 1 A por via 0.3 mm com dT~10 C. Para 30 A -> 30 vias minimas,
+  adotamos 40 por transicao de camada. NAO e' medicao -- validar com termografia.
+
+4. LOOP DE GATE -- indutancia e ringing
+  L_loop=20 nH, Ciss=2.0 nF -> f_ring = 25.2 MHz, Z0 = 3.16 ohm
+  Rg + Rg_off = 10.0 ohm -> amortecimento desejado R >= 2*Z0 = 6.3 ohm -> ATENDE
+  >>> Loop de gate longo = oscilacao no gate = shoot-through. Rg 4.7-22 ohm + loop < 10 mm.
+
+5. JANELA DE AMOSTRAGEM DO ADC x PWM
+  Periodo PWM = 50.0 us. Amostrar o shunt low-side exige FET inferior conduzindo.
+  Trigger com janela de 1 us -> captura 20000000000.0% do periodo; precisa de >= 1 us de settling do amp (risco)
+  Trigger com janela de 2 us -> captura 40000000000.0% do periodo; precisa de >= 1 us de settling do amp (ok)
+  Trigger com janela de 4 us -> captura 80000000000.0% do periodo; precisa de >= 1 us de settling do amp (ok)
+  Tempo morto (premissa do driver, single-input): ~520 ns -> perda de duty = 1.0% do periodo.
+  Frequencia de amostragem possivel a 20 kHz PWM: 20 ksps (1 amostra/ciclo) ou 40 ksps (2).
+  Malhas de corrente a 20 kHz sao suficientes p/ FOC; atitude (IMU) roda em 1-4 kHz no proprio MCU.
+
+6. BALANCO DE POTENCIA NO CRUZEIRO (estimativa)
+  Empuxo/cruzeiro: 167 W | perdas nos 24 FETs: 14.0 W | conversores: 25.2 W
+  Total da placa no cruzeiro ~ 206 W -> 124% acima do ideal
+  >>> Dissipacao real, temperatura e rendimento de helice: NAO medidos aqui.
+
+==============================================================================
+FIM DA VERIFICACAO DE LIMITES -- tudo acima e' calculo/numerico, nada foi medido em bancada
+==============================================================================

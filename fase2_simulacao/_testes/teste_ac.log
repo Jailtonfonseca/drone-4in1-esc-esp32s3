@@ -1,0 +1,24 @@
+
+No compatibility mode selected!
+
+
+Circuit: * teste .meas ac + .op dentro de .control
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+
+No. of Data Rows : 1
+v(in) = 2.520000e+01
+v(out) = 3.036412e+00
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+
+No. of Data Rows : 101
+h1                  =  -1.838105e+01
+fc20                =  1.316898e+02
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+
+No. of Data Rows : 2501
+Note: No ".plot", ".print", or ".fourier" lines; no simulations run
+fc500               =  1.316886e+02

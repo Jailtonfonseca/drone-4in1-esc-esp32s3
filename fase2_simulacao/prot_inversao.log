@@ -1,0 +1,31 @@
+Note: No ".plot", ".print", or ".fourier" lines; no simulations run
+
+No compatibility mode selected!
+
+
+Circuit: * ==========================================================================
+
+
+########## (a) polaridade NORMAL   Vin = +19.8 V ##########
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+
+No. of Data Rows : 1
+v(vin) = 1.980000e+01
+v(load) = 1.976048e+01
+v(vin)-v(load) = 3.951546e-02
+i(v1) = -1.97605e+00
+@rl[i] = 1.976048e+00
+@dbd[id] = 3.647373e-12
+
+########## (b) polaridade INVERTIDA  Vin = -19.8 V ##########
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+
+No. of Data Rows : 1
+v(vin) = -1.98000e+01
+v(load) = -4.06100e-10
+v(vin)-v(load) = -1.98000e+01
+i(v1) = 4.061000e-11
+@rl[i] = -4.06100e-11
+@dbd[id] = -2.08000e-11

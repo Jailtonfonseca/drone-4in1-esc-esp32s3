@@ -1,0 +1,19 @@
+* teste de sondas: @r[i], i(fonte de corrente), @d[id], alter
+V1 a 0 dc 10
+R1 a b 1k
+R2 b 0 1k
+Vinj 0 b dc 1m
+D1 b 0 DMOD
+.model DMOD D(Is=1e-12)
+.control
+op
+echo "--- caso normal ---"
+print v(a) v(b) i(V1)
+print @r1[i] @r2[i] @d1[id]
+print i(Vinj)
+echo "--- apos alter V1 dc=-10 ---"
+alter V1 dc = -10
+op
+print v(a) v(b) i(V1) @r1[i] @d1[id]
+.endc
+.end

@@ -1,0 +1,33 @@
+Warning: iqg: no DC value, transient time 0 value used
+Warning: vpwm: no DC value, transient time 0 value used
+
+No compatibility mode selected!
+
+
+Circuit: * ==========================================================================
+
+
+########## (a) degrau 0->12 V: tempo de subida do gate 10%-90% ##########
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using transient initial conditions
+
+No. of Data Rows : 1023
+Warning: iqg: no DC value, transient time 0 value used
+Warning: vpwm: no DC value, transient time 0 value used
+tg_10_90            =  8.788888e-08 targ=  9.210384e-08 trig=  4.214956e-09
+vg_4n214            =  1.199850e+00
+vg_92n10            =  1.079999e+01
+vg_fim              =  1.191914e+01
+
+########## (b) droop do bootstrap nos 50 us de conducao ##########
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using transient initial conditions
+Note: No ".plot", ".print", or ".fourier" lines; no simulations run
+
+No. of Data Rows : 3052
+vb_1ns              =  1.200000e+01
+vb_10us             =  1.195500e+01
+vb_50us             =  1.193500e+01
+droop = 6.500000e-02

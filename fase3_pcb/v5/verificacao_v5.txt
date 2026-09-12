@@ -1,0 +1,95 @@
+==========================================================================
+VERIFICACAO DO PCB v3 (KiCad 5.1)  [CALC/EXECUTADO]
+==========================================================================
+footprints        : 238
+pads              : 889
+trilhas (tracks)  : 147
+vias              : 543
+zonas (planos)    : 3 -> ['In1.Cu', 'B.Cu', 'In2.Cu']
+dimensoes da placa: 220.1 x 160.1 mm
+camadas de cobre  : 4
+
+nets com pad      : 426
+nets roteadas     : 59
+nets NAO roteadas : 367
+
+-- nets roteadas (amostra das potentes) --
+   GHM101       pads= 2  trilhas/vias/zonas=1
+   GHM102       pads= 2  trilhas/vias/zonas=1
+   GHM103       pads= 2  trilhas/vias/zonas=1
+   GHM201       pads= 2  trilhas/vias/zonas=1
+   GHM202       pads= 2  trilhas/vias/zonas=1
+   GHM203       pads= 2  trilhas/vias/zonas=1
+   GHM301       pads= 2  trilhas/vias/zonas=1
+   GHM302       pads= 2  trilhas/vias/zonas=1
+   GHM303       pads= 2  trilhas/vias/zonas=1
+   GHM401       pads= 2  trilhas/vias/zonas=1
+   GHM402       pads= 2  trilhas/vias/zonas=1
+   GHM403       pads= 2  trilhas/vias/zonas=1
+   GLM101       pads= 2  trilhas/vias/zonas=1
+   GLM102       pads= 2  trilhas/vias/zonas=1
+   GLM103       pads= 2  trilhas/vias/zonas=1
+   GLM201       pads= 2  trilhas/vias/zonas=1
+   GLM202       pads= 2  trilhas/vias/zonas=1
+   GLM203       pads= 2  trilhas/vias/zonas=1
+   GLM301       pads= 2  trilhas/vias/zonas=1
+   GLM302       pads= 2  trilhas/vias/zonas=1
+   GLM303       pads= 2  trilhas/vias/zonas=1
+   GLM401       pads= 2  trilhas/vias/zonas=1
+   GLM402       pads= 2  trilhas/vias/zonas=1
+   GLM403       pads= 2  trilhas/vias/zonas=1
+   GND          pads=112  trilhas/vias/zonas=556
+   PHM101       pads= 9  trilhas/vias/zonas=4
+   PHM102       pads= 9  trilhas/vias/zonas=4
+   PHM103       pads= 9  trilhas/vias/zonas=4
+   PHM201       pads= 9  trilhas/vias/zonas=4
+   PHM202       pads= 9  trilhas/vias/zonas=4
+   PHM203       pads= 9  trilhas/vias/zonas=4
+   PHM301       pads= 9  trilhas/vias/zonas=4
+   PHM302       pads= 9  trilhas/vias/zonas=4
+   PHM303       pads= 9  trilhas/vias/zonas=4
+   PHM401       pads= 9  trilhas/vias/zonas=4
+   PHM402       pads= 9  trilhas/vias/zonas=4
+   PHM403       pads= 9  trilhas/vias/zonas=4
+   SNM101       pads= 2  trilhas/vias/zonas=2
+   SNM102       pads= 2  trilhas/vias/zonas=2
+   SNM103       pads= 2  trilhas/vias/zonas=2
+   SNM201       pads= 2  trilhas/vias/zonas=2
+   SNM202       pads= 2  trilhas/vias/zonas=2
+   SNM203       pads= 2  trilhas/vias/zonas=2
+   SNM301       pads= 2  trilhas/vias/zonas=2
+   SNM302       pads= 2  trilhas/vias/zonas=2
+   SNM303       pads= 2  trilhas/vias/zonas=2
+   SNM401       pads= 2  trilhas/vias/zonas=2
+   SNM402       pads= 2  trilhas/vias/zonas=2
+   SNM403       pads= 2  trilhas/vias/zonas=2
+   VBAT         pads= 3  trilhas/vias/zonas=1
+   VBAT_PROT    pads=92  trilhas/vias/zonas=32
+
+-- grupos de nets NAO roteadas (por prefixo) --
+   MCU        41 nets
+   CSAM10     24 nets
+   CSAM20     24 nets
+   CSAM30     24 nets
+   CSAM40     24 nets
+   DRVM10     24 nets
+   DRVM20     24 nets
+   DRVM30     24 nets
+   DRVM40     24 nets
+   IMU        24 nets
+   USB        17 nets
+   BARO       8 nets
+
+-- checagem de curto (pads de nets diferentes que se tocam) --
+   pads de nets diferentes com bbox sobreposto: 0
+
+-- checagem de curto (trilha x pad de net diferente) --
+   pares trilha x pad (net diferente) proximos: 36
+     ex: trilha PHM101 x pad QM101L.3(SNM101)
+     ex: trilha PHM101 x pad QM101L.1(GLM101)
+     ex: trilha PHM101 x pad QM101H.2(VBAT_PROT)
+     ex: trilha PHM102 x pad QM102L.3(SNM102)
+     ex: trilha PHM102 x pad QM102L.1(GLM102)
+     ex: trilha PHM102 x pad QM102H.2(VBAT_PROT)
+     ex: trilha PHM103 x pad QM103L.3(SNM103)
+     ex: trilha PHM103 x pad QM103L.1(GLM103)

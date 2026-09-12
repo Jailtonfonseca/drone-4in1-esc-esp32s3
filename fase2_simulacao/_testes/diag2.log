@@ -1,0 +1,38 @@
+Warning: vg2: no DC value, transient time 0 value used
+Warning: vg1: no DC value, transient time 0 value used
+
+No compatibility mode selected!
+
+
+Circuit: * diag2: .tran/.meas como linhas de netlist (fora de .control) -> uic honrado?
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using transient initial conditions
+ Reference value :  7.00000e-05 Reference value :  1.49815e-04 Reference value :  2.23215e-04 Reference value :  3.00000e-04 Reference value :  3.77695e-04 Reference value :  4.55955e-04 Reference value :  5.28645e-04 Reference value :  6.02585e-04 Reference value :  6.80000e-04 Reference value :  7.57213e-04 Reference value :  8.36000e-04 Reference value :  9.05212e-04 Reference value :  9.84000e-04 Reference value :  1.06106e-03 Reference value :  1.14321e-03 Reference value :  1.22248e-03 Reference value :  1.30478e-03 Reference value :  1.38763e-03 Reference value :  1.47060e-03 Reference value :  1.54991e-03 Reference value :  1.63136e-03 Reference value :  1.71322e-03 Reference value :  1.79170e-03 Reference value :  1.86698e-03 Reference value :  1.93400e-03
+No. of Data Rows : 163580
+
+  Measurements for Transient Analysis
+
+w1                  =  1.201544e+01 from=  1.000000e-05 to=  2.000000e-05
+w2                  =  1.206477e+01 from=  1.100000e-04 to=  1.200000e-04
+w6                  =  1.194212e+01 from=  2.600000e-04 to=  2.700000e-04
+w9                  =  1.199216e+01 from=  1.900000e-03 to=  2.000000e-03
+v10                 =  1.200986e+01
+v290                =  1.193605e+01
+
+
+Total analysis time (seconds) = 6.712
+
+Total elapsed time (seconds) = 6.731 
+
+Total DRAM available = 7689.355 MB.
+DRAM currently available = 1141.113 MB.
+Maximum ngspice program size =   27.391 MB.
+Current ngspice program size =   18.504 MB.
+
+Shared ngspice pages =    8.242 MB.
+Text (code) pages =    4.988 MB.
+Stack = 0 bytes.
+Library pages =   10.672 MB.
+

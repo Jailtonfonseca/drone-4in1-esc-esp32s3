@@ -1,0 +1,29 @@
+Note: No ".plot", ".print", or ".fourier" lines; no simulations run
+
+No compatibility mode selected!
+
+
+Circuit: * teste de sondas: @r[i], i(fonte de corrente), @d[id], alter
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+
+No. of Data Rows : 1
+--- caso normal ---
+v(a) = 1.000000e+01
+v(b) = -1.00000e-03
+i(v1) = -1.00010e-02
+@r1[i] = 1.000100e-02
+@r2[i] = -1.00000e-06
+@d1[id] = -3.89246e-14
+i(vinj) = -1.00020e-02
+--- apos alter V1 dc=-10 ---
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+
+No. of Data Rows : 1
+v(a) = -1.00000e+01
+v(b) = -1.00000e-03
+i(v1) = 9.999000e-03
+@r1[i] = -9.99900e-03
+@d1[id] = -3.89246e-14

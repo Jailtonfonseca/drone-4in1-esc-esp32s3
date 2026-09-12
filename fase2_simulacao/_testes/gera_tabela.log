@@ -1,0 +1,39 @@
+CSV gravado: resultados_fase2_spice.csv  (35 linhas)
+
+| circuito | grandeza | esperado | medido | erro |
+|---|---|---|---|---|
+| buck12 | Vout media (D*Vin, ideal) | 11.9988 V | 11.9802 V | 0.15477% |
+| buck12 | Vout media (com Ron+DCR) | 11.9802 V | 11.9802 V | 5.363e-06% |
+| buck12 | dIL pk-pk | 0.106237 A | 0.106239 A | 0.0019143% |
+| buck12 | Ripple saida pk-pk | 0.000634208 V | 0.000634032 V | 0.027798% |
+| buck12 | iL media (=Iout) | 0.599012 A | 0.599011 A | 0.00012222% |
+| buck12 | Vsw media | 11.9982 V | 11.9982 V | 8.2385e-06% |
+| buck12 | Corrente max diodo de corpo D1 | 0 A | 0 A | 0 (exato) |
+| buck12 | Corrente max diodo de corpo D2 | 0 A | 0 A | 0 (exato) |
+| buck5 | Vout media (com Ron) | 5.002 V | 5.002 V | 4.0048e-06% |
+| buck5 | Vout media (D*Vin, ideal) | 5.004 V | 5.002 V | 0.039988% |
+| buck5 | dIL pk-pk (calculado dos parametros dados) | 0.343216 A | 0.343252 A | 0.010714% |
+| buck5 | dIL pk-pk (numero citado no enunciado) | 0.246 A | 0.343252 A | 39.533% |
+| buck5 | Ripple saida pk-pk | 0.00204715 V | 0.00204511 V | 0.099821% |
+| buck5 | iL media (=Iout) | 2.0008 A | 2.0008 A | 1.5987e-05% |
+| buck3v3 | Vout media (com Ron) | 3.2985 V | 3.2985 V | 9.6556e-06% |
+| buck3v3 | Vout media (D*Vin, ideal) | 3.3 V | 3.2985 V | 0.045424% |
+| buck3v3 | dIL pk-pk (calculado dos parametros dados) | 0.4488 A | 0.448952 A | 0.033846% |
+| buck3v3 | dIL pk-pk (numero citado no enunciado) | 0.178 A | 0.448952 A | 152.22% |
+| buck3v3 | Ripple saida pk-pk | 0.00268751 V | 0.00268536 V | 0.08013% |
+| buck3v3 | iL media (=Iout) | 1.49932 A | 1.49932 A | 3.2788e-05% |
+| divisor_vbat | Vout .op (Vin=25.2 V) | 3.03641 V | 3.03641 V | 1.2861e-05% |
+| divisor_vbat | Ganho DC | -18.3808 dB | -18.381 dB | 0.0013713% |
+| divisor_vbat | fc (-3 dB) | 132.087 Hz | 132.095 Hz | 0.0058404% |
+| bemf_div | Vout .op (Vin=25.2 V) | 2.73913 V | 2.73913 V | 1.5873e-05% |
+| bemf_div | Ganho DC | -19.2758 dB | -19.2758 dB | 1.7914e-05% |
+| bemf_div | fc (-3 dB) | 178564 Hz | 178564 Hz | 6.5806e-05% |
+| gate_drive | Tempo de subida do gate 10-90% | 8.7889e-08 s | 8.78889e-08 s | 0.0001173% |
+| gate_drive | Droop do bootstrap em 50 us | 0.065 V | 0.065 V | 0.00e+00% |
+| shunt_amp | Tensao no shunt | 0.015 V | 0.015 V | 0.00e+00% |
+| shunt_amp | Vout (ganho ideal 50) | 0.75 V | 0.749618 V | 0.050973% |
+| shunt_amp | Vout (com ganho finito A=1e5) | 0.749618 V | 0.749618 V | 6.70e-07% |
+| shunt_amp | Corrente no shunt (derivada de Vshunt/Rsh) | 30 A | 30 A | 0.00e+00% |
+| prot_inversao | Caso (a) corrente na carga | 1.97605 A | 1.97605 A | 0.00024434% |
+| prot_inversao | Caso (a) queda dreno-source | 0.0394717 V | 0.0395155 V | 0.11082% |
+| prot_inversao | Caso (b) corrente na carga (bloqueio) | 1e-12 A | -4.061e-11 A | 4161% |

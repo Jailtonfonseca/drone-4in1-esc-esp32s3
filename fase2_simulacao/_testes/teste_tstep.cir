@@ -1,0 +1,28 @@
+* sensibilidade do resultado ao passo maximo (buck ideal 19.8->12, 500kHz)
+V1 vin 0 19.8
+Vg1 g1 0 PULSE(0 1 0 1p 1p 1.212u 2u)
+Vg2 g2 0 PULSE(0 1 1.212u 1p 1p 788n 2u)
+S1 vin sw g1 0 SWQ
+S2 0 sw g2 0 SWQ
+.model SWQ SW(Ron=1m Roff=1meg Vt=0.5 Vh=0)
+L1 sw out 89u ic=0.6
+C1 out 0 44u
+Rl out 0 20
+.ic v(out)=11.9982
+.control
+tran 20n 300u uic
+meas tran a20 AVG v(out) FROM=290u TO=300u
+meas tran p20 PP v(out) FROM=290u TO=300u
+meas tran v0_20 FIND v(out) AT=0
+tran 5n 300u uic
+meas tran a5 AVG v(out) FROM=290u TO=300u
+meas tran p5 PP v(out) FROM=290u TO=300u
+meas tran v0_5 FIND v(out) AT=0
+tran 2n 300u uic
+meas tran a2 AVG v(out) FROM=290u TO=300u
+meas tran p2 PP v(out) FROM=290u TO=300u
+tran 1n 300u uic
+meas tran a1 AVG v(out) FROM=290u TO=300u
+meas tran p1 PP v(out) FROM=290u TO=300u
+.endc
+.end

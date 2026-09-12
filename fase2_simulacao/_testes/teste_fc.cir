@@ -1,0 +1,15 @@
+* comparacao de metodo p/ medir fc: -45 graus (exato p/ 1 polo) vs -3dB
+Vin in 0 dc 25.2 ac 1
+R1 in out 100k
+R2 out 0 13.7k
+C1 out 0 100n
+.control
+ac dec 20 1 100k
+meas ac hdc FIND vdb(out) AT=1
+meas ac fc_ph WHEN vp(out)=-45
+meas ac fc_3db20 WHEN vdb(out)=-21.3818
+ac dec 2000 1 100k
+meas ac fc_ph_f WHEN vp(out)=-45
+meas ac fc_3db_f WHEN vdb(out)=-21.3818
+.endc
+.end

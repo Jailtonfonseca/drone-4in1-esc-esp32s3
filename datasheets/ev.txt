@@ -1,0 +1,252 @@
+                                                                                                               AN-000488
+
+
+
+
+         TDK-InvenSense EV_ICM-42688-P
+              Evaluation Board (EVB)
+                    User Guide
+
+
+
+
+InvenSense, Inc. reserves the right to change           InvenSense, a TDK Group Company             Document Number : AN-000488
+specifications and information herein without     1745 Technology Drive, San Jose, CA 95110 U.S.A   Revision: 1.2
+notice unless the product is in mass production                 +1(408) 988–7339                    Release Date: 10/10/2024
+and the application note has been designated by                invensense.tdk.com
+InvenSense in writing as subject to a specified
+Product / Process Change Notification Method
+regulation.
+      PURPOSE
+This document describes the hardware and circuitry on the TDK-InvenSense EV_ICM-42688-P evaluation board for
+TDK motion sensor ICM-42688-P.
+This user guide also covers the key signals, circuit functions, hardware jumper settings, and interface connections.
+
+1.1     USAGE
+The ICM-42688-P is a 6-axis MEMS MotionTracking device that combines a 3-axis gyroscope and a 3-axis
+accelerometer. It has a configurable host interface that supports I3CSM, I2C and SPI serial communication, features
+a 2 kB FIFO and 2 programmable interrupts with ultra-low-power wake-on-motion support to minimize system
+power consumption.
+The EV_ICM-42688-P may be connected to a TDK-InvenSense DK board (development kit MCU host board) to use
+the TDK-InvenSense MotionLink software.
+The EV_ICM-42688-P evaluation board is lead-free and RoHS compliant.
+
+1.2     RELATED DOCUMENTS
+Please refer to the product specification of the ICM-42688-P for mechanic, electrical characteristics, pinout, sensor
+configuration registers, and applications details. The datasheet can be found at invensense.tdk.com.
+
+
+
+
+                                            Figure 1. ICM-42688-P EVB
+
+
+
+
+Document Number: AN-000488                       Page 2 of 11
+Rev Number: 1.2
+TABLE OF CONTENTS
+      Purpose .................................................................................................................................................................2
+  1.1      Usage ...............................................................................................................................................................2
+  1.2      Related Documents .........................................................................................................................................2
+      EV_ICM-42688-P Evaluation Board Overview ......................................................................................................4
+      EV_ICM-42688-P Evalution Board Schematics ......................................................................................................5
+      Bill of Materials (BOM)..........................................................................................................................................6
+      Connector and Jumpers ........................................................................................................................................7
+      Host Interface Options ..........................................................................................................................................8
+      Electrostatic Discharge Sensitivity ........................................................................................................................9
+      Revision History ..................................................................................................................................................10
+
+
+
+
+Document Number: AN-000488                                              Page 3 of 11
+Rev Number: 1.2
+      EV_ICM-42688-P EVALUATION BOARD OVERVIEW
+The EV_ICM-42688-P evaluation board hosts the ICM-42688-P TDK-InvenSense motion sensor which is in a small
+2.5 x 3 mm 14-pin LGA package.
+The digital signal IO voltage (VDDIO) and chip operation voltage (VDD) can be selected between 1.8V and 3.0V.
+
+
+
+
+                                            AP_SDA / AP_SDIO / AP_SDI
+
+                                                                        AP_SCL / AP_SCLK
+
+                                                                                             AP_CS
+                                                                        13
+
+                                                                                             12
+                                                14
+
+
+
+               AP_SDO / AP_AD0      1                                                                     11   RESV
+
+                             RESV   2                                                                     10   RESV                        +Z
+                                           ICM-42688-P
+                             RESV   3                                                                     9    INT2 / FSYNC / CLKIN
+
+                       INT1 / INT   4                                                                     8    VDD
+                                               5
+
+
+
+                                                                                             7
+                                                                        6
+
+
+
+
+                                                                                                                                      +Y        +X
+                                               VDDIO
+
+                                                                           GND
+
+                                                                                              RESV
+
+
+
+
+                                Figure 2. Pin Out Diagram for ICM-42688-P 2.5x3.0x0.91 mm LGA
+The EV_ICM-42688-P evaluation board is populated with components only on its top side to achieve ease of
+jumper setting access. Board name, code, and date are printed on the top side too. There is no component and
+silkscreen print on the bottom side.
+Please note, the same PCB fab may be used for TDK-InvenSense other motion sensors.
+
+
+
+
+                                                                  Figure 3. Evaluation board top side
+
+
+
+
+Document Number: AN-000488                                                                 Page 4 of 11
+Rev Number: 1.2
+      EV_ICM-42688-P EVALUTION BOARD SCHEMATICS
+
+
+
+
+                             Figure 4. EV_ICM-42688-P Evaluation Board Schematics
+
+
+
+
+Document Number: AN-000488                   Page 5 of 11
+Rev Number: 1.2
+             BILL OF MATERIALS (BOM)
+       The BOM the evaluation board is provided below for reference.
+
+QUANTITY       REFERENCE                          PART                            MANUFACTURER   MANUFACTURER'S PART NUMBER
+   1             CN1                HDR 10X2, Male, RA, 2.54mmx2.54mm                Wurth              61302021021
+   4         C1,C3,C5,C6                           0.1uF                              Yageo         CC0402KRX5R6BB104
+   2            C2,C4                                1uF                             Murata        GRM155R61A105KE15D
+   2           JP1,JP2                         SIP-3 2.54mm                            FCI             68000-103HLF
+   3          R1,R2,R3                              10K                               Yageo           RC0402JR-0710KL
+   1              R5                                100K                              Yageo          RC0402FR-07100KL
+   2            R8,R9                                0R                               Yageo           RC0402JR-070RL
+   1              U1                           ICM-42688-P                         InvenSense           ICM-42688-P
+   1              U2                        XC6210B302MR-G                            Torex          XC6210B302MR-G
+   1              U3                          TLV70218DBVT                              TI             TLV70218DBVT
+                                                     Table 1. Bill of Materials
+
+
+
+
+       Document Number: AN-000488                        Page 6 of 11
+       Rev Number: 1.2
+      CONNECTOR AND JUMPERS
+CN1 is used for I2C/I3C/SPI host communication, IRQ, and power supply connection.
+
+                   CONNECTOR REF. NAME                 PIN #                        SIGNALS
+                                                           3                          INT1
+                                                           4                         AP_CS
+                                                        5,6                       INT2_FSYNC
+                                                       11,13                          GND
+                       Connector 1 (CN1)
+                                                         16                     AP_SCL/AP_SCLK
+                                                         18                     AP_SDA/AP_SDIO
+                                                         20                     AP_AD0/AP_SDO
+                                             1,2,7,8,9,10,12,14,15,17                  NC
+                                               Table 2. CN1 Signals
+JP1 and JP2 are jumpers to set VDD and VDDIO voltage level.
+
+   CONNECTOR REF. NAME             PIN #          SIGNALS                            DESCRIPTION
+                                     1              VDD                   Jumper short on pin 1/2: VDDIO = VDD
+     VDDIO Selector (JP1)            2             VDDIO
+                                     3              1.8V                  Jumper short on pin 2/3: VDDIO = 1.8V
+                                     1              3.0V                   Jumper close on pin 1/2: VDD = 3.0V
+       VDD Selector (JP2)            2              VDD
+                                     3              1.8V                   Jumper close on pin 2/3: VDD = 1.8V
+
+                                           Table 3. JP1 and JP2 Signals
+
+
+
+
+Document Number: AN-000488                     Page 7 of 11
+Rev Number: 1.2
+      HOST INTERFACE OPTIONS
+EV_ICM-42688-P sensor data can be read using the jump wires or by soldering the required pins from CN1 to the
+external host CPU.
+
+The evaluation board can be directly plugged in via CN1 to a TDK InvenSense SmartMotion Host Interface board
+(e.g., DK-UNIVERSAL-I) ordered separately.
+
+
+
+
+Document Number: AN-000488                    Page 8 of 11
+Rev Number: 1.2
+      ELECTROSTATIC DISCHARGE SENSITIVITY
+The IMU sensor can be permanently damaged by electrostatic discharge (ESD). ESD precautions for handling and
+storage must be taken to avoid damage to the devices.
+
+
+
+
+Document Number: AN-000488                    Page 9 of 11
+Rev Number: 1.2
+      REVISION HISTORY
+       DATE             REVISION                                       DESCRIPTION
+    08/20/2024             1.0     Initial release
+    09/25/2024             1.1     Updated Figure 2 with correct package height
+    10/10/2024             1.2     Updated schematics, BOM, board picture, and connection descriptions
+
+
+
+
+Document Number: AN-000488                        Page 10 of 11
+Rev Number: 1.2
+This information furnished by InvenSense or its affiliates (“TDK InvenSense”) is believed to be accurate and reliable. However, no responsibility
+is assumed by TDK InvenSense for its use, or for any infringements of patents or other rights of third parties that may result from its use.
+Specifications are subject to change without notice. TDK InvenSense reserves the right to make changes to this product, including its circuits
+and software, in order to improve its design and/or performance, without prior notice. TDK InvenSense makes no warranties, neither expressed
+nor implied, regarding the information and specifications contained in this document. TDK InvenSense assumes no responsibility for any claims
+or damages arising from information contained in this document, or from the use of products and services detailed therein. This includes, but is
+not limited to, claims or damages based on the infringement of patents, copyrights, mask work and/or other intellectual property rights.
+Certain intellectual property owned by InvenSense and described in this document is patent protected. No license is granted by implication or
+otherwise under any patent or patent rights of InvenSense. This publication supersedes and replaces all information previously supplied.
+Trademarks that are registered trademarks are the property of their respective companies. TDK InvenSense sensors should not be used or sold
+in the development, storage, production, or utilization of any conventional or mass-destructive weapons or for any other weapons or life-
+threatening applications, as well as in any other life critical applications such as medical equipment, transportation, aerospace and nuclear
+instruments, undersea equipment, power plant equipment, disaster prevention and crime prevention equipment.
+©2024 InvenSense. All rights reserved. InvenSense, SmartMotion, SmartIndustrial, SmartSonic, SmartAutomotive, SmartRobotics, SmartSound,
+SmartPressure, MotionProcessing, MotionProcessor, UltraPrint, MotionTracking, CHIRP Microsystems, SmartBug, SonicLink, Digital Motion
+Processor, AAR, and the InvenSense logo are registered trademarks of InvenSense, Inc. The TDK logo is a trademark of TDK Corporation. Other
+company and product names may be trademarks of the respective companies with which they are associated.
+
+
+
+
+                                                     ©2024 InvenSense. All rights reserved.
+
+
+
+
+Document Number: AN-000488                                  Page 11 of 11
+Rev Number: 1.2
+

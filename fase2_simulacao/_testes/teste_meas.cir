@@ -1,0 +1,15 @@
+* teste de sintaxe .meas (ngspice-34)
+* 1) PP / AVG / MAX / MIN em tran, corrente de indutor
+V1 in 0 PULSE(0 10 0 1p 1p 5u 10u)
+R1 in n1 1
+L1 n1 out 10u ic=0
+C1 out 0 1u
+Rl out 0 10
+.tran 10n 100u
+.meas tran vavg AVG v(out) FROM=50u TO=100u
+.meas tran vpp PP v(out) FROM=50u TO=100u
+.meas tran vmax MAX v(out) FROM=50u TO=100u
+.meas tran ilpp PP i(L1) FROM=50u TO=100u
+.meas tran ilpp2 PP @l1[i] FROM=50u TO=100u
+.meas tran trise TRIG v(out) VAL=1 RISE=1 TARG v(out) VAL=9 RISE=1
+.end

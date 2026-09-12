@@ -1,0 +1,44 @@
+bloco;item;valor_especificacao;qtd;usd_unit;usd_total;brl_nacional;conf;fonte
+ENTRADA;Conector de bateria;XT60 macho+femea, 60 A [N/D offline];1;0.5800;0.5800;9.52;[CALC];ML: XT60 3 pares R$28,78 -> R$9,59/par / (5,1312*3,2)
+PROTECAO;TVS unidirecional;standoff >= 30 V, clamp ~38 V [N/D offline];1;0.1200;0.1200;1.97;[EST];SMBJ33A SMB, ~US$0,10-0,15 no LCSC
+PROTECAO;P-FET anti-inversao;canal P, Vds >= 30 V, Rds < 10 mOhm [N/D offline];1;0.5500;0.5500;9.03;[EST];P-ch 40V TO-252, ~US$0,4-0,8
+PROTECAO;Resistor de gate do P-FET + zenner;10k + 12 V;2;0.0300;0.0600;0.99;[EST];kit de passivos
+BANCO;Capacitor de entrada;470 uF / 35 V polimero low-ESR;6;1.1000;6.6000;108.37;[EST];polimero SMD 470uF/35V (PTH radial low-ESR = R$1,67 COT moduloeletronica)
+BANCO;Ceramico de alta freq.;10 uF / 50 V X7R;12;0.1400;1.6800;27.59;[EST];10uF/50V X7R 1206
+BANCO;Ceramico de alta freq.;100 nF / 50 V X7R;48;0.0060;0.2880;4.73;[EST];100nF/50V X7R 0402
+POTENCIA;MOSFET N;Vds >= 40 V, Rds <= 3 mOhm @10V, Qg <= 60 nC [PREMISSA];24;0.4500;10.8000;177.33;[EST];"N-ch 40V ~2-3 mOhm TO-252; NCE3050K (30V) = US$0,09 COT LCSC, 40V e' mais caro"
+POTENCIA;Dissipador / area de cobre;2 oz, poligono no dreno;0;0.0000;0.0000;0.00;[-];GERADO NO LAYOUT (custo no preco do cobre da PCB)
+GATE DRIVE;Driver half-bridge single-input;bootstrap, dead-time interno ~520 ns, Vcc 12 V [N/D offline];12;0.3000;3.6000;59.11;[EST];EG2134/EG2133: EG2133 = US$0,2222 COT (LCSC)
+GATE DRIVE;Resistor de gate;10 ohm (Rg >= 2*Z0 = 6,3 ohm calculado);24;0.0100;0.2400;3.94;[EST];10 ohm 0805
+GATE DRIVE;Resistor de gate (desliga);2,2 ohm;24;0.0100;0.2400;3.94;[EST];2,2 ohm 0805
+GATE DRIVE;Capacitor de bootstrap;1 uF / 25 V X7R (>= 20*Qg calculado);12;0.0300;0.3600;5.91;[EST];1uF/25V X7R 0805
+GATE DRIVE;Diodo de bootstrap;ultrarrapido 100 V / 1 A [N/D offline];12;0.0200;0.2400;3.94;[EST];ultrarrapido 100V SOD-123
+GATE DRIVE;Capacitor local do driver;10 uF / 25 V X7R;12;0.1400;1.6800;27.59;[EST];10uF/25V X7R 1206
+CORRENTE;Shunt de fase;0,5 mOhm 2 W 2512 manganina (112 mW continuo calculado);12;0.3000;3.6000;59.11;[EST];"0,5 mOhm 2W 2512 manganina; eBay 50pcs US$13,30 = US$0,27 COT"
+CORRENTE;Amplificador diferencial;ganho 50, CMVR >= 30 V, largura de banda >= 400 kHz [N/D offline];12;2.6000;31.2000;512.30;[EST];"INA240A2; modulo breakout = US$7,80 COT (7semi); CI ~US$2,5-3,3"
+CORRENTE;Divisor de referencia;10k/10k 1% + 100 nF;12;0.0300;0.3600;5.91;[EST];2x R 0603 1% + 100nF
+BEMF;Divisor de fase;8,2k/1,0k 1% (25,2 V -> 3,07 V calculado);12;0.0200;0.2400;3.94;[EST];2x R 0603 1% por fase
+BEMF;Filtro + clamp;1 nF + diodo clamp 3,3 V / zenner;12;0.0400;0.4800;7.88;[EST];1nF 0402 + zener clamp
+ADC;ADC externo SPI;16 canais, >= 200 ksps, 12 bits [N/D offline];1;8.0000;8.0000;131.36;[EST];ADS7953 16ch 12b 1Msps (Mouser single = US$13,56 COT)
+ADC;Mux analogico (se usar 2x CI de 8 canais);[N/D offline];2;1.2000;2.4000;39.41;[EST];alternativa barata: 2x MCP3208 ~US$2,60 cada -> ver nota
+MCU;Modulo ESP32-S3-WROOM-1;WiFi 2,4 GHz + USB nativo;1;3.5000;3.5000;57.47;[CALC];ML modulo N16R8 R$56,91 COT / (5,1312*3,2)
+MCU;Botao BOOT + EN;tatico 2 pinos;2;0.0500;0.1000;1.64;[EST];tatico SMD
+MCU;Pull-ups de I2C;4,7k;2;0.0200;0.0400;0.66;[EST];2x 4,7k 0603 (kit)
+MCU;Pads de programacao;UART0 TX/RX + pads 1,27 mm;0;0.0000;0.0000;0.00;[-];test points sem custo no BOM (qtd '-')
+IMU;IMU 6 eixos;SPI/I2C, QFN-24 3x3 [confirmar CI exato];1;4.9100;4.9100;80.62;[COT];ICM-42688-P US$4,91 (DigiKey, 11/09/2026)
+BAROMETRO;Barometro;I2C, LGA-8;1;3.5000;3.5000;57.47;[EST];BMP390 LGA-10 (BMP581 vizinho = US$3,07 COT DigiKey)
+ENERGIA;Buck 12 V;0,60 A, L=89 uH, Cout=2x22 uF (calculado);1;2.2000;2.2000;36.12;[EST];CI buck 36V/3A tipo TPS5430 (modulo = EUR6,30 COT)
+ENERGIA;Buck 5 V;2,00 A, L=17 uH, Cout=2x22 uF (calculado);1;2.2000;2.2000;36.12;[EST];idem
+ENERGIA;Buck 3,3 V;1,50 A, L=5 uH, Cout=2x22 uF (calculado);1;2.2000;2.2000;36.12;[EST];idem
+ENERGIA;LDO 3,3 V_A;150 mA, baixo ruido (Pdiss 255 mW calculado);1;0.6000;0.6000;9.85;[EST];SOT-23 baixo ruido tipo TPS7A2033
+ENERGIA;Indutor de saida;22 uH (12 V e 5 V) / 5 uH (3,3 V);3;0.6500;1.9500;32.02;[EST];media 12x12mm 89uH / SRR1210A 17uH / SRN8040 5uH
+ENERGIA;Capacitor de saida;22 uF / 25 V X7R;6;0.3500;2.1000;34.48;[EST];22uF/25V X7R 1210
+MOTOR;Conector de motor;MR30 3 pinos (fases U/V/W);4;0.3500;1.4000;22.99;[EST];MR30 3 pinos (XT60/XT30 reais: ~US$0,3-0,6 COT)
+USB;Receptaculo USB-C;16 pinos, so' programacao;1;0.6000;0.6000;9.85;[EST];GCT USB4085 16p, so' programacao
+USB;Protecao ESD USB;array ESD [N/D offline];1;0.1200;0.1200;1.97;[EST];USBLC6-2SC6 SOT-23-6
+USB;Ideal diode do VBUS;P-FET + controlador [N/D offline];1;0.5000;0.5000;8.21;[EST];P-FET + controlador SOT-23-6 (LM66100)
+EXTRA;LED de status;verde 0805 + resistor 1k;1;0.0400;0.0400;0.66;[EST];LED 0805 + R 1k
+EXTRA;Buzzer;SMD 4 kHz;1;0.6000;0.6000;9.85;[EST];SMD 4 kHz CPT-9019S + transistor
+EXTRA;Watchdog externo (opcional);corte de motores independente do firmware;1;0.7000;0.7000;11.49;[EST];SOIC-8 -- opcional, decisao do Jailton
+EXTRA;Fusivel/e-fuse de entrada;30 A [N/D offline];1;0.3000;0.3000;4.93;[EST];fusivel 30A 1206 (e-fuse TPS2594x ~US$0,90)
+MECANICO;PCB;4 camadas, 2 oz nas externas, ~40x60 mm (estimativa);1;0.0000;0.0000;0.00;[-];custo tratado no bloco FAB (nao e' componente)

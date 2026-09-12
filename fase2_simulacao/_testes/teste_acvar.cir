@@ -1,0 +1,15 @@
+* teste: threshold do -3dB calculado a partir do Hdc medido (let + var)
+Vin in 0 dc 25.2 ac 1
+R1 in out 100k
+R2 out 0 13.7k
+C1 out 0 100n
+.control
+ac dec 20 1 100k
+meas ac Hdc_dB FIND vdb(out) AT=1
+meas ac fc_an WHEN vdb(out)=-21.3921
+let vth = Hdc_dB - 3.0103
+meas ac fc_var WHEN vdb(out)=vth
+meas ac fc_f45 WHEN vp(out)=-45
+print vdb(out) vp(out)
+.endc
+.end

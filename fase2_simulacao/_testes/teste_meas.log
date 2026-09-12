@@ -1,0 +1,51 @@
+Warning: v1: no DC value, transient time 0 value used
+
+No compatibility mode selected!
+
+
+Circuit: * teste de sintaxe .meas (ngspice-34)
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+in                                           0
+n1                                           0
+out                                          0
+l1#branch                                    0
+v1#branch                                    0
+
+ Reference value :  5.88605e-05
+No. of Data Rows : 10408
+
+  Measurements for Transient Analysis
+
+ .meas tran trise trig v(out) val=1 rise=1 targ v(out) val=9 rise=1 failed!
+
+
+Error: measure  trise  (TARG) : out of interval
+vavg                =  4.544438e+00 from=  5.000000e-05 to=  1.000000e-04
+vpp                 =  4.049851e+00 from=  5.000000e-05 to=  1.000000e-04
+vmax                =  6.572591e+00 at=  6.673049e-05
+ilpp                =  3.006231e+00 from=  5.000000e-05 to=  1.000000e-04
+ilpp2               =  0.000000e+00 from=  5.000000e-05 to=  1.000000e-04
+
+
+Total analysis time (seconds) = 0.371
+
+Total elapsed time (seconds) = 0.401 
+
+Total DRAM available = 7689.355 MB.
+DRAM currently available =  565.520 MB.
+Maximum ngspice program size =   19.438 MB.
+Current ngspice program size =    8.727 MB.
+
+Shared ngspice pages =    6.660 MB.
+Text (code) pages =    4.988 MB.
+Stack = 0 bytes.
+Library pages =    2.719 MB.
+

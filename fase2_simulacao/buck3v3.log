@@ -1,0 +1,45 @@
+Warning: vg2: no DC value, transient time 0 value used
+Warning: vg1: no DC value, transient time 0 value used
+
+No compatibility mode selected!
+
+
+Circuit: * ==========================================================================
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using transient initial conditions
+ Reference value :  5.17249e-05 Reference value :  1.11345e-04 Reference value :  1.64000e-04 Reference value :  2.25125e-04 Reference value :  2.85320e-04 Reference value :  3.42283e-04 Reference value :  3.99863e-04 Reference value :  4.52000e-04 Reference value :  5.06000e-04 Reference value :  5.64985e-04 Reference value :  6.26000e-04 Reference value :  6.80000e-04 Reference value :  7.41305e-04 Reference value :  8.03285e-04 Reference value :  8.64003e-04 Reference value :  9.17085e-04 Reference value :  9.74863e-04 Reference value :  1.03264e-03 Reference value :  1.09292e-03 Reference value :  1.14600e-03 Reference value :  1.19140e-03 Reference value :  1.25014e-03 Reference value :  1.31354e-03 Reference value :  1.37690e-03 Reference value :  1.43124e-03 Reference value :  1.49001e-03 Reference value :  1.55200e-03 Reference value :  1.61028e-03 Reference value :  1.66366e-03 Reference value :  1.72698e-03 Reference value :  1.78933e-03 Reference value :  1.85230e-03 Reference value :  1.91132e-03 Reference value :  1.96600e-03
+No. of Data Rows : 162572
+
+  Measurements for Transient Analysis
+
+vout_jan1           =  3.298315e+00 from=  1.000000e-04 to=  1.100000e-04
+vout_jan2           =  3.298500e+00 from=  1.000000e-03 to=  1.010000e-03
+vout_jan3           =  3.298501e+00 from=  1.990000e-03 to=  2.000000e-03
+vout_med            =  3.298501e+00 from=  1.900000e-03 to=  2.000000e-03
+vout_max            =  3.300001e+00 at=  1.999543e-03
+vout_min            =  3.297316e+00 at=  1.998543e-03
+vout_pp             =  2.685359e-03 from=  1.998000e-03 to=  2.000000e-03
+dil_pp              =  4.489519e-01 from=  1.998000e-03 to=  2.000000e-03
+il_max              =  1.723778e+00 at=  1.999320e-03
+il_min              =  1.274826e+00 at=  1.998000e-03
+il_med              =  1.499318e+00 from=  1.900000e-03 to=  2.000000e-03
+id1_max             =  0.000000e+00 at=  0.000000e+00
+id2_max             =  0.000000e+00 at=  0.000000e+00
+
+
+Total analysis time (seconds) = 9.204
+
+Total elapsed time (seconds) = 9.244 
+
+Total DRAM available = 7689.355 MB.
+DRAM currently available = 1362.934 MB.
+Maximum ngspice program size =   33.672 MB.
+Current ngspice program size =   24.637 MB.
+
+Shared ngspice pages =    8.203 MB.
+Text (code) pages =    4.988 MB.
+Stack = 0 bytes.
+Library pages =   16.953 MB.
+

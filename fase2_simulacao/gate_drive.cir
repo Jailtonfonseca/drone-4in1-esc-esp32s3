@@ -1,0 +1,75 @@
+* ==========================================================================
+* gate_drive.cir -- Malha de gate do MOSFET + capacitor de bootstrap
+*   Rg = 10 ohm   | Ciss equivalente = Qg/dV = 40 nC / 10 V = 4 nF  [P-06]
+*   Cboot = 1 uF  | Qg = 40 nC por ciclo | Iq quiescente do driver = 0.5 mA
+*   PWM de motor = 20 kHz  ->  T = 50 us                          [P-07]
+* Execucao:  ngspice -b gate_drive.cir > gate_drive.log 2>&1
+* --------------------------------------------------------------------------
+* (a) DEGRAU 0 -> 12 V NO GATE
+*     Rede: fonte PULSE 0->12 V -> Rg -> Ciss para o terra. RC serie de 1a
+*     ordem:   v(g,t) = 12*(1 - exp(-t/(Rg*Ciss)))
+*       tau  = Rg*Ciss = 10 * 4e-9 = 40 ns
+*       t10  = -tau*ln(0.90) = 40n * 0.1053605 =  4.2144 ns
+*       t90  = -tau*ln(0.10) = 40n * 2.3025851 = 92.1034 ns
+*       t_rise(10%->90%) = tau * ln(9) = 40n * 2.1972246 = 87.889 ns
+*     (o enunciado usa a aproximacao de engenharia 2.2*Rg*Ciss = 88 ns;
+*      a formula exata e ln(9) = 2.19722, nao 2.2)
+*
+* (b) DROOP DO BOOTSTRAP DURANTE OS 50 us DE CONDUCAO (20 kHz)
+*     Carga retirada de Cboot em 1 ciclo de conducao:
+*       Q = Iq*t_on + Qg = 0.5 mA * 50 us + 40 nC
+*         = 25 nC + 40 nC = 65 nC
+*     dV = Q/Cboot = 65e-9 / 1e-6 = 65.0 mV
+*     -> v(vboot) vai de 12.000 V para 11.935 V
+* --------------------------------------------------------------------------
+* MODELAGEM / PREMISSAS DECLARADAS
+*   [M1] Ciss = Qg/dV e tratado como capacitor LINEAR equivalente. O Ciss
+*        real de um MOSFET depende de Vds (nao-linear). MOSFET real
+*        [N/D offline] -> modelo linear equivalente.
+*   [M2] O driver foi reduzido a sua carga: 0.5 mA de quiescencia +
+*        40 nC/ciclo. Nao ha Rds do driver, nem miller, nem diodo do driver.
+*   [M3] Rb = 1 GOhm: so para dar caminho DC ao solver (o no do capacitor
+*        ficaria flutuante com apenas uma fonte de corrente). Erro
+*        introduzido: 12 V/1G * 50 us = 0.6 pC em 65 nC = 9.2e-6 -> nulo.
+*   [M4] uic nas duas analises: a rede (b) nao tem ponto de operacao DC
+*        definido (capacitor carregado + fonte de corrente), a carga
+*        inicial e imposta por ic=12 no proprio capacitor.
+* ==========================================================================
+
+* ---------------- (a) malha de gate -------------------------------------
+Vpwm gp  0  PULSE(0 12 0 1p 1p 1 2)
+Rg   gp  g  10
+Ciss g   0  4n ic=0
+
+* ---------------- (b) rede do bootstrap ---------------------------------
+* quiescencia do driver: 0.5 mA drenados continuamente de vboot
+Iq   vboot 0  dc 0.5m
+* pacote de carga de gate: 40 nC, uma vez por ciclo.
+* ATENCAO a convencao do PULSE do ngspice: a largura PW e o trecho de TOPO,
+* as rampas TR/TF sao triangulos ADICIONAIS. A carga e a AREA da onda:
+*   Q = 0.8 A * (TR/2 + PW + TF/2) = 0.8 * (0.5n + 49n + 0.5n)
+*     = 0.8 A * 50 ns = 40.0 nC        <- e o que o enunciado pede
+* (com PW=50n a area daria 0.8*51n = 40.8 nC e o droop sairia 65.8 mV)
+Iqg  vboot 0  PULSE(0 0.8 1u 1n 1n 49n 1)
+Cb   vboot 0  1u ic=12
+Rb   vboot 0  1G
+
+.control
+  echo ""
+  echo "########## (a) degrau 0->12 V: tempo de subida do gate 10%-90% ##########"
+  tran 0.2n 200n 0 0.2n uic
+  meas tran tg_10_90 TRIG v(g) VAL=1.2 RISE=1 TARG v(g) VAL=10.8 RISE=1
+  meas tran vg_4n214 FIND v(g) AT=4.2144n
+  meas tran vg_92n10 FIND v(g) AT=92.1034n
+  meas tran vg_fim   FIND v(g) AT=200n
+
+  echo ""
+  echo "########## (b) droop do bootstrap nos 50 us de conducao ##########"
+  tran 20n 60u 0 20n uic
+  meas tran vb_1ns  FIND v(vboot) AT=1n
+  meas tran vb_10us FIND v(vboot) AT=10u
+  meas tran vb_50us FIND v(vboot) AT=50u
+  let droop = vb_1ns - vb_50us
+  print droop
+.endc
+.end

@@ -1,0 +1,15 @@
+* teste .meas ac + .op dentro de .control
+Vin in 0 dc 25.2 ac 1
+R1 in out 100k
+R2 out 0 13.7k
+C1 out 0 100n
+.control
+op
+print v(in) v(out)
+ac dec 20 1 100k
+meas ac h1 FIND vdb(out) AT=1
+meas ac fc20 WHEN vdb(out)=-21.378
+ac dec 500 1 100k
+meas ac fc500 WHEN vdb(out)=-21.378
+.endc
+.end

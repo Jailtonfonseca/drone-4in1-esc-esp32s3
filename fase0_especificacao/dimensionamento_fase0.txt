@@ -1,0 +1,130 @@
+
+==============================================================================
+0. PREMISSAS (P-xx) -- NENHUMA VERIFICADA EM DATASHEET (nao ha datasheet offline)
+==============================================================================
+{
+  "P01_motor": "2207, 1750 KV, helice 5\"/3 pas  (usuario ainda nao forneceu dados reais)",
+  "P02_bateria": "LiPo 6S (22.2 V nom, 25.2 V max, 19.8 V a 3.30 V/celula)",
+  "P03_i_pico_motor": 30.0,
+  "P04_i_cont_motor": 15.0,
+  "P05_rds_on": 0.002,
+  "P06_qg": 4e-08,
+  "P07_fpwm": 20000.0,
+  "P08_fbuck": 500000.0,
+  "P09_shunt": 0.0005,
+  "P10_gain_csa": 50.0,
+  "P11_iq_driver": 0.0025,
+  "P12_adc_bits": 12,
+  "P13_vref": 3.3
+}
+
+==============================================================================
+1. ESTAGIO DE POTENCIA -- 4x inversor trifasico (12 half-bridges, 24 MOSFETs)
+==============================================================================
+Tensao de barramento: max 25.2 V | nom 22.2 V | min 19.8 V
+-> MOSFET precisa de Vds >= 40 V (margem 1.6x sobre 25.2 V). Premissa de classe 40-60 V.
+  Rds_on= 1.5 mOhm -> Irms/FET=15.00 A -> Pcond= 337.5 mW/FET -> 24 FETs =   8.10 W no total
+  Rds_on= 2.0 mOhm -> Irms/FET=15.00 A -> Pcond= 450.0 mW/FET -> 24 FETs =  10.80 W no total
+  Rds_on= 3.0 mOhm -> Irms/FET=15.00 A -> Pcond= 675.0 mW/FET -> 24 FETs =  16.20 W no total
+  Rds_on= 5.0 mOhm -> Irms/FET=15.00 A -> Pcond=1125.0 mW/FET -> 24 FETs =  27.00 W no total
+  (premissa adotada: Rds_on = 2.0 mOhm -> 10.80 W de conducao total)
+  Comutacao: tr=tf=20 ns -> Esw=6660.00 nJ por evento -> 133.2 mW/FET -> 24 FETs = 3.20 W
+  >>> ATENCAO: tr/tf e' PREMISSA. Dissipacao real, acoplamento termico e EMI so se provam na bancada.
+
+Barramento: PICO = 120 A | CONTINUO (premissa) = 60 A
+Potencia instantanea de pico no barramento = 3024 W (4.05 hp)  << numero de seguranca
+Estimativa de CRUZEIRO (PREMISSA AUW=750 g, 4.5 g/W): P=167 W -> I_barramento = 7.5 A  (usar este valor para dimensionar trilha continua)
+
+==============================================================================
+2. DRIVE DE GATE (12 half-bridges x driver com dead-time interno + bootstrap)
+==============================================================================
+Potencia de gate por FET: Qg*Vgs*f = 40 nC * 12.0 V * 20 kHz = 9.60 mW
+Por driver (2 FETs) = 19.20 mW | 12 drivers = 230.40 mW
+Corrente de pico de gate: Rg=10 ohm -> 1.20 A | Rg=5 ohm -> 2.40 A (vem do cap de bootstrap + 10 uF local, nao do buck)
+Tempo de subida estimado t_r = Qg/Ipk = 33.33 ns com Rg=10 ohm
+Capacitor de bootstrap: Cboot >= 20*Qg = 800 nF -> adotar 1 uF/25 V X7R
+Queda no bootstrap a cada ciclo: dV = Qg/Cboot = 0.040 V
+Trilho 12 V: quiescencia 12*2.5 mA = 30 mA + 19.2 mA (carga de gate) = 49 mA -> BUCK 12 V / 0.60 A com folga 3x
+
+==============================================================================
+3. SENSORIAMENTO DE CORRENTE (shunt low-side + amp) e BEMF
+==============================================================================
+  I=  30 A -> Vshunt=15.00 mV -> Vout(ganho 50) = 0.750 V
+      saida bipolar: 0.900 .. 2.400 V  (limite 0..3.3 V)
+  I=  40 A -> Vshunt=20.00 mV -> Vout(ganho 50) = 1.000 V
+      saida bipolar: 0.650 .. 2.650 V  (limite 0..3.3 V)
+  Fundo de escala utilizado = 22.7 % do ADC -> ADOTAR este par (Rs, G)
+  Dissipacao no shunt: continua 112 mW | pico 0.45 W -> resistor 2512 2 W OK (pico e' rajada, nao continuo)
+  Resolucao ADC: 806 uV/LSB -> 32.2 mA/LSB  | erro de offset do ADC(~3 mV) = 0.13 A de offset
+  >>> ATENCAO: shunt low-side so' e' valido quando o FET inferior esta ON -> a amostragem do ADC
+      TEM de ser sincronizada com o PWM (trigger no centro/centro-esquerda do periodo).
+  BEMF: divisor 1:8.40 (ex. 8.2k/1.0k) -> 25.2 V => 3.07 V; cap 1 nF + clamp 3.3 V.
+      erro de divisor 1% : 0.061 V -> 0.50 V na fase
+
+==============================================================================
+4. VBAT SENSE + FILTRO DE ADC
+==============================================================================
+  Divisor 100.0k/13.7k -> ratio 0.12049
+  25.2 V -> 3.036 V | 22.2 V -> 2.675 V | 19.8 V -> 2.386 V | 14.0 V -> 1.687 V
+  Corrente do divisor = 222 uA (5.59 mW) -- aceitavel
+  Resolucao efetiva = 6.7 mV/LSB -> 0.159 % da faixa de celula (4.2 V)
+  Filtro RC (C=100 nF): fc=132.1 Hz (paralelo de Thevenin 12.05 kOhm)
+
+==============================================================================
+5. FONTES CHAVEADAS (3 bucks) -- fsw = 500 kHz
+==============================================================================
+
+  [BUCK 12 V (gate drivers)] 19.8-25.2 V -> 12.0 V @ 0.60 A
+    D = 0.476..0.606 | L(30% ripple) = 88.9 uH -> adotar 89 uH
+    Cout (dV=12 mV) = 3.7 uF -> adotar 2x22 uF X7R + 100 nF
+    ripple ESR: dV_esr = dIL*ESR = 0.4 mV (domina sobre o capacitivo)
+    Ic_in(rms) = 0.300 A | Pin(90%) = 8.00 W -> Iin(vin_min) = 404 mA
+
+  [BUCK 5 V (USB/perifericos/aux)] 19.8-25.2 V -> 5.0 V @ 2.00 A
+    D = 0.198..0.253 | L(30% ripple) = 17.0 uH -> adotar 17 uH
+    Cout (dV=25 mV) = 6.0 uF -> adotar 2x22 uF X7R + 100 nF
+    ripple ESR: dV_esr = dIL*ESR = 1.2 mV (domina sobre o capacitivo)
+    Ic_in(rms) = 0.798 A | Pin(90%) = 11.11 W -> Iin(vin_min) = 561 mA
+
+  [BUCK 3.3 V (MCU+WiFi+sensores)] 4.8-5.0 V -> 3.3 V @ 1.50 A
+    D = 0.660..0.695 | L(30% ripple) = 5.2 uH -> adotar 5 uH
+    Cout (dV=33 mV) = 3.4 uF -> adotar 2x22 uF X7R + 100 nF
+    ripple ESR: dV_esr = dIL*ESR = 0.9 mV (domina sobre o capacitivo)
+    Ic_in(rms) = 0.711 A | Pin(90%) = 5.50 W -> Iin(vin_min) = 1158 mA
+
+  [LDO 3.3 V_A (analogico IMU/baro)] 5 V -> 3.3 V @ 0.15 A : Pdiss = 0.255 W (SOT-23 com pad, OK)
+
+==============================================================================
+6. CAPACITOR DE ENTRADA (barramento) -- conta de ripple
+==============================================================================
+  C=   470 uF : dV = I*t/C = 30 A * 50 us / C = 3.191 V (por motor, pior caso pico)
+  C=  1000 uF : dV = I*t/C = 30 A * 50 us / C = 1.500 V (por motor, pior caso pico)
+  C=  2200 uF : dV = I*t/C = 30 A * 50 us / C = 0.682 V (por motor, pior caso pico)
+  Ripple RMS agregado estimado (4 motores, D=50%): ~30.0 A -> exigir cap de entrada com
+  Io_ripple >= 1.5x = 45 A. ADOTADO: 4x 470 uF/35 V low-ESR (polimero) + 4x 10 uF + 40x 100 nF ceramico junto aos FETs.
+  >>> ESR/ESL e' o que manda, nao a capacitancia. O layout (laco minimo) e' a metade do projeto.
+
+  TVS de entrada: precisa suportar Vbat max (25.2 V) sem conduzir -> standoff >= 30 V; clamp ~37.8 V. PREMISSA (datasheet nao disponivel offline).
+  Protecao de inversao: P-FET ideal diode (Q de canal P, 30 V, Rdson < 10 mOhm) ou D Schottky -> Schottky perderia Vf*I = 0.5 V * 7.5 A = 3.8 W. ADOTADO: P-FET + gate clamp.
+
+==============================================================================
+7. TRILHAS DE POTENCIA -- IPC-2221 (calculo, a ser validado na bancada)
+==============================================================================
+  I=   10 A, 2 oz (t=3 mil=70 um), dT=10 C -> A=   390.3 mil^2 -> largura = 3.60 mm (142 mil)
+  I=   10 A, 2 oz (t=3 mil=70 um), dT=20 C -> A=   256.3 mil^2 -> largura = 2.36 mm (93 mil)
+  I=   10 A, 2 oz (t=3 mil=70 um), dT=30 C -> A=   200.4 mil^2 -> largura = 1.85 mm (73 mil)
+
+  I=   30 A, 2 oz (t=3 mil=70 um), dT=10 C -> A=  1776.2 mil^2 -> largura = 16.37 mm (644 mil)
+  I=   30 A, 2 oz (t=3 mil=70 um), dT=20 C -> A=  1166.3 mil^2 -> largura = 10.75 mm (423 mil)
+  I=   30 A, 2 oz (t=3 mil=70 um), dT=30 C -> A=   911.9 mil^2 -> largura = 8.40 mm (331 mil)
+
+  I=   60 A, 2 oz (t=3 mil=70 um), dT=10 C -> A=  4620.7 mil^2 -> largura = 42.59 mm (1677 mil)
+  I=   60 A, 2 oz (t=3 mil=70 um), dT=20 C -> A=  3034.0 mil^2 -> largura = 27.96 mm (1101 mil)
+  I=   60 A, 2 oz (t=3 mil=70 um), dT=30 C -> A=  2372.1 mil^2 -> largura = 21.86 mm (861 mil)
+
+  I=  120 A, 2 oz (t=3 mil=70 um), dT=10 C -> A= 12020.4 mil^2 -> largura = 110.78 mm (4362 mil)
+  I=  120 A, 2 oz (t=3 mil=70 um), dT=20 C -> A=  7892.7 mil^2 -> largura = 72.74 mm (2864 mil)
+  I=  120 A, 2 oz (t=3 mil=70 um), dT=30 C -> A=  6171.0 mil^2 -> largura = 56.87 mm (2239 mil)
+
+  Decisao: barramento DC (dezenas de A continuos) EM CAMADA INTERNA + metal exposto/barra;
+  nao existe trilha de 2 oz que aguente 1

@@ -1,0 +1,32 @@
+Warning: ish: no DC value, transient time 0 value used
+
+No compatibility mode selected!
+
+
+Circuit: * ==========================================================================
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+sh                                           0
+nn                                           0
+out                                          0
+np                                           0
+e1#branch                                    0
+
+ Reference value :  4.77050e-05Note: No ".plot", ".print", or ".fourier" lines; no simulations run
+
+No. of Data Rows : 10011
+vshunt              =  1.500000e-02
+vout                =  7.496177e-01
+vp                  =  1.470588e-02
+vn                  =  1.469839e-02
+vshunt_f            =  1.500000e-02
+vout_f              =  7.496177e-01
+ishunt_der          =  3.000000e+01
+vdif                =  7.496177e-06

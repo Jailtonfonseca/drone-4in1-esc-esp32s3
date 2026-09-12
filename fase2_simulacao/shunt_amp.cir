@@ -1,0 +1,58 @@
+* ==========================================================================
+* shunt_amp.cir -- Medicao de corrente do pack: shunt + amp diferencial
+*   Rshunt = 0.5 mOhm | degrau de corrente 0 -> 30 A | ganho G = 50
+* Execucao:  ngspice -b shunt_amp.cir > shunt_amp.log 2>&1
+* --------------------------------------------------------------------------
+* FORMULA DO VALOR ESPERADO (analitico)
+*   [E1] Vshunt = I * Rshunt = 30 * 0.5e-3 = 15.000 mV
+*   [E2] Amplificador diferencial classico com R1 = R3 = 1k e Rf = R4 = 50k:
+*          Vout = (Rf/R1) * (Vp - Vn) = 50 * (Vshunt - 0) = 0.750 V
+*        (deducao: no nao-inversor V+ = Vp*R4/(R3+R4) = Vp*50/51 e o ganho
+*         nao-inversor e 1+Rf/R1 = 51 -> 51*Vp*50/51 = 50*Vp; o caminho
+*         inversor da -Rf/R1 * Vn = -50*Vn ; total 50*(Vp-Vn))
+*   [E3] EFEITO DO GANHO FINITO DO AMP-OP (A = 1e5):
+*          beta = R1/(R1+Rf) = 1/51 = 0.0196078
+*          A*beta = 1e5 * 0.0196078 = 1960.78
+*          erro relativo de ganho de malha fechada = 1/(1+A*beta) = 5.10e-4
+*          Vout = 0.750 * (1 - 5.10e-4) = 0.7496175 V
+*        -> ESPERADO "ideal" (enunciado) = 0.750 V
+*        -> ESPERADO com o E1 de ganho 1e5 = 0.749618 V
+*        As duas referencias sao comparadas no relatorio.
+*   [E4] Vshunt NAO e afetado pelo ganho finito: a entrada do amp-op e de
+*        corrente nula (fonte E ideal), entao Vshunt = 30 A * 0.5 mOhm
+*        exatamente = 15.000 mV.
+* --------------------------------------------------------------------------
+* MODELAGEM: amp-op ideal (fonte E de ganho 1e5 + realimentacao resistiva
+*   de precisao), resistores ideais, shunt ideal (sem indutancia parasita
+*   e sem coeficiente termico). Amp-op real e shunt real: [N/D offline].
+* ==========================================================================
+
+* degrau de corrente de carga 0 -> 30 A (rampa de 1 us so para o solver)
+Ish 0   sh  PULSE(0 30 0 1u 1u 500u 1)
+* shunt de 0.5 mOhm
+Rsh sh  0   0.5m
+
+* amp diferencial: ganho = 50
+R1  0   nn  1k
+Rf  nn  out 50k
+R3  sh  np  1k
+R4  np  0   50k
+E1  out 0   np nn 1e5
+
+.control
+  tran 10n 100u 0 10n
+  meas tran Vshunt   FIND v(sh)  AT=50u
+  meas tran Vout     FIND v(out) AT=50u
+  meas tran Vp       FIND v(np)  AT=50u
+  meas tran Vn       FIND v(nn)  AT=50u
+  meas tran Vshunt_f FIND v(sh)  AT=99u
+  meas tran Vout_f   FIND v(out) AT=99u
+  * corrente do shunt: vetor derivado de v(sh) pela lei de Ohm no shunt.
+  * (nao existe vetor de ramo para resistor no ngspice, entao e derivada --
+  *  e nao "medida direta"; por isso a marcacao)
+  let ish  = v(sh) / 0.5m
+  meas tran Ishunt_der FIND ish AT=50u
+  let vdif = v(np) - v(nn)
+  meas tran Vdif     FIND vdif AT=50u
+.endc
+.end

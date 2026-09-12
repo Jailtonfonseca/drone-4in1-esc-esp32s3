@@ -1,0 +1,82 @@
+* ==========================================================================
+* buck3v3.cir -- Buck SINCRONO (3o estagio da cadeia, projeto Drone)
+*   Vin = 5 V | D = 0.66 | fsw = 500 kHz (Tsw = 2 us)   [PREMISSA P-08]
+*   L = 5 uH (DCR nao informado -> 0)
+*   Cout = 2 x 22 uF (ESR 5 mOhm cada)
+*   Carga 1.5 A  ->  R = 2.2 ohm
+* Maquina: Orange Pi 3B, Debian aarch64, ngspice-34
+* Execucao:  ngspice -b buck3v3.cir > buck3v3.log 2>&1
+* --------------------------------------------------------------------------
+* FORMULA DO VALOR ESPERADO (analitico)
+*   [E1] Vout ideal = D * Vin = 0.66 * 5 = 3.300 V
+*   [E2] Ton = D / fsw = 0.66 / 500k = 1.32 us
+*   [E3] Vout com perdas: Vout = 3.300 - I*Ron , I = Vout/2.2
+*            => Vout * 1.00045455 = 3.300  =>  Vout = 3.2985006 V
+*            => I = 1.4993185 A
+*   [E4] dIL = (Vin - I*Ron - Vout) * Ton / L
+*            = (5 - 0.001499 - 3.298501) * 1.32e-6 / 5e-6
+*            = 1.700 * 1.32e-6 / 5e-6
+*            = 0.4488 A pk-pk
+*       *** ATENCAO / DIVERGENCIA NO ENUNCIADO ***
+*       O enunciado pede "dIL = 0.178 A pk-pk". Com os dados dados
+*       (Vin=5, D=0.66, L=5 uH, fsw=500 kHz) a formula acima da
+*       0.4488 A. Para dar 0.178 A seria preciso L = 12.6 uH (ou
+*       fsw = 1.26 MHz). Reporto 0.4488 A como ESPERADO (calculado da
+*       formula com os parametros dados) e sinalizo a inconsistencia.
+*   [E5] ripple capacitivo = dIL/(8*Cout*fsw) = 0.4488/(8*44e-6*500e3)
+*            = 2.550 mV pk-pk
+*   [E6] ripple ESR = dIL * 2.5m = 1.122 mV pk-pk
+*   [E7] ripple total pk-pk (soma com fase real, ponto a ponto) =
+*        2.6875 mV pk-pk  (script minimiza_ripple.py; somar os dois pp
+*        daria 3.672 mV -- sobrestima)
+* --------------------------------------------------------------------------
+* MODELAGEM / PREMISSAS DECLARADAS
+*   [M1] Chave ideal S-model SW(Ron=1m Roff=1meg Vt=0.5 Vh=0).
+*   [M2] Acionamento complementar EXATO (dead-time = 0).
+*   [M3] Diodos de corpo explicitos Is=1e-12 (FET real [N/D offline]).
+*   [M4] DCR do indutor NAO informado -> 0. Se houver DCR, Vout cai I*DCR.
+*   [M5] Condicao inicial analitica de regime permanente:
+*            v(out) = 3.2985006 V ; i(L1) = 1.4993185 - 0.2244
+*                   = 1.2749185 A
+*        Q = R*sqrt(C/L) = 2.2*sqrt(44u/5u) = 6.53 (subamortecido).
+*        PROVA de regime: janelas sucessivas coincidem no log.
+* ==========================================================================
+Vin   vin 0  5
+
+Vg1   g1  0  PULSE(0 1 0      1p 1p 1.32u  2u)
+Vg2   g2  0  PULSE(0 1 1.32u  1p 1p 0.68u  2u)
+
+S1    vin sw  g1 0  SWQ
+S2    0   sw  g2 0  SWQ
+.model SWQ SW(Ron=1m Roff=1meg Vt=0.5 Vh=0)
+
+D1    0   sw  DBDY
+D2    sw  vin DBDY
+.model DBDY D(Is=1e-12 N=1)
+
+L1    sw  out 5u  ic=1.2749185
+C1    out nc1 22u
+Res1  nc1 0   5m
+C2    out nc2 22u
+Res2  nc2 0   5m
+
+Rl    out 0   2.2
+
+.ic v(out)=3.2985006
+
+.tran 20n 2m 0 20n uic
+
+.meas tran Vout_jan1 AVG v(out) FROM=100u TO=110u
+.meas tran Vout_jan2 AVG v(out) FROM=1000u TO=1010u
+.meas tran Vout_jan3 AVG v(out) FROM=1990u TO=2000u
+.meas tran Vout_med AVG v(out) FROM=1900u TO=2000u
+.meas tran Vout_max MAX v(out) FROM=1998u TO=2000u
+.meas tran Vout_min MIN v(out) FROM=1998u TO=2000u
+.meas tran Vout_pp  PP  v(out) FROM=1998u TO=2000u
+.meas tran dIL_pp   PP  i(L1)  FROM=1998u TO=2000u
+.meas tran iL_max   MAX i(L1)  FROM=1998u TO=2000u
+.meas tran iL_min   MIN i(L1)  FROM=1998u TO=2000u
+.meas tran iL_med   AVG i(L1)  FROM=1900u TO=2000u
+.meas tran iD1_max  MAX @d1[id] FROM=1900u TO=2000u
+.meas tran iD2_max  MAX @d2[id] FROM=1900u TO=2000u
+.end

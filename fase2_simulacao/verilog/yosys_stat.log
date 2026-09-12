@@ -1,0 +1,765 @@
+
+ /----------------------------------------------------------------------------\
+ |                                                                            |
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |                                                                            |
+ |  Copyright (C) 2012 - 2019  Clifford Wolf <clifford@clifford.at>           |
+ |                                                                            |
+ |  Permission to use, copy, modify, and/or distribute this software for any  |
+ |  purpose with or without fee is hereby granted, provided that the above    |
+ |  copyright notice and this permission notice appear in all copies.         |
+ |                                                                            |
+ |  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES  |
+ |  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF          |
+ |  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR   |
+ |  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    |
+ |  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN     |
+ |  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   |
+ |  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            |
+ |                                                                            |
+ \----------------------------------------------------------------------------/
+
+ Yosys 0.9 (git sha1 1979e0b)
+
+
+-- Running command `read_verilog pwm_deadtime.v; hierarchy -check -top pwm_deadtime; proc; opt; techmap; opt; stat' --
+
+1. Executing Verilog-2005 frontend: pwm_deadtime.v
+Parsing Verilog input from `pwm_deadtime.v' to AST representation.
+Generating RTLIL representation for module `\pwm_deadtime'.
+Generating RTLIL representation for module `\pwm_dt_channel'.
+Successfully finished Verilog frontend.
+
+2. Executing HIERARCHY pass (managing design hierarchy).
+
+2.1. Analyzing design hierarchy..
+Top module:  \pwm_deadtime
+Used module:     \pwm_dt_channel
+
+2.2. Analyzing design hierarchy..
+Top module:  \pwm_deadtime
+Used module:     \pwm_dt_channel
+Removed 0 unused modules.
+
+3. Executing PROC pass (convert processes to netlists).
+
+3.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+3.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 6 switch rules as full_case in process $proc$pwm_deadtime.v:135$259 in module pwm_dt_channel.
+Marked 1 switch rules as full_case in process $proc$pwm_deadtime.v:65$5 in module pwm_deadtime.
+Marked 2 switch rules as full_case in process $proc$pwm_deadtime.v:54$1 in module pwm_deadtime.
+Removed a total of 0 dead cases.
+
+3.3. Executing PROC_INIT pass (extract init attributes).
+
+3.4. Executing PROC_ARST pass (detect async resets in processes).
+Found async reset \rst_n in `\pwm_dt_channel.$proc$pwm_deadtime.v:135$259'.
+Found async reset \rst_n in `\pwm_deadtime.$proc$pwm_deadtime.v:65$5'.
+Found async reset \rst_n in `\pwm_deadtime.$proc$pwm_deadtime.v:54$1'.
+
+3.5. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\pwm_dt_channel.$proc$pwm_deadtime.v:135$259'.
+     1/3: $0\dt_cnt[15:0]
+     2/3: $0\lo[0:0]
+     3/3: $0\hi[0:0]
+Creating decoders for process `\pwm_deadtime.$proc$pwm_deadtime.v:65$5'.
+     1/1: $0\dt_cycles[15:0]
+Creating decoders for process `\pwm_deadtime.$proc$pwm_deadtime.v:54$1'.
+     1/1: $0\phase_cnt[15:0]
+
+3.6. Executing PROC_DLATCH pass (convert process syncs to latches).
+
+3.7. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\pwm_dt_channel.\hi' using process `\pwm_dt_channel.$proc$pwm_deadtime.v:135$259'.
+  created $adff cell `$procdff$303' with positive edge clock and negative level reset.
+Creating register for signal `\pwm_dt_channel.\lo' using process `\pwm_dt_channel.$proc$pwm_deadtime.v:135$259'.
+  created $adff cell `$procdff$304' with positive edge clock and negative level reset.
+Creating register for signal `\pwm_dt_channel.\dt_cnt' using process `\pwm_dt_channel.$proc$pwm_deadtime.v:135$259'.
+  created $adff cell `$procdff$305' with positive edge clock and negative level reset.
+Creating register for signal `\pwm_deadtime.\dt_cycles' using process `\pwm_deadtime.$proc$pwm_deadtime.v:65$5'.
+  created $adff cell `$procdff$306' with positive edge clock and negative level reset.
+Creating register for signal `\pwm_deadtime.\phase_cnt' using process `\pwm_deadtime.$proc$pwm_deadtime.v:54$1'.
+  created $adff cell `$procdff$307' with positive edge clock and negative level reset.
+
+3.8. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 5 empty switches in `\pwm_dt_channel.$proc$pwm_deadtime.v:135$259'.
+Removing empty process `pwm_dt_channel.$proc$pwm_deadtime.v:135$259'.
+Removing empty process `pwm_deadtime.$proc$pwm_deadtime.v:65$5'.
+Found and cleaned up 1 empty switch in `\pwm_deadtime.$proc$pwm_deadtime.v:54$1'.
+Removing empty process `pwm_deadtime.$proc$pwm_deadtime.v:54$1'.
+Cleaned up 6 empty switches.
+
+4. Executing OPT pass (performing simple optimizations).
+
+4.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module pwm_dt_channel.
+<suppressed ~4 debug messages>
+Optimizing module pwm_deadtime.
+<suppressed ~33 debug messages>
+
+4.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\pwm_dt_channel'.
+<suppressed ~6 debug messages>
+Finding identical cells in module `\pwm_deadtime'.
+<suppressed ~147 debug messages>
+Removed a total of 51 cells.
+
+4.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \pwm_dt_channel..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+      Replacing known input bits on port B of cell $procmux$296: \hi -> 1'1
+      Replacing known input bits on port A of cell $procmux$294: \hi -> 1'0
+      Replacing known input bits on port B of cell $procmux$286: \lo -> 1'1
+      Replacing known input bits on port A of cell $procmux$284: \lo -> 1'0
+  Analyzing evaluation results.
+Running muxtree optimizer on module \pwm_deadtime..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~40 debug messages>
+
+4.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \pwm_dt_channel.
+  Optimizing cells in module \pwm_deadtime.
+Performed a total of 0 changes.
+
+4.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\pwm_dt_channel'.
+<suppressed ~6 debug messages>
+Finding identical cells in module `\pwm_deadtime'.
+<suppressed ~120 debug messages>
+Removed a total of 42 cells.
+
+4.6. Executing OPT_RMDFF pass (remove dff with constant values).
+
+4.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \pwm_dt_channel..
+Finding unused cells or wires in module \pwm_deadtime..
+Removed 4 unused cells and 167 unused wires.
+<suppressed ~23 debug messages>
+
+4.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module pwm_deadtime.
+Optimizing module pwm_dt_channel.
+
+4.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+4.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \pwm_deadtime..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Running muxtree optimizer on module \pwm_dt_channel..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~26 debug messages>
+
+4.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \pwm_deadtime.
+  Optimizing cells in module \pwm_dt_channel.
+Performed a total of 0 changes.
+
+4.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\pwm_deadtime'.
+Finding identical cells in module `\pwm_dt_channel'.
+Removed a total of 0 cells.
+
+4.13. Executing OPT_RMDFF pass (remove dff with constant values).
+
+4.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \pwm_deadtime..
+Finding unused cells or wires in module \pwm_dt_channel..
+
+4.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module pwm_deadtime.
+Optimizing module pwm_dt_channel.
+
+4.16. Finished OPT passes. (There is nothing left to do.)
+
+5. Executing TECHMAP pass (map to technology primitives).
+
+5.1. Executing Verilog-2005 frontend: <techmap.v>
+Parsing Verilog input from `<techmap.v>' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `\$__div_mod_u'.
+Generating RTLIL representation for module `\$__div_mod'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_lut'.
+Successfully finished Verilog frontend.
+
+5.2. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $eq.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=16:Y_WIDTH=16:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=16:Y_WIDTH=16:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=16:Y_WIDTH=16:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $mux.
+Using extmapper simplemap for cells of type $logic_not.
+Running "alumacc" on wrapper $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=12:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=12:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=12:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$gt:A_SIGNED=0:A_WIDTH=12:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$gt:A_SIGNED=0:A_WIDTH=12:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$gt:A_SIGNED=0:A_WIDTH=12:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$mul:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$mul:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$mul:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $paramod\_90_div\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=32\Y_WIDTH=32 for cells of type $div.
+Running "alumacc" on wrapper $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=16:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=16:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=16:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $adff.
+Using template $paramod\$__div_mod\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=32\Y_WIDTH=32 for cells of type $__div_mod.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=12\B_WIDTH=32\Y_WIDTH=32 for cells of type $alu.
+Using extmapper simplemap for cells of type $not.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=16\B_WIDTH=16\Y_WIDTH=16 for cells of type $alu.
+Using extmapper simplemap for cells of type $or.
+Using extmapper simplemap for cells of type $reduce_and.
+Using extmapper maccmap for cells of type $macc.
+  add 4000 * \g_canal[0].duty_cl (32x16 bits, unsigned)
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=16\B_WIDTH=32\Y_WIDTH=32 for cells of type $alu.
+  add 4000 * \g_canal[1].duty_cl (32x16 bits, unsigned)
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=32\Y_WIDTH=32 for cells of type $alu.
+Using extmapper simplemap for cells of type $reduce_or.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=16\Y_WIDTH=32 for cells of type $alu.
+  add 4000 * \g_canal[2].duty_cl (32x16 bits, unsigned)
+  add 4000 * \g_canal[3].duty_cl (32x16 bits, unsigned)
+  add 4000 * \g_canal[4].duty_cl (32x16 bits, unsigned)
+  add 4000 * \g_canal[5].duty_cl (32x16 bits, unsigned)
+  add 4000 * \g_canal[6].duty_cl (32x16 bits, unsigned)
+  add 4000 * \g_canal[7].duty_cl (32x16 bits, unsigned)
+  add 4000 * \g_canal[8].duty_cl (32x16 bits, unsigned)
+  add 4000 * \g_canal[9].duty_cl (32x16 bits, unsigned)
+  add 4000 * \g_canal[10].duty_cl (32x16 bits, unsigned)
+  add 4000 * \g_canal[11].duty_cl (32x16 bits, unsigned)
+Using extmapper simplemap for cells of type $and.
+Using extmapper simplemap for cells of type $ne.
+Running "alumacc" on wrapper $extern:wrap:$neg:Y_WIDTH=32:A_WIDTH=32:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$neg:Y_WIDTH=32:A_WIDTH=32:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$neg:Y_WIDTH=32:A_WIDTH=32:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $logic_and.
+Using template $paramod\$__div_mod_u\WIDTH=32 for cells of type $__div_mod_u.
+Using extmapper simplemap for cells of type $pos.
+Using extmapper simplemap for cells of type $xor.
+Using template $paramod\_90_lcu\WIDTH=32 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=16 for cells of type $lcu.
+Using template $paramod\_90_fa\WIDTH=32 for cells of type $fa.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=0\B_WIDTH=32\Y_WIDTH=32 for cells of type $alu.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=32:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=32:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=32:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=32:B_WIDTH=32:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=32:B_WIDTH=32:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=32:B_WIDTH=32:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=33:B_WIDTH=33:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=33:B_WIDTH=33:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=33:B_WIDTH=33:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=33:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=33:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=33:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=34:B_WIDTH=34:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=34:B_WIDTH=34:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=34:B_WIDTH=34:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=34:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=34:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=34:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=35:B_WIDTH=35:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=35:B_WIDTH=35:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=35:B_WIDTH=35:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=35:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=35:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=35:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=36:B_WIDTH=36:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=36:B_WIDTH=36:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=36:B_WIDTH=36:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=36:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=36:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=36:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=37:B_WIDTH=37:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=37:B_WIDTH=37:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=37:B_WIDTH=37:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=37:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=37:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=37:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=38:B_WIDTH=38:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=38:B_WIDTH=38:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=38:B_WIDTH=38:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=38:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=38:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=38:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=39:B_WIDTH=39:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=39:B_WIDTH=39:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=39:B_WIDTH=39:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=39:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=39:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=39:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=40:B_WIDTH=40:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=40:B_WIDTH=40:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=40:B_WIDTH=40:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=40:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=40:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=40:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=41:B_WIDTH=41:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=41:B_WIDTH=41:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=41:B_WIDTH=41:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=41:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=41:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=41:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=42:B_WIDTH=42:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=42:B_WIDTH=42:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=42:B_WIDTH=42:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=42:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=42:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=42:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=43:B_WIDTH=43:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=43:B_WIDTH=43:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=43:B_WIDTH=43:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=43:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=43:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=43:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=44:B_WIDTH=44:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=44:B_WIDTH=44:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=44:B_WIDTH=44:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=44:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=44:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=44:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=45:B_WIDTH=45:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=45:B_WIDTH=45:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=45:B_WIDTH=45:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=45:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=45:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=45:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=46:B_WIDTH=46:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=46:B_WIDTH=46:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=46:B_WIDTH=46:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=46:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=46:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=46:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=47:B_WIDTH=47:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=47:B_WIDTH=47:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=47:B_WIDTH=47:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=47:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=47:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=47:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=48:B_WIDTH=48:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=48:B_WIDTH=48:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=48:B_WIDTH=48:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=48:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=48:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=48:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=49:B_WIDTH=49:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=49:B_WIDTH=49:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=49:B_WIDTH=49:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=49:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=49:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=49:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=50:B_WIDTH=50:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=50:B_WIDTH=50:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=50:B_WIDTH=50:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=50:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=50:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=50:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=51:B_WIDTH=51:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=51:B_WIDTH=51:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=51:B_WIDTH=51:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=51:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=51:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=51:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=52:B_WIDTH=52:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=52:B_WIDTH=52:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=52:B_WIDTH=52:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=52:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=52:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=52:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=53:B_WIDTH=53:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=53:B_WIDTH=53:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=53:B_WIDTH=53:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=53:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=53:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=53:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=54:B_WIDTH=54:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=54:B_WIDTH=54:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=54:B_WIDTH=54:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=54:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=54:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=54:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=55:B_WIDTH=55:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=55:B_WIDTH=55:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=55:B_WIDTH=55:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=55:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=55:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=55:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=56:B_WIDTH=56:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=56:B_WIDTH=56:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=56:B_WIDTH=56:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=56:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=56:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=56:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=57:B_WIDTH=57:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=57:B_WIDTH=57:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=57:B_WIDTH=57:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=57:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=57:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=57:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=58:B_WIDTH=58:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=58:B_WIDTH=58:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=58:B_WIDTH=58:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=58:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=58:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=58:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=59:B_WIDTH=59:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=59:B_WIDTH=59:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=59:B_WIDTH=59:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=59:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=59:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=59:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=60:B_WIDTH=60:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=60:B_WIDTH=60:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=60:B_WIDTH=60:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=60:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=60:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=60:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=61:B_WIDTH=61:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=61:B_WIDTH=61:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=61:B_WIDTH=61:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=61:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=61:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=61:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=62:B_WIDTH=62:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=62:B_WIDTH=62:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=62:B_WIDTH=62:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=62:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=62:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=62:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=63:B_WIDTH=63:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=63:B_WIDTH=63:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=63:B_WIDTH=63:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=63:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=63:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=63:A_WIDTH=32:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=63:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=63:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=63:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=62:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=62:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=62:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=61:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=61:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=61:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=60:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=60:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=60:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=59:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=59:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=59:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=58:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=58:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=58:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=57:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=57:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=57:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=56:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=56:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=56:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=55:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=55:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=55:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=54:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=54:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=54:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=53:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=53:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=53:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=52:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=52:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=52:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=51:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=51:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=51:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=50:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=50:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=50:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=49:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=49:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=49:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=48:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=48:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=48:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=47:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=47:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=47:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=46:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=46:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=46:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=45:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=45:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=45:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=44:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=44:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=44:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=43:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=43:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=43:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=42:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=42:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=42:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=41:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=41:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=41:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=40:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=40:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=40:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=39:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=39:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=39:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=38:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=38:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=38:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=37:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=37:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=37:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=36:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=36:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=36:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=35:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=35:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=35:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=34:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=34:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=34:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=33:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=33:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=33:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=63:Y_WIDTH=63:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=63:Y_WIDTH=63:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=63:Y_WIDTH=63:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=62:Y_WIDTH=62:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=62:Y_WIDTH=62:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=62:Y_WIDTH=62:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=61:Y_WIDTH=61:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=61:Y_WIDTH=61:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=61:Y_WIDTH=61:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=60:Y_WIDTH=60:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=60:Y_WIDTH=60:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=60:Y_WIDTH=60:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=59:Y_WIDTH=59:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=59:Y_WIDTH=59:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=59:Y_WIDTH=59:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=58:Y_WIDTH=58:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=58:Y_WIDTH=58:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=58:Y_WIDTH=58:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=57:Y_WIDTH=57:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=57:Y_WIDTH=57:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=57:Y_WIDTH=57:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=56:Y_WIDTH=56:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=56:Y_WIDTH=56:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=56:Y_WIDTH=56:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=55:Y_WIDTH=55:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=55:Y_WIDTH=55:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=55:Y_WIDTH=55:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=54:Y_WIDTH=54:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=54:Y_WIDTH=54:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=54:Y_WIDTH=54:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=53:Y_WIDTH=53:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=53:Y_WIDTH=53:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=53:Y_WIDTH=53:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=52:Y_WIDTH=52:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=52:Y_WIDTH=52:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=52:Y_WIDTH=52:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=51:Y_WIDTH=51:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=51:Y_WIDTH=51:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=51:Y_WIDTH=51:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=50:Y_WIDTH=50:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=50:Y_WIDTH=50:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=50:Y_WIDTH=50:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=49:Y_WIDTH=49:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=49:Y_WIDTH=49:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=49:Y_WIDTH=49:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=48:Y_WIDTH=48:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=48:Y_WIDTH=48:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=48:Y_WIDTH=48:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=47:Y_WIDTH=47:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=47:Y_WIDTH=47:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=47:Y_WIDTH=47:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=46:Y_WIDTH=46:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=46:Y_WIDTH=46:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=46:Y_WIDTH=46:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=45:Y_WIDTH=45:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=45:Y_WIDTH=45:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=45:Y_WIDTH=45:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=44:Y_WIDTH=44:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=44:Y_WIDTH=44:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=44:Y_WIDTH=44:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=43:Y_WIDTH=43:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=43:Y_WIDTH=43:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=43:Y_WIDTH=43:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=42:Y_WIDTH=42:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=42:Y_WIDTH=42:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=42:Y_WIDTH=42:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=41:Y_WIDTH=41:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=41:Y_WIDTH=41:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=41:Y_WIDTH=41:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=40:Y_WIDTH=40:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=40:Y_WIDTH=40:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=40:Y_WIDTH=40:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=39:Y_WIDTH=39:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=39:Y_WIDTH=39:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=39:Y_WIDTH=39:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=38:Y_WIDTH=38:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=38:Y_WIDTH=38:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=38:Y_WIDTH=38:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=37:Y_WIDTH=37:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=37:Y_WIDTH=37:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=37:Y_WIDTH=37:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=36:Y_WIDTH=36:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=36:Y_WIDTH=36:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=36:Y_WIDTH=36:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=35:Y_WIDTH=35:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=35:Y_WIDTH=35:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=35:Y_WIDTH=35:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=34:Y_WIDTH=34:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=34:Y_WIDTH=34:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=34:Y_WIDTH=34:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=33:Y_WIDTH=33:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=33:Y_WIDTH=33:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=33:Y_WIDTH=33:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=40\Y_WIDTH=40 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=48\Y_WIDTH=48 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=56\Y_WIDTH=56 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=63\Y_WIDTH=63 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=33\Y_WIDTH=33 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=34\Y_WIDTH=34 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=35\Y_WIDTH=35 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=36\Y_WIDTH=36 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=37\Y_WIDTH=37 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=38\Y_WIDTH=38 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=39\Y_WIDTH=39 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=41\Y_WIDTH=41 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=42\Y_WIDTH=42 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=43\Y_WIDTH=43 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=44\Y_WIDTH=44 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=45\Y_WIDTH=45 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=46\Y_WIDTH=46 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=47\Y_WIDTH=47 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=49\Y_WIDTH=49 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=50\Y_WIDTH=50 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=51\Y_WIDTH=51 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=52\Y_WIDTH=52 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=53\Y_WIDTH=53 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=54\Y_WIDTH=54 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=55\Y_WIDTH=55 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=57\Y_WIDTH=57 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=58\Y_WIDTH=58 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=59\Y_WIDTH=59 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=60\Y_WIDTH=60 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=61\Y_WIDTH=61 for cells of type $alu.
+Using template $paramod\_90_alu\A_SIGNED=0\B_SIGNED=0\A_WIDTH=32\B_WIDTH=62\Y_WIDTH=62 for cells of type $alu.
+Using template $paramod\_90_lcu\WIDTH=40 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=48 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=56 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=63 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=33 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=34 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=35 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=36 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=37 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=38 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=39 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=41 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=42 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=43 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=44 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=45 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=46 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=47 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=49 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=50 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=51 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=52 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=53 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=54 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=55 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=57 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=58 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=59 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=60 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=61 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=62 for cells of type $lcu.
+Running "alumacc" on wrapper $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=16:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=16:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=16:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+No more expansions possible.
+<suppressed ~202494 debug messages>
+
+6. Executing OPT pass (performing simple optimizations).
+
+6.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module pwm_deadtime.
+<suppressed ~330037 debug messages>
+Optimizing module pwm_dt_channel.
+<suppressed ~123 debug messages>
+
+6.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\pwm_deadtime'.
+<suppressed ~253965 debug messages>
+Finding identical cells in module `\pwm_dt_channel'.
+<suppressed ~33 debug messages>
+Removed a total of 84666 cells.
+
+6.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \pwm_deadtime..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Running muxtree optimizer on module \pwm_dt_channel..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+6.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \pwm_deadtime.
+  Optimizing cells in module \pwm_dt_channel.
+Performed a total of 0 changes.
+
+6.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\pwm_deadtime'.
+Finding identical cells in module `\pwm_dt_channel'.
+Removed a total of 0 cells.
+
+6.6. Executing OPT_RMDFF pass (remove dff with constant values).
+
+6.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \pwm_deadtime..
+Finding unused cells or wires in module \pwm_dt_channel..
+Removed 9175 unused cells and 164664 unused wires.
+<suppressed ~9177 debug messages>
+
+6.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module pwm_deadtime.
+<suppressed ~24 debug messages>
+Optimizing module pwm_dt_channel.
+
+6.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+6.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \pwm_deadtime..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Running muxtree optimizer on module \pwm_dt_channel..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+6.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \pwm_deadtime.
+  Optimizing cells in module \pwm_dt_channel.
+Performed a total of 0 changes.
+
+6.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\pwm_deadtime'.
+<suppressed ~36 debug messages>
+Finding identical cells in module `\pwm_dt_channel'.
+Removed a total of 12 cells.
+
+6.13. Executing OPT_RMDFF pass (remove dff with constant values).
+
+6.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \pwm_deadtime..
+Finding unused cells or wires in module \pwm_dt_channel..
+Removed 0 unused cells and 12 unused wires.
+<suppressed ~1 debug messages>
+
+6.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module pwm_deadtime.
+Optimizing module pwm_dt_channel.
+
+6.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+6.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \pwm_deadtime..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Running muxtree optimizer on module \pwm_dt_channel..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+6.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \pwm_deadtime.
+  Optimizing cells in module \pwm_dt_channel.
+Performed a total of 0 changes.
+
+6.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\pwm_deadtime'.
+Finding identical cells in module `\pwm_dt_channel'.
+Removed a total of 0 cells.
+
+6.20. Executing OPT_RMDFF pass (remove dff with constant values).
+
+6.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \pwm_deadtime..
+Finding unused cells or wires in module \pwm_dt_channel..
+
+6.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module pwm_deadtime.
+Optimizing module pwm_dt_channel.
+
+6.23. Finished OPT passes. (There is nothing left to do.)
+
+7. Printing statistics.
+
+=== pwm_deadtime ===
+
+   Number of wires:              11531
+   Number of wire bits:          79927
+   Number of public wires:          69
+   Number of public wire bits:    1334
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:              33626
+     $_AND_                      13121
+     $_DFF_PN0_                     28
+     $_DFF_PN1_                      4
+     $_MUX_                       4512
+     $_NOT_                        516
+     $_OR_                        6541
+     $_XOR_                       8892
+     pwm_dt_channel                 12
+
+=== pwm_dt_channel ===
+
+   Number of wires:                 64
+   Number of wire bits:            270
+   Number of public wires:           7
+   Number of public wire bits:      37
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                222
+     $_AND_                         68
+     $_DFF_PN0_                     18
+     $_MUX_                         68
+     $_NOT_                         18
+     $_OR_                          18
+     $_XOR_                         32
+
+=== design hierarchy ===
+
+   pwm_deadtime                      1
+     pwm_dt_channel                 12
+
+   Number of wires:              12299
+   Number of wire bits:          83167
+   Number of public wires:         153
+   Number of public wire bits:    1778
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:              36278
+     $_AND_                      13937
+     $_DFF_PN0_                    244
+     $_DFF_PN1_                      4
+     $_MUX_                       5328
+     $_NOT_                        732
+     $_OR_                        6757
+     $_XOR_                       9276
+
+End of script. Logfile hash: d9edbede9e
+CPU: user 460.46s system 18.64s, MEM: 1561.25 MB total, 1152.93 MB resident
+Yosys 0.9 (git sha1 1979e0b)
+Time spent: 38% 40x opt_merge (182 sec), 19% 1x techmap (94 sec), ...

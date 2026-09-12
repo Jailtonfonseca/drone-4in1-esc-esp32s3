@@ -1,0 +1,19 @@
+* diag2: .tran/.meas como LINHAS DE NETLIST (fora de .control) -> uic honrado?
+V1 vin 0 19.8
+Vg1 g1 0 PULSE(0 1 0 1p 1p 1.212u 2u)
+Vg2 g2 0 PULSE(0 1 1.212u 1p 1p 788n 2u)
+S1 vin sw g1 0 SWQ
+S2 0 sw g2 0 SWQ
+.model SWQ SW(Ron=1m Roff=1meg Vt=0.5 Vh=0)
+L1 sw out 89u ic=0.6
+C1 out 0 44u
+Rl out 0 20
+.ic v(out)=11.9982
+.tran 20n 2000u 0 20n uic
+.meas tran w1 AVG v(out) FROM=10u TO=20u
+.meas tran w2 AVG v(out) FROM=110u TO=120u
+.meas tran w6 AVG v(out) FROM=260u TO=270u
+.meas tran w9 AVG v(out) FROM=1900u TO=2000u
+.meas tran v10 FIND v(out) AT=10u
+.meas tran v290 FIND v(out) AT=290u
+.end
