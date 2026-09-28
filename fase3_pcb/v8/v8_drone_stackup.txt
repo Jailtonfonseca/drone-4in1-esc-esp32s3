@@ -1,0 +1,26 @@
+# STACKUP DA v8 -- 6 camadas
+#
+# KiCad 5.1.9 NAO possui o token (stackup ...) no formato do .kicad_pcb.
+# Inserir este bloco em (setup ...) torna o board ILEGIVEL para
+# pcbnew 5.1.9 (medido: OSError Unexpected "stackup" in input/source).
+# O bloco abaixo e o mesmo de fase3_pcb/STACKUP_PROPOSTO.md e deve ser
+# colado no Gerber/STEP ou em um projeto KiCad >= 6.0.
+# Soma conferida: 1,6000 mm (ver NOTA_E3.md).
+#
+(stackup
+      (layer F.Cu (type "copper") (thickness 0.0350))
+      (layer "dielectric 1" (type "prepreg") (thickness 0.2032) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
+      (layer In1.Cu (type "copper") (thickness 0.0350))
+      (layer "dielectric 2" (type "core") (thickness 0.3556) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
+      (layer In2.Cu (type "copper") (thickness 0.0180))
+      (layer "dielectric 3" (type "core") (thickness 0.3556) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
+      (layer In3.Cu (type "copper") (thickness 0.0350))
+      (layer "dielectric 4" (type "prepreg") (thickness 0.2032) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
+      (layer In4.Cu (type "copper") (thickness 0.0350))
+      (layer "dielectric 5" (type "core") (thickness 0.2894) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
+      (layer B.Cu (type "copper") (thickness 0.0350))
+      (copper_thickness 0.0350)
+      (dielectric_thickness 1.4070)
+      (edge_connector bevelled)
+      (impedance 50)
+    )

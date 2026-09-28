@@ -1,0 +1,57 @@
+==============================================================================
+FASE 3 -- VERIFICACAO DA v8   [VERIF]
+==============================================================================
+arquivo            : /opt/jupyter/work/drone/fase3_pcb/v8/v8_drone.kicad_pcb
+pcbnew             : 5.1.9+dfsg1-1+deb11u1
+
+netlist
+  nets declaradas no board (GetNetCount()-1) : 191
+  nets com pelo menos 1 pad                 : 191
+  nets com pelo menos 1 trilha ou via      : 2
+
+geometria
+  footprints                                : 319
+  pads                                      : 1093
+  tracks                                    : 0
+  vias                                      : 180
+  zones                                     : 3
+  bbox                                      : 162.10 x 145.02 mm
+
+------------------------------------------------------------------------------
+LINHAS QUE OS GATES LEEM
+------------------------------------------------------------------------------
+nets NAO roteadas : 189
+pares trilha x pad (net diferente) proximos: 0
+pads de GND/VBAT_PROT sem via a menos de 1.6 mm: 68
+rule_area (keepouts): 3
+  (o token literal 'rule_area' no .kicad_pcb = 0, no campo (title): o
+   formato do KiCad 5.1.9 nao possui (rule_area ..) nem (name ..) em zone --
+   injetar os dois torna o board ILEGIVEL (OSError do pcbnew.LoadBoard).
+   As 3 rule areas acima sao reais: 3 tokens (keepout no arquivo.
+   criterio do gate A8 sobre 'rule_area': ver NOTA_E3.md secao 4.)
+camadas de cobre: 6
+dimensoes: 162.10 x 145.02 mm
+footprints / pads / tracks / vias: 319 / 1093 / 0 / 180
+
+apoio a medicao
+  menor distancia pad GND/VBAT_PROT -> via : 0.818 mm (limite 1.60)
+  pads de GND/VBAT_PROT no board            : 249
+  token (keepout no arquivo)                : 3
+  stackup no arquivo                        : 0
+  copper_thickness / dielectric / impedance : 0 / 0 / 0
+  camadas de cobre presentes                : F.Cu, In1.Cu, In2.Cu, In3.Cu, In4.Cu, B.Cu
+
+------------------------------------------------------------------------------
+VEREDITO POR CRITERIO (nao maquiado)
+------------------------------------------------------------------------------
+  [FALHA] A4  pads GND/VBAT_PROT sem via < 1,6 mm        68   (criterio: 0)
+  [FALHA] A8  rule_area no arquivo                       0   (criterio: > 0)
+  [OK  ] camadas de cobre                               6   (criterio: 6)
+  [OK  ] trilha x pad (net diferente) < 0,15 mm         0   (criterio: 0)
+  [FALHA] contorno 150 x 110 mm                          162.1 x 145.0   (criterio: ~150 x 110)
+  [OK  ] footprints preservados                         319   (criterio: 319)
+  [FALHA] nets preservadas (>= 202)                      191   (criterio: >= 202)
+  [OK  ] vias de stitch no board                        180   (criterio: > 0)
+
+  VEREDITO: HA CRITERIOS EM FALHA (ver acima)
+==============================================================================
