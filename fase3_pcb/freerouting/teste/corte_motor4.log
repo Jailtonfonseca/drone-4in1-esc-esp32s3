@@ -1,0 +1,90 @@
+2026-09-28 11:36:48.966 [main] INFO  Freerouting v1.9.0 (build-date: 2023-10-30)
+2026-09-28 11:36:49.369 [main] INFO  Settings were loaded from freerouting.json
+2026-09-28 11:36:50.531 [main] INFO  Opening 'teste/corte_motor4.dsn'...
+java.util.concurrent.CompletionException: javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+	at java.base/java.util.concurrent.CompletableFuture.encodeRelay(CompletableFuture.java:368)
+	at java.base/java.util.concurrent.CompletableFuture.completeRelay(CompletableFuture.java:377)
+	at java.base/java.util.concurrent.CompletableFuture$UniCompose.tryFire(CompletableFuture.java:1152)
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+	at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2162)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate.stopOnError(SSLFlowDelegate.java:983)
+	at java.base/java.util.concurrent.CompletableFuture.uniExceptionally(CompletableFuture.java:990)
+	at java.base/java.util.concurrent.CompletableFuture$UniExceptionally.tryFire(CompletableFuture.java:974)
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+	at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2162)
+	at java.net.http/jdk.internal.net.http.common.SubscriberWrapper$DownstreamPusher.run1(SubscriberWrapper.java:295)
+	at java.net.http/jdk.internal.net.http.common.SubscriberWrapper$DownstreamPusher.run(SubscriberWrapper.java:259)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(SequentialScheduler.java:205)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:149)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:230)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:303)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:256)
+	at java.net.http/jdk.internal.net.http.common.SubscriberWrapper.errorCommon(SubscriberWrapper.java:419)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader.errorCommon(SSLFlowDelegate.java:366)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader.processData(SSLFlowDelegate.java:519)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader$ReaderDownstreamPusher.run(SSLFlowDelegate.java:268)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(SequentialScheduler.java:205)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:149)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$TryEndDeferredCompleter.complete(SequentialScheduler.java:347)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:151)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:230)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+	at java.net.http/jdk.internal.net.http.common.SSLTube.checkForHandshake(SSLTube.java:595)
+	at java.net.http/jdk.internal.net.http.common.SSLTube$SSLTubeFlowDelegate.checkForHandshake(SSLTube.java:156)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader.processData(SSLFlowDelegate.java:518)
+	... 9 more
+Caused by: java.lang.RuntimeException: Unexpected error: java.security.InvalidAlgorithmParameterException: the trustAnchors parameter must be non-empty
+	at java.base/sun.security.validator.PKIXValidator.<init>(PKIXValidator.java:101)
+	at java.base/sun.security.validator.Validator.getInstance(Validator.java:181)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.getValidator(X509TrustManagerImpl.java:309)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrustedInit(X509TrustManagerImpl.java:183)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:255)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:144)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1329)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.onConsumeCertificate(CertificateMessage.java:1226)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.consume(CertificateMessage.java:1169)
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:396)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:480)
+	at java.base/sun.security.ssl.SSLEngineImpl$DelegatedTask$DelegatedAction.run(SSLEngineImpl.java:1277)
+	at java.base/sun.security.ssl.SSLEngineImpl$DelegatedTask$DelegatedAction.run(SSLEngineImpl.java:1264)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:712)
+	at java.base/sun.security.ssl.SSLEngineImpl$DelegatedTask.run(SSLEngineImpl.java:1209)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate.lambda$executeTasks$3(SSLFlowDelegate.java:1118)
+	at java.net.http/jdk.internal.net.http.HttpClientImpl$DelegatingExecutor.execute(HttpClientImpl.java:157)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate.executeTasks(SSLFlowDelegate.java:1113)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate.doHandshake(SSLFlowDelegate.java:1079)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader.processData(SSLFlowDelegate.java:484)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader$ReaderDownstreamPusher.run(SSLFlowDelegate.java:268)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(SequentialScheduler.java:205)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:149)
+	... 4 more
+Caused by: java.security.InvalidAlgorithmParameterException: the trustAnchors parameter must be non-empty
+	at java.base/java.security.cert.PKIXParameters.setTrustAnchors(PKIXParameters.java:200)
+	at java.base/java.security.cert.PKIXParameters.<init>(PKIXParameters.java:120)
+	at java.base/java.security.cert.PKIXBuilderParameters.<init>(PKIXBuilderParameters.java:104)
+	at java.base/sun.security.validator.PKIXValidator.<init>(PKIXValidator.java:98)
+	... 27 more
+2026-09-28 11:36:53.618 [main] WARN  Structure.create_board: The DSN file was exported from an old KiCad version that has known compatibility issues. Please update KiCad to version 6 or newer.
+2026-09-28 11:36:53.797 [main] WARN  Shape.read_polygon_scope: layer name 'F_Cu' not found in layer structure  at 'D_SOD-123'
+2026-09-28 11:36:53.808 [main] WARN  Shape.read_polygon_scope: layer name 'F_Cu' not found in layer structure  at 'SOIC-8_3.9x4.9mm_P1.27mm'
+2026-09-28 11:36:53.821 [main] WARN  Shape.read_polygon_scope: layer name 'F_Cu' not found in layer structure  at 'SOT-23'
+2026-09-28 11:36:53.829 [main] WARN  Shape.read_circle_scope: layer with name 'F_Cu' not found in layer structure.
+2026-09-28 11:36:53.834 [main] WARN  Circle.read_circle_scope: layer with name 'F_Cu' not found in layer structure at 'PAD1'
+2026-09-28 11:36:53.841 [main] WARN  Library.read_padstack_scope: shape not found for padstack with name 'PAD1'
+2026-09-28 11:36:53.845 [main] WARN  Shape.read_circle_scope: layer with name 'F_Cu' not found in layer structure.
+2026-09-28 11:36:53.850 [main] WARN  Circle.read_circle_scope: layer with name 'F_Cu' not found in layer structure at 'PAD2'
+2026-09-28 11:36:53.855 [main] WARN  Library.read_padstack_scope: shape not found for padstack with name 'PAD2'
+2026-09-28 11:36:53.860 [main] WARN  Shape.read_circle_scope: layer with name 'F_Cu' not found in layer structure.
+2026-09-28 11:36:53.864 [main] WARN  Circle.read_circle_scope: layer with name 'F_Cu' not found in layer structure at 'PAD3'
+2026-09-28 11:36:53.869 [main] WARN  Library.read_padstack_scope: shape not found for padstack with name 'PAD3'
+2026-09-28 11:36:53.879 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
+2026-09-28 11:36:53.886 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
+2026-09-28 11:36:53.891 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
+2026-09-28 11:36:53.898 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
+2026-09-28 11:36:53.904 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
+2026-09-28 11:36:53.910 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
+2026-09-28 11:36:53.921 [main] WARN  Library.read_scope: board padstack not found at 'VIA1'
