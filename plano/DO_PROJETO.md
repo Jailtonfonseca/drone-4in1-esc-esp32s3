@@ -1,8 +1,10 @@
 # Definition of Done — Projeto Drone (4×ESC trifásico + ESP32-S3)
 
 > **Data da conferência: 2026-09-28.** Todos os estados desta tabela foram medidos nesta
-> máquina, com os comandos da coluna 3, no commit local `606abdf`. Onde o estado não pôde ser
-> conferido por máquina, está escrito **não conferido** — e o motivo está na própria linha.
+> máquina, com os comandos da coluna 3, **nesta sessão de 2026-09-28, contra a árvore no
+> momento da leitura** (referência: `git rev-parse --short HEAD`, que avança a cada commit —
+> por isso nenhum commit é citado aqui). Onde o estado não pôde ser conferido por máquina,
+> está escrito **não conferido** — e o motivo está na própria linha.
 > Effort marcado `[EST]`. Nenhum prazo é prometido aqui.
 
 ## 1. Como usar este documento
@@ -22,8 +24,8 @@ Portão de **arquivo**. Nenhum destes critérios exige bancada; todos são verif
 |---|---|---|---|---|
 | A1 | Existe **exatamente uma** pasta de envio, e ela é a versão boa? | `ls fase3_pcb/v*/-drone_F_Cu.gtl \| wc -l` retorna `1` | ❌ **retorna 7** (v1…v7, mesmo nome `-drone_*` em todas) — `plano/WP2_FABRICACAO.md` §3.1 | você |
 | A2 | Nenhuma net com pad ficou sem cobre? | `fase3_pcb/v8/verificacao_v8.txt` contém `0` em "nets sem trilha" | ❌ **138 nets com pad e zero trilha**; `fase3_pcb/v8/` está vazia (0 arquivos) — `plano/WP1_ROTEAMENTO.md` §1.5 | roteamento |
-| A3 | Nenhum par de nets diferentes tem folga menor que 0,15 mm? | mesmo painel, linha de clearance: `0` pares abaixo do limite | ❌ painel não existe; hoje **0 keepouts** (`grep -c rule_area` = 0) — `plano/WP1_ROTEAMENTO.md` §5 | roteamento |
-| A4 | Todo pad de GND e VBAT_PROT tem via a menos de 1,6 mm? | `cd /opt/jupyter/work/drone && python3 plano/mede_v7_wp1.py` → `0` de `309` | ❌ **309 de 309** sem via próxima (207 GND + 102 VBAT_PROT) — `plano/WP1_ROTEAMENTO.md` §3.2 | roteamento |
+| A3 | Nenhum par de nets diferentes tem folga menor que 0,15 mm? | `test -e fase3_pcb/v8/clearance_v8.txt` com a linha `pares abaixo de 0,15 mm: 0`; hoje, `grep -c rule_area fase3_pcb/v7/v7_drone.kicad_pcb` | ❌ **o painel de clearance não existe**; e o arquivo de hoje nem declara regra alguma: `grep -c rule_area` → **0** keepouts — `plano/WP1_ROTEAMENTO.md` §5 | roteamento |
+| A4 | Todo pad de GND e VBAT_PROT tem via a menos de 1,6 mm? | `cd /opt/jupyter/work/drone && /usr/bin/python3.9 plano/mede_v7_wp1.py` → `0` de `309` (tem de rodar com `/usr/bin/python3.9`, **não** com `python3` — ver a nota do interpretador abaixo da tabela) | ❌ **309 de 309** sem via próxima: `GND pads=207 vias=296 pads_sem_via_perto=207` e `VBAT_PROT pads=102 vias=21 pads_sem_via_perto=102` — `plano/WP1_ROTEAMENTO.md` §3.2 | roteamento |
 | A5 | Existe o painel de verificação da versão enviada? | `test -e fase3_pcb/v8/verificacao_v8.txt` | ❌ **não existe**; o painel mais recente é `fase3_pcb/v6/verificacao_v6.txt` | roteamento |
 | A6 | Existe esquema elétrico **nativo** KiCad? | `find . -name '*.kicad_sch' -o -name '*.sch' \| wc -l` > `0` | ❌ **0** — só há PNG em `fase1_esquema/` | você / fab |
 | A7 | Existe netlist de produção? | `find . -name '*.net' \| wc -l` > `0` | ❌ **0** — `plano/WP2_FABRICACAO.md` §2.1 | você / fab |
@@ -45,21 +47,39 @@ Portão de **arquivo**. Nenhum destes critérios exige bancada; todos são verif
 de geração de arquivos (`plano/WP2_FABRICACAO.md` §2) — mas o caminho crítico não é o arquivo, é
 o roteamento (A2–A5), que bloqueia tudo. Prazos não são prometidos aqui.
 
+> **Nota do interpretador (A4).** O único critério deste documento que depende de Python é o
+> A4, e ele **precisa do interpretador 3.9 do sistema**, não do `python3` do PATH:
+>
+> ```sh
+> $ python3 -V            # 3.12.13 (venv do agente)
+> $ /usr/bin/python3 -V   # 3.9.2
+> $ python3 plano/mede_v7_wp1.py
+>   File "/opt/jupyter/work/drone/plano/mede_v7_wp1.py", line 19, in <module>
+>       import pcbnew
+>   ModuleNotFoundError: No module named 'pcbnew'
+> $ /usr/bin/python3.9 -c "import pcbnew; print(pcbnew.GetBuildVersion())"
+> 5.1.9+dfsg1-1+deb11u1
+> ```
+>
+> O módulo `pcbnew` (KiCad 5.1.9, Debian Bullseye) está instalado **só** no 3.9. Nenhum outro
+> critério do documento usa Python — todos os outros são `ls`, `find`, `grep`, `test` ou
+> `md5sum`, que não têm esse problema.
+
 ---
 
 ## 3. Bloco B — Pronto para bancada
 
 Portão de **medição**. Exige que o Portão A esteja fechado e a placa montada. A ordem dos
-ensaios já está escrita em `fase4_entrega/PLANO_TESTE_BANCADA.md` (passos 1 a 16); aqui está
+ensaios já está escrita em `fase4_entrega/PLANO_TESTE_BANCADA.md` (passos 1 a 15); aqui está
 apenas o que precisa ser **verdade** para chamar a bancada de vencida.
 
 | # | Critério binário (pergunta de sim/não) | Comando que verifica | Estado hoje | Quem resolve |
 |---|---|---|---|---|
-| B1 | Existe plano de bancada escrito e numerado? | `test -e fase4_entrega/PLANO_TESTE_BANCADA.md` | ✅ **existe**, 24 228 B, 16 passos | — |
+| B1 | Existe plano de bancada escrito e numerado? | `test -e fase4_entrega/PLANO_TESTE_BANCADA.md`; contagem real: `grep -cE '^## [0-9]+\. PASSO' fase4_entrega/PLANO_TESTE_BANCADA.md` | ✅ **existe**, 24 228 B, **15 passos** (`grep -cE '^## [0-9]+\. PASSO'` → `15`). ⚠️ o próprio plano tem uma referência órfã: `fase4_entrega/PLANO_TESTE_BANCADA.md:62` manda o termopar I8 para o "passo 16 (térmica)", que não existe — nenhum passo numerado é térmico. Isso é defeito do plano de bancada, corrigido aqui | — |
 | B2 | Existe a ordem de solda? | `test -e fase4_entrega/MONTAGEM_ORDEM_DE_SOLDA.md` | ✅ **existe** | — |
 | B3 | Existe análise de riscos? | `test -e fase4_entrega/RISCOS.md` | ✅ **existe** | — |
 | B4 | Existe documento de segurança e regulatório? | `test -e fase4_entrega/SEGURANCA_E_REGULATORIO.md` | ✅ **existe** | — |
-| B5 | Os instrumentos exigidos pelo plano estão fisicamente disponíveis? | comparar a lista de `fase4_entrega/PLANO_TESTE_BANCADA.md` §1 com o inventário real | **não conferido** — depende do seu inventário, que não está no repositório | você |
+| B5 | Os instrumentos exigidos pelo plano estão fisicamente disponíveis? | `test -e fase4_entrega/logs/inventario_instrumentos.txt` com uma linha por instrumento **I1 a I11** de `fase4_entrega/PLANO_TESTE_BANCADA.md` §1, marcada presente/ausente e conferida **em bancada** | **não conferido** — **não reproduzível hoje**: o inventário de instrumentos é um dado físico da sua bancada e **não está no repositório**; o registro é `fase4_entrega/logs/inventario_instrumentos.txt`, que ainda não existe | você |
 | B6 | Passo 1 (inspeção visual) executado e registrado? | existe log em `fase4_entrega/logs/passo1.txt` | ❌ não existe pasta `fase4_entrega/logs/` | bancada |
 | B7 | Passo 2 (continuidade) executado, sem curto entre trilhos? | `test -e fase4_entrega/logs/passo2.txt` com veredito escrito | ❌ sem log | bancada |
 | B8 | Passo 3 (resistência entre trilhos) medido e aprovado? | `test -e fase4_entrega/logs/passo3.txt` com valores em Ω | ❌ sem log | bancada |
@@ -68,7 +88,7 @@ apenas o que precisa ser **verdade** para chamar a bancada de vencida.
 | B11 | Passo 6: ripple de cada trilho medido dentro do limite? | `test -e fase4_entrega/logs/passo6.txt` | ❌ sem log | bancada |
 | B12 | Passo 7: PWM sem potência, 20 kHz, período 50 000 ns ± 0,1 %? | `test -e fase4_entrega/logs/passo7.txt` | ❌ sem log | bancada |
 | B13 | Passo 8: gate com subida e droop de bootstrap medidos? | `test -e fase4_entrega/logs/passo8.txt` | ❌ sem log | bancada |
-| B14 | O Qg real do MOSFET foi medido no osciloscópio, não estimado? | `test -e fase4_entrega/logs/passo9.txt` com Qg em nC | ❌ **40 nC está `[CONTRADITO]`** pelo datasheet: real 168 nC (typ) / 210 nC (max) — `plano/WP3_PREMISSAS_DATASHEETS.md` P-06 | bancada |
+| B14 | O Qg real do MOSFET foi medido no osciloscópio, não estimado? | `test -e fase4_entrega/logs/passo8.txt` com o **Qg em nC** (integral da corrente de gate), no bloco **8a do PASSO 8 — Teste de gate** — e não `passo9.txt`, que é o PASSO 9 de dead-time | ❌ **40 nC está `[CONTRADITO]`** pelo datasheet: real 168 nC (typ) / 210 nC (max) — `plano/WP3_PREMISSAS_DATASHEETS.md` P-06 | bancada |
 | B15 | Existe a medição de corrente que substitui 30 A / 15 A? | `test -e fase4_entrega/logs/passo_corrente.txt` com A medidos | ❌ **nada foi medido**; 30 A/15 A são `[PREMISSA]` | bancada |
 
 **Portão B: 4 de 15 critérios passam** — e os 4 que passam são documentos, não medições.
@@ -88,17 +108,17 @@ Portão de **sistema**. Exige A e B fechados.
 | C4 | A decisão do ADC externo foi tomada **e medida**? | `grep -rn "MCP3208\|ADS7953" firmware/` com veredito registrado | ❌ **NÃO DETERMINADO** (D-12 não traz horas) — 26 canais necessários, ADC1 do ESP32-S3 dá no máximo 20 | você + firmware |
 | C5 | A limitação de corte por software foi decidida por escrito? | `grep -rn "D-13" plano/WP5_DECISOES.md` com resposta | ❌ pendente D-13 | você |
 | C6 | Existe CI de watchdog externo no layout? | `grep -c "watchdog\|WATCHDOG" fase3_pcb/v7/v7_drone.kicad_pcb` > `0` | ❌ não há CI; `WD_FEED` só aparece no pad 25 e no `TP_WD` (D-07) | roteamento + você |
-| C7 | O dead-time do motor que vai por LEDC foi medido em bancada? | log do osciloscópio com os dois gates, 12 V | ❌ **o valor de 518,750 ns é de RTL Verilog, não de firmware** — `fase2_simulacao/verilog/RELATORIO_VERILOG.md` §4.3 | bancada + firmware |
-| C8 | O corte por perda de link é ≤ 200 ms, medido? | log do ensaio M10 | ❌ sem firmware | firmware |
-| C9 | O reset por watchdog é ≤ 1 s e grava motivo legível? | log do ensaio M11 | ❌ sem firmware | firmware |
-| C10 | A IMU fica estável com motor a 100 %? | log do ensaio M6 | ❌ sem firmware | bancada + firmware |
+| C7 | O dead-time do motor que vai por LEDC foi medido em bancada? | `test -e fase4_entrega/logs/ensaio_M3.log` com o dead-time dos 6 canais **LEDC** (motores 3 e 4), 12 V, e a defasagem de 90° | ❌ **o valor de 518,750 ns é de RTL Verilog, não de firmware**, e ele é o do M2/MCPWM; no M3 a janela é 400–650 ns e não é programável — `fase2_simulacao/verilog/RELATORIO_VERILOG.md` §4.3 e `plano/WP4_FIRMWARE.md` RF-14 | bancada + firmware |
+| C8 | O corte por perda de link é ≤ 200 ms, medido? | `test -e fase4_entrega/logs/ensaio_M10.log` com o instante de perda e o instante de corte | ❌ sem firmware | firmware |
+| C9 | O reset por watchdog é ≤ 1 s e grava motivo legível? | `test -e fase4_entrega/logs/ensaio_M11.log` com o tempo de reset e o motivo impresso | ❌ sem firmware | firmware |
+| C10 | A IMU fica estável com motor a 100 %? | `test -e fase4_entrega/logs/ensaio_M5.log` com a taxa angular antes/depois — **M5 é a IMU (ICM-42688-P); M6 é o barômetro** (`plano/WP4_FIRMWARE.md` §5) | ❌ sem firmware | bancada + firmware |
 | C11 | Os 14 módulos de firmware estão com critério de aceite medido? | `grep -c "M0\|M1\|…\|M13" firmware/modulos.md` = 14, cada um com log | ❌ **14 módulos, 0 implementados** — `plano/WP4_FIRMWARE.md` §5 | firmware |
-| C12 | A corrente de um motor é linear (< 2 %) entre 5 A e 30 A? | log do ensaio M4 | ❌ sem bancada; e 30 A é `[PREMISSA]` | bancada |
-| C13 | As decisões do `plano/WP5_DECISOES.md` foram todas respondidas por você? | `grep -c "Resposta do Jailton" plano/WP5_DECISOES.md` retorna `15` | ❌ **0** — hoje o WP5 traz opção e recomendação do agente, mas **nenhuma resposta sua**; e são **15** decisões (D-01..D-15), não 14 | você |
+| C12 | A corrente de um motor é linear (< 2 %) entre 5 A e 30 A? | `test -e fase4_entrega/logs/ensaio_M4.log` com os pontos de 5 A a 30 A e o erro de linearidade | ❌ sem bancada; e 30 A é `[PREMISSA]` | bancada |
+| C13 | As decisões do `plano/WP5_DECISOES.md` foram todas respondidas por você? | `grep -c 'Resposta do Jailton' plano/WP5_DECISOES.md` retorna `0`; e `grep -cE '^\| \*\*D-[0-9]+\*\*' plano/WP5_DECISOES.md` | ❌ **0** — hoje o WP5 traz opção e recomendação do agente, mas **nenhuma resposta sua**; e são **15** decisões (D-01..D-15), não 14 | você |
 | C14 | O orçamento tem preço real em todos os itens? | `grep -c "EST" orcamento/orcamento_detalhado.csv` retorna `0` | ❌ **37 de 43** itens `[EST]` | compras |
 | C15 | Os limites de corrente e o comportamento térmico saíram de `[PREMISSA]`? | `grep -n "PREMISSA" fase4_entrega/logs/*.txt` retorna vazio para corrente e térmica | ❌ **é `[PREMISSA]`** — `README.md` e `PLANO_FINAL.md` §1 | bancada |
 | C16 | A conformidade regulatória brasileira está resolvida (registro/SISANT, peso, distância)? | `grep -n "SISANT\|ANAC" fase4_entrega/SEGURANCA_E_REGULATORIO.md` com veredito | **não conferido** — o documento existe, mas a decisão depende de você e de consulta externa | você |
-| C17 | A bateria LiPo 6S real foi caracterizada e registrada? | log da bateria usada, com tensão por célula | **não conferido** — nenhum pacote físico no repositório | você |
+| C17 | A bateria LiPo 6S real foi caracterizada e registrada? | `test -e fase4_entrega/logs/caracterizacao_bateria_6S.log` com a tensão por célula em carga e a capacidade em Ah | **não conferido** — **não reproduzível hoje**: nenhum pacote físico está no repositório; o registro será `fase4_entrega/logs/caracterizacao_bateria_6S.log` | você |
 | C18 | Existe log de voo de um voo de teste sem carga útil? | `test -e fase4_entrega/logs/voo1.txt` | ❌ sem log | você |
 
 **Portão C: 0 de 18 critérios passam.** Esforço rastreado: **320 h** `[EST]` de firmware
@@ -152,8 +172,24 @@ erro. Foi renomeado (não apagado) e está fora do glob `*.pdf`
 `PLANO_FINAL.md:77`, `PLANO_FINAL.md:235` e `PLANO_FINAL.md:281` dizem **14 (D-01..D-14)**.
 A discrepância está em `PLANO_FINAL.md`; este documento usa **15** porque é o número
 verificável. Corrigir `PLANO_FINAL.md` fica como tarefa do Jailton — aqui nada foi editado
-além deste arquivo. Cuidado ao ler o `✅` do WP5: ele marca a **opção recomendada**, não
-decisão tomada — `grep -c "✅" plano/WP5_DECISOES.md` retorna `15` mesmo com zero respostas.
+além deste arquivo.
+
+**Prova de que nenhuma decisão foi respondida — e por que o `✅` não vale como prova.**
+O `✅` do WP5 marca a **opção recomendada do agente**, não uma decisão sua, e a contagem de `✅`
+**muda conforme o arquivo muda**, então ela não pode ser usada como evidência. Duas contagens
+independentes, nenhuma delas dependente de `✅`, ambas rodadas agora:
+
+```sh
+$ grep -cE '^\| \*\*D-[0-9]+\*\*' plano/WP5_DECISOES.md
+15
+$ grep -c 'Resposta do Jailton' plano/WP5_DECISOES.md
+0
+```
+
+A primeira conta as decisões (15 linhas de tabela, uma por D-xx). A segunda conta as suas
+respostas: **0**. Um `grep -c "✅"` aqui devolveria hoje `17` (16 opções recomendadas + 1 linha de
+resumo que se auto-referencia) e não prova nada — é exatamente o número que muda a cada edição do
+WP5.
 
 ### 5.8 — O que fazer com os Gerbers enquanto a placa não fecha
 
@@ -185,7 +221,10 @@ passarem**. Ele não é burocracia: é o critério A20.
 
 ## 6. Contagem final
 
-Conferido em **2026-09-28**, commit local `606abdf`, branch `main`, sem push.
+Conferido em **2026-09-28**, nesta sessão, contra a árvore no momento da leitura, branch `main`,
+sem push. Referência da árvore: `cd /opt/jupyter/work/drone && git rev-parse --short HEAD` — é um
+ponteiro que **avança a cada commit**, então nenhum hash é congelado aqui e nenhuma contagem
+deste documento (número de commits, de linhas, de arquivos) é válida para outra árvore.
 
 | Portão | Critérios | Passam hoje | % |
 |---|---|---|---|
@@ -203,18 +242,87 @@ O caminho crítico hoje é o roteamento (**A2 → A4**), não a geração de arq
 30,0 h `[EST]` de artefatos sobre uma placa com 138 nets sem cobre entrega ao fabricante um
 arquivo completo e inutilizável.
 
-Recontar depois de qualquer trabalho:
+### 6.1 Os 20 comandos do Portão A, um por critério
+
+Um portão só fecha com **todos** os seus critérios em ✅ (§1). A receita antiga checava 4
+números e agregava quatro critérios num só — com isso, um `.gbrjob` sozinho fazia A6, A7 e A8
+parecerem resolvidos, e 14 dos 20 critérios (incluindo A2 e A4) nunca eram olhados. A receita
+abaixo é a correção: **20 comandos, uma linha de saída por critério.** Nunca some dois critérios
+no mesmo número.
+
+Rode **os 20** a partir de `/opt/jupyter/work/drone`. A saída esperada são **20 linhas, uma por
+critério** (mais o `md5sum` do A17, que também é uma linha só). O valor "passa" está no comentário
+de cada linha; hoje só o A19 passa.
 
 ```sh
-cd /opt/jupyter/work/drone && \
-  ls fase3_pcb/v*/-drone_F_Cu.gtl | wc -l        && \
-  find . -name '*.kicad_sch' -o -name '*.net' -o -name '*.pos' -o -name '*.gbrjob' | wc -l && \
-  grep -c "EST" orcamento/orcamento_detalhado.csv && \
-  find . -name '*.c' -o -name '*.cpp' | wc -l
+# A1  passa = 1        | hoje 7 (v1..v7 gravam o mesmo nome)
+ls fase3_pcb/v*/-drone_F_Cu.gtl | wc -l
+# A2  passa = 1 linha  | hoje 0: o arquivo da v8 nao existe
+cat fase3_pcb/v8/verificacao_v8.txt 2>/dev/null | grep -c "ZERO trilha *: 0"
+# A3  passa = 1 linha  | hoje 0: o painel de clearance da v8 nao existe
+cat fase3_pcb/v8/clearance_v8.txt 2>/dev/null | grep -c "pares abaixo de 0,15 mm: 0"
+# A4  passa = 0        | hoje 2 linhas: 207 GND + 102 VBAT_PROT sem via perto
+/usr/bin/python3.9 plano/mede_v7_wp1.py | grep -c "pads_sem_via_perto"
+# A5  passa = 1        | hoje 0
+ls fase3_pcb/v8/verificacao_v8.txt 2>/dev/null | wc -l
+# A6  passa > 0        | hoje 0
+find . -name '*.kicad_sch' -o -name '*.sch' | wc -l
+# A7  passa > 0        | hoje 0
+find . -name '*.net' | wc -l
+# A8  passa > 0        | hoje 0
+find . -name '*.pos' | wc -l
+# A9  passa = 0        | hoje 37 itens [EST]
+grep -c EST orcamento/orcamento_detalhado.csv
+# A10 passa > 0        | hoje 0
+find . -name '*.lib' | wc -l
+# A11 passa > 0        | hoje 0 (o cabecalho declara 0)
+grep -c stackup fase3_pcb/v7/v7_drone.kicad_pcb
+# A12 passa > 0        | hoje 0
+find . -name '*.drr' | wc -l
+# A13 passa > 0        | hoje 0
+find . -name '*.gbrjob' | wc -l
+# A14 passa > 0        | hoje 0 gr_line (sao 9 gr_poly)
+grep -c "gr_line.*Edge.Cuts" fase3_pcb/v7/v7_drone.kicad_pcb
+# A15 passa > 0        | hoje 0
+grep -c title_block fase3_pcb/v7/v7_drone.kicad_pcb
+# A16 passa = 1        | hoje 0: o cabecalho diz (zones 0) e existem 3
+grep -m1 "(zones" fase3_pcb/v7/v7_drone.kicad_pcb | grep -c "(zones 3)"
+# A17 o .gtl tem de nascer deste .kicad_pcb | hoje gtl de 2026-09-11, board md5 3dd3b23c
+md5sum fase3_pcb/v7/v7_drone.kicad_pcb
+# A18 passa = 11       | hoje 0 na v8 (os 11 existem na v7)
+ls fase3_pcb/v8/*.g* fase3_pcb/v8/*.drl 2>/dev/null | wc -l
+# A19 passa = 4        | hoje 4  <-- o unico criterio do Portao A em ✅
+ls fase4_entrega/MONTAGEM_ORDEM_DE_SOLDA.md fase4_entrega/PLANO_TESTE_BANCADA.md \
+   fase4_entrega/RISCOS.md fase4_entrega/SEGURANCA_E_REGULATORIO.md | wc -l
+# A20 passa = 0        | hoje 1, em README.md:28
+grep -c "Não fabrique esta placa ainda" README.md
 ```
 
-Quatro zeros e um `1`: quando `ls` der 1, os `find` derem mais de zero, o `grep -c EST` der 0
-e o `find` de C der mais de zero, o Portão A fecha e o B pode começar.
+O A19 é o único que passa hoje. Para o Portão A fechar, **todos os 20** precisam chegar ao valor
+"passa" — o que fecha o arquivo é A19 mais os outros 19, não A19 mais uma média. Os 15 comandos
+do Portão B (`test -e fase4_entrega/logs/…`, um por log) e os 18 do Portão C estão nas colunas 3
+das §3 e §4 e se lêem do mesmo jeito: um comando, um critério, um arquivo.
+
+---
+
+## 7. Correções round 2 (2026-09-28)
+
+Seis defeitos deste próprio documento, encontrados por conferência e corrigidos aqui. Nenhum
+número de estado mudou: a contagem final continua **5 de 53** (1/20 + 4/15 + 0/18), e nenhum
+❌ foi inflado.
+
+| # | Defeito | Correção | Evidência rodada |
+|---|---|---|---|
+| F1 | 🔴 O comando do A4 (`python3 plano/mede_v7_wp1.py`) **não roda**: `pcbnew` só existe no Python 3.9 do sistema | A4 passou a usar `/usr/bin/python3.9`; a saída real foi colada na linha do critério, e há uma nota abaixo da tabela do Portão A sobre o interpretador | `python3` → `ModuleNotFoundError: No module named 'pcbnew'`; `/usr/bin/python3.9 -c "import pcbnew; print(pcbnew.GetBuildVersion())"` → `5.1.9+dfsg1-1+deb11u1`; o script imprime `GND pads=207 vias=296 pads_sem_via_perto=207` e `VBAT_PROT pads=102 vias=21 pads_sem_via_perto=102`. **A4 era o único critério com Python** — os outros 52 são `ls`/`find`/`grep`/`test`/`md5sum` |
+| F2 | 🔴 A §5.7 afirmava `grep -c "✅" plano/WP5_DECISOES.md` → `15`; o real é `17`, e esse número muda a cada edição do WP5 | Trocado por duas contagens **não auto-referentes**: uma conta as decisões, a outra conta as suas respostas. A mesma correção foi aplicada no C13, que tinha o mesmo `grep -c` com o valor trocado | `grep -cE '^\| \*\*D-[0-9]+\*\*' plano/WP5_DECISOES.md` → `15`; `grep -c 'Resposta do Jailton' plano/WP5_DECISOES.md` → `0` |
+| F3 | 🔴 Proveniência impossível: o documento congelava um **hash de commit** como origem das medições, e esse commit era o **pai** do commit que criou o próprio `DO_PROJETO.md` — o arquivo nem existia na árvore citada. O HEAD já tinha avançado antes disso: o commit mais recente alterou 232 linhas do `plano/WP5_DECISOES.md`, que é a fonte do número da §5.7 | Removida **toda** citação de hash — inclusive desta linha, que descreve o defeito sem repeti-lo. Agora é "medido nesta sessão, em 2026-09-28, contra a árvore no momento da leitura", com `git rev-parse --short HEAD` citado como **referência que avança a cada commit**. Nenhuma contagem que o próprio commit do documento invalide (commits, linhas, arquivos) é impressa | `grep -cE '\b[0-9a-f]{7}\b' plano/DO_PROJETO.md` → **0** (nenhum hash de commit no documento); `git rev-parse --short HEAD` → ponteiro móvel, que já avançou **durante esta própria rodada** |
+| F4 | 🟠 A §6 contradizia a §1: a receita tinha 4 comandos, agregava A6+A7+A8+A13 num único `find` (um `.gbrjob` só faria os três parecerem resolvidos) e deixava 14 dos 20 critérios sem checagem, entre eles A2 e A4 | §6.1 reescrita: **20 comandos, uma linha de saída por critério**, sem agregação. O texto diz explicitamente que a saída esperada são 20 linhas | `ls fase3_pcb/v*/-drone_F_Cu.gtl \| wc -l` → `7`; A19 → `4`; A4 → `2`; os outros 18 critérios, cada um com sua linha |
+| F5 | 🟠 B1 e o §1 diziam "16 passos"; o plano de bancada tem **15** seções de passo. E o B14 apontava o Qg para `passo9.txt`, que é o PASSO 9 de **dead-time** — o Qg é medido no PASSO 8 (teste de gate) | §1 e B1 corrigidos para 15; a referência órfã "passo 16 (térmica)" de `PLANO_TESTE_BANCADA.md:62` foi registrada como defeito **do plano de bancada**, sem editar esse arquivo; B14 passou a `fase4_entrega/logs/passo8.txt` (bloco 8a) | `grep -cE '^## [0-9]+\. PASSO' fase4_entrega/PLANO_TESTE_BANCADA.md` → `15`; `sed -n '62p'` → `\| I8 \| Termopar tipo K ou câmera térmica \| −50…+300 °C \| passo 16 (térmica) \|` |
+| F6 | 🟡 Sete critérios sem comando nem arquivo (A3, C7, C8, C9, C10, C12, C17) diziam "log do ensaio M10" sem dizer qual arquivo; e B5 dependia de um inventário que não está no repositório | Cada um ganhou um caminho específico, no mesmo padrão de B6–B13 e B15. A3 aponta `fase3_pcb/v8/clearance_v8.txt`; C7→`ensaio_M3.log`; C8→`ensaio_M10.log`; C9→`ensaio_M11.log`; C10→`ensaio_M5.log`; C12→`ensaio_M4.log`; C17→`caracterizacao_bateria_6S.log`; B5→`inventario_instrumentos.txt`, conferido em bancada e marcado como **não reproduzível hoje** | `plano/WP4_FIRMWARE.md` §5: **M5 é a IMU (ICM-42688-P)** e M6 é o barômetro — o C10 apontava para o módulo errado; M3 é o PWM dos motores 3 e 4 por LEDC; `PLANO_TESTE_BANCADA.md` §1 lista I1–I11. Nenhum dos caminhos existe ainda: `ls fase4_entrega/logs` → `No such file or directory` |
+
+O que **não** foi tocado nesta rodada: a contagem 5/53, a honestidade dos estados (nenhum "não
+conferido" contado como aprovado), os 14 números de coerência com os WPs, a §5 inteira ("o que
+não pode ser declarado pronto") e a regra dos 7 Gerbers homônimos da §5.8.
 
 ---
 
