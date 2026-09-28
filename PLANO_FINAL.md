@@ -141,7 +141,7 @@ de layout (E3, 2–3 semanas `[EST]`) e **sem** a cotação (F13, NÃO DETERMINA
 | **E0** | — | Responder D-08, D-02, D-03 e D-01. As outras 11 decisões vêm depois, mas nenhuma trava a E0. | `plano/WP5_DECISOES.md` §2 e §4 | As 3 respostas estão escritas e datadas | **NÃO DETERMINADO** — é tempo de decisão, não de trabalho |
 | **E1** | E0 (D-08 escolhe a peça) | Refazer o dimensionamento de gate drive com Qg = 168/210 nC e corrigir P-11 para 0,325 mA; reexecutar os scripts da Fase 0 | `plano/WP3_PREMISSAS_DATASHEETS.md` §6; `plano/WP5_DECISOES.md` D-11 | `fase0_especificacao/dimensionamento_fase0_saida_v2.txt` e `fase0_especificacao/verifica_limites_saida_v4.txt` reexecutados com o Qg novo | 4–6 h |
 | **E2** | E0 | Fechar part numbers, cotar com disponibilidade e lead time, e produzir a BOM de fabricação com MPN/fabricante em 43/43 linhas | `plano/WP5_DECISOES.md` D-08, D-14; `plano/WP2_FABRICACAO.md` §4; `orcamento/ORCAMENTO.md` | 43/43 itens com preço real e lead time | 4 h (BOM) + cotação **NÃO DETERMINADA** |
-| **E3** | E0 (D-02 + D-03), E1 | Layout novo: 6 camadas + contorno ~150×110 mm, preservando as 202 nets e os 319 footprints. **Pacote único de correções de layout, tudo na mesma revisão:** (a) stitch vias do D-10; (b) rotação do `SD` dos 12 IR2104 para um GPIO (D-13); (c) **fusível 30 A 1206 no polo positivo do VBAT (D-15, recomendação A)** — 1 footprint de 2 pinos, 0 GPIO, 0 net de sinal; (d) **definir os keepouts de potência e de sinal no gerador** (`rule_area` no `fase3_pcb/gera_pcb_v8.py`; hoje a v7 tem 0); (e) **D-09 fechada antes de começar**: com a recomendação A (manter os 12× INA240A2) **não há respin** — se você escolher B (INA181/INA241), a troca entra neste mesmo pacote e vira um quinto item | `plano/WP1_ROTEAMENTO.md` §4 e §3.3; `plano/WP5_DECISOES.md` §3.2, §3.3, §3.9 e §3.15 | G1 (§5) — as 8 linhas do painel de aceitação | **2–3 semanas** `[EST]` (`plano/WP5_DECISOES.md` §3.2 — em horas: **NÃO DETERMINADO**, nenhuma fonte converte) |
+| **E3** | E0 (D-02 + D-03), E1 | Layout novo: 6 camadas + contorno ~150×110 mm, preservando as 202 nets e os 319 footprints. **Pacote único de correções de layout, tudo na mesma revisão:** (a) stitch vias do D-10; (b) rotação do `SD` dos 12 IR2104 para um GPIO (D-13); (c) **fusível 30 A 1206 no polo positivo do VBAT (D-15, recomendação A)** — 1 footprint de 2 pinos, 0 GPIO, 0 net de sinal; (d) **definir os keepouts de potência e de sinal no gerador** (`rule_area` no `fase3_pcb/gera_pcb_v8.py` — **ainda não existe**: é o gerador da v8, a criar copiando `fase3_pcb/gera_pcb_v7.py`, que existe; hoje a v7 tem 0 `rule_area`); (e) **D-09 fechada antes de começar**: com a recomendação A (manter os 12× INA240A2) **não há respin** — se você escolher B (INA181/INA241), a troca entra neste mesmo pacote e vira um quinto item | `plano/WP1_ROTEAMENTO.md` §4 e §3.3; `plano/WP5_DECISOES.md` §3.2, §3.3, §3.9 e §3.15 | G1 (§5) — as 8 linhas do painel de aceitação | **2–3 semanas** `[EST]` (`plano/WP5_DECISOES.md` §3.2 — em horas: **NÃO DETERMINADO**, nenhuma fonte converte) |
 | **E4** | E0, D-01, E2, E3 | Gerar os 8 artefatos que não existem, o `.gbrjob`, o Edge.Cuts nativo, o nome dos Gerbers e a BOM | `plano/WP2_FABRICACAO.md` §1 e §3.3 | G2 (§5) | 30,0 h (34,0 h com a BOM, já contada em E2) |
 | **E5** | E3, E4 | Montar a placa seguindo a ordem de solda | `fase4_entrega/MONTAGEM_ORDEM_DE_SOLDA.md` | placa montada sem curto; não há estimativa de horas no documento | **NÃO DETERMINADO** |
 | **E6** | E3, E4, E5, D-01 = B | Firmware de bancada M0–M6 + M10 + M11 | `plano/WP4_FIRMWARE.md` §5 | critérios de aceite de cada módulo, colados na §5 do WP4 | **160 h** |
@@ -187,10 +187,14 @@ avança quando o gate inteiro é verdadeiro.
 > NÃO DETERMINADO** (o 12 é da v6 — ver §1 e §8.5). O alvo A3 = 0 só tem medição na v6
 > (`fase3_pcb/v6/verificacao_v6.txt`) e precisa ser reconferido na v8.
 >
-> **Atenção ao `test -e`:** `fase3_pcb/v8/verificacao_v8.txt` **ainda não existe** — é o
-> arquivo que o gate G1 manda **produzir**, não um insumo. O diretório `fase3_pcb/v8/` está
-> vazio desde 2026-09-11 22:37, porque `fase3_pcb/rota_v7.py` só grava depois do laço de roteamento
-> (`plano/WP1_ROTEAMENTO.md` §2.3 e §5.1). Todos os outros caminhos citados existem.
+> **Atenção ao `test -e`:** **dois** dos caminhos citados **ainda não existem**, e os dois são
+> artefatos a produzir, não insumos: (1) `fase3_pcb/v8/verificacao_v8.txt` — o arquivo que o gate G1
+> manda produzir; o diretório `fase3_pcb/v8/` está vazio desde 2026-09-11 22:37, porque
+> `fase3_pcb/rota_v7.py` só grava depois do laço de roteamento
+> (`plano/WP1_ROTEAMENTO.md` §2.3 e §5.1); (2) `fase3_pcb/gera_pcb_v8.py` — o gerador da v8, a
+> criar a partir de `fase3_pcb/gera_pcb_v7.py` (que existe). **Todos os outros caminhos citados
+> existem** — a lista completa, com a saída real do `test -e` e os dois ausentes marcados como "a
+> produzir", está na tabela de correções abaixo.
 
 ### G2 — Pacote de fabricação completo (`plano/WP2_FABRICACAO.md` §5)
 
@@ -324,3 +328,51 @@ existente foi alterado** — os 21 números-chave do documento continuam os mesm
 DT 400/520/650, 518,750 ns, R$ 1.706, R$ 1.354, 37/43, 12 V vs 15 V, 4× MCP3208, 2× MCPWM) e a
 ressalva de que **nada foi validado em bancada**. Nenhum WP1..WP5, `plano/DO_PROJETO.md` ou
 `prd.json` foi tocado.
+
+---
+
+## Correções round 3 (2026-09-28)
+
+Defeito único, introduzido pelo round 2. **Nenhum número foi alterado** — os 21 números-chave, os
+6 defeitos do round 2 e a ressalva de nada validado em bancada seguem como estavam.
+
+| # | Defeito | Correção | Verificação |
+|---|---|---|---|
+| 7 | 🔴 E3(d) citava `fase3_pcb/gera_pcb_v8.py` como se fosse insumo, e a nota de `test -e` afirmava incondicionalmente que "Todos os outros caminhos citados existem" — os dois falsos | (a) **E3(d)** passa a dizer, com a mesma convenção já usada para o outro artefato, que o `fase3_pcb/gera_pcb_v8.py` **ainda não existe** e é o gerador da v8 **a criar copiando `fase3_pcb/gera_pcb_v7.py`**, que existe; (b) a nota do gate G1 passa a listar **os dois** artefatos ausentes, ambos a produzir, e a afirmação "todos os outros existem" ficou restrita aos 24 que existem | `ls fase3_pcb/gera_pcb_v*.py` → **v1 a v7**, `gera_pcb_v8.py` não está na lista; saída real do `test -e` abaixo |
+
+**Saída real do `test -e` sobre os 26 caminhos citados no documento** (extração por
+`grep -oE '`[^`]*\/[^`]*`'` filtrada para artefatos e diretórios; os dois `grep -c` da tabela do
+round 2 foram descartados por serem comandos, não caminhos). **AUSENTE = a produzir:**
+
+```
+EXISTE   datasheets/
+EXISTE   fase0_especificacao/dimensionamento_fase0_saida_v2.txt
+EXISTE   fase0_especificacao/FASE0_ESPECIFICACAO.md
+EXISTE   fase0_especificacao/verifica_limites_saida_v4.txt
+EXISTE   fase2_simulacao/verilog/RELATORIO_VERILOG.md
+EXISTE   fase3_pcb/calc_trilhas_vias_saida.txt
+EXISTE   fase3_pcb/gera_pcb_v7.py
+AUSENTE  fase3_pcb/gera_pcb_v8.py            <- a produzir (copia de gera_pcb_v7.py, item E3(d))
+EXISTE   fase3_pcb/rota_v7.py
+EXISTE   fase3_pcb/v6/verificacao_v6.txt
+EXISTE   fase3_pcb/v7/v7_drone.kicad_pcb
+EXISTE   fase3_pcb/v8/
+AUSENTE  fase3_pcb/v8/verificacao_v8.txt     <- a produzir (gate G1)
+EXISTE   fase4_entrega/ANALISE_WIFI_CONTROLE.md
+EXISTE   fase4_entrega/MONTAGEM_ORDEM_DE_SOLDA.md
+EXISTE   fase4_entrega/PLANO_TESTE_BANCADA.md
+EXISTE   fase4_entrega/RISCOS.md
+EXISTE   fase4_entrega/SEGURANCA_E_REGULATORIO.md
+EXISTE   orcamento/ORCAMENTO.md
+EXISTE   plano/DO_PROJETO.md
+EXISTE   plano/mede_v7_wp1.py
+EXISTE   plano/WP1_ROTEAMENTO.md
+EXISTE   plano/WP2_FABRICACAO.md
+EXISTE   plano/WP3_PREMISSAS_DATASHEETS.md
+EXISTE   plano/WP4_FIRMWARE.md
+EXISTE   plano/WP5_DECISOES.md
+existem=24  ausentes=2  total=26
+```
+
+Os dois ausentes são coerentes entre si: ambos são produtos da v8, nenhum é insumo. Nenhum WP1..WP5,
+`plano/DO_PROJETO.md`, `README.md` ou `prd.json` foi tocado; nada foi enviado para fora.
