@@ -1,0 +1,500 @@
+
+==============================================================================
+REDIMENSIONAMENTO DO GATE DRIVE (v5) -- Qg REAL
+==============================================================================
+  MOSFET de referencia : IPB017N10N5 (OptiMOS 5, 100 V) -- datasheets/ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf
+  Driver              : IR2104(S) -- datasheets/ir2104_infineon_datasheet.pdf
+  Os dois sao 'NAO ESCOLHIDOS'. Este script dimensiona para o par de referencia
+  e mostra o quanto a Fase 0 (feita com Qg = 40 nC, premissa P-06) subestimava.
+
+  Fontes de numero, por tipo:
+    [DS FET p.N]  IPB017N10N5 via `pdftotext -layout`  -> tabela e pagina citadas
+    [DS DRV p.N]  IR2104 via `pdftotext -layout`         -> tabela e pagina citadas
+    [MEDIDO]      conta executada por ESTE arquivo agora
+    [PREMISSA]    P-xx de FASE0_ESPECIFICACAO.md, ainda em aberto
+    [EST]         estimativa do redator, com a conta que a sustenta
+
+==============================================================================
+1. O QUE MUDOU: P-06 (Qg) e P-11 (quiesciencia do driver)
+==============================================================================
+  P-06 Qg total do MOSFET  (nC)                        | esp         40 | med        168 nC     | erro +320.00 %
+                                                       |   fonte: IPB017N10N5 p.4, Table 6 'Gate charge total' = 168 nC typ / 210 nC max
+  P-06 Qg total  -- caso MAXIMO (nC)                   | esp         40 | med        210 nC     | erro +425.00 %
+                                                       |   fonte: IPB017N10N5 p.4, Table 6, coluna Max
+  P-11 quiesciencia por driver (uA)                    | esp       2500 | med        180 uA     | erro  -92.80 %
+                                                       |   fonte: IR2104 p.3, Static: IQCC 150/270 uA + IQBS 30/55 uA = 180 uA typ
+  P-11 quiesciencia por driver -- MAX (uA)             | esp       2500 | med        325 uA     | erro  -87.00 %
+                                                       |   fonte: IR2104 p.3, Static, colunas Max somadas: 270 + 55 = 325 uA
+
+  Leitura: P-06 esta ERRADA por 4,20x (typ) / 5,25x (max) -- e' o erro que decide a placa.
+          P-11 estava 13.9x ACIMA do tipico e 7.7x ACIMA do maximo: a premissa era
+          pessimista, ou seja, folga de folga no consumo quiescente. Nao e' risco de
+          thermally, mas a conta do trilho de 12 V muda (ver §6).
+
+  Composicao do Qg real (para o leitor nao tratar 168 nC como numero magico):
+    Qgs  = 53 nC   (31.5 % do Qg) [DS FET p.4 Table 6]  -> carga de 'linearizacao'
+    Qgd  = 34 nC typ / 51 nC max (20.2 % do Qg) [DS FET p.4] -> Miller, o que fixa a perda de comutacao
+    Qsw  = 51 nC   [DS FET p.4 Table 6]  -> parte que vai para a saida durante a comutacao
+    Vpl  = 4.4 V    [DS FET p.4 Table 6]  -> patamar, o ponto de maior dI/dt e maior dV/dt
+    RG interno do FET = 1.3 ohm typ [DS FET p.4 Table 4] -> soma com o Rg externo
+  [MEDIDO] Qg nao e' monolitico: 1/3 vai para o source (ganho de transcondutancia) e 1/5
+  fica no Miller. Um modelo de 'carga + Rg' so' para o total erra a forma da onda.
+
+==============================================================================
+2. TEMPO DE COMUTACAO DE GATE  t = Qg / I_gate   (o numero que decide tudo)
+==============================================================================
+  I_gate NAO e' livre: e' o que o IR2104 entrega -- IO+ 130 mA (fonte) / IO- 270 mA
+  (drain) [IR2104 p.1, Product Summary]. O dimensionamento_fase0.py supunha
+  Ipk = Vgs/Rg = 10/10 = 1,2 A, o que e' fisicamente falso: 1,2 A exigiria que o
+  driver entregasse 9.2x a corrente que ele declara.
+
+  t =   168 nC / 130.0 mA =  1.2923 us =   1292.3 ns   [Qg typ 168 nC, IO+ 130 mA] [MEDIDO]
+  t =   168 nC / 270.0 mA =  0.6222 us =    622.2 ns   [Qg typ 168 nC, IO- 270 mA] [MEDIDO]
+  t =   210 nC / 130.0 mA =  1.6154 us =   1615.4 ns   [Qg max 210 nC, IO+ 130 mA] [MEDIDO]
+  t =   210 nC / 270.0 mA =  0.7778 us =    777.8 ns   [Qg max 210 nC, IO- 270 mA] [MEDIDO]
+
+  t de comutacao com IO+ 130 mA (Qg typ, us)           | esp       0.05 | med      1.292 us     | erro +2484.62 %
+                                                       |   fonte: 168 nC / 130 mA; o alvo de 0,05 us (50 ns) e' o [EST] de projeto
+  t de comutacao com IO- 270 mA (Qg typ, us)           | esp       0.05 | med     0.6222 us     | erro +1144.44 %
+                                                       |   fonte: 168 nC / 270 mA
+
+  [MEDIDO] Com Qg typ: subir leva 1.2923 us (130 mA) e descer leva
+  0.6222 us (270 mA). Com Qg max: 1.6154 us e 0.7778 us.
+  [MEDIDO] Periodo de PWM a 20 kHz = 50.0 us, com duty 50 %
+  -> conduction de 25.0 us por ciclo. O turn-on de 1.29 us
+  consome 2.6 % do periodo; no pior caso de Qg max,
+  3.2 %. Ver §7: isso vira perda em regime intermediario.
+
+  ANCORA DE BANCADA NO DATASHEET (esta e' a verificacao mais forte do script):
+    O DS mediu tr = 23 ns com Qg = 168 nC e Rg,ext = 1,6 ohm [DS FET p.4, Table 5].
+   Corrente media implicita = Qg/tr = 7.30 A  [MEDIDO]
+    Isso e' 56.2x a corrente de fonte que o IR2104 declara (130 mA).
+    [MEDIDO] Logo: o IPB017N10N5 em 20 kHz NAO e' comutavel por um IR2104 sem pre-
+    driver. As duas escritas do DS se cruzam exatamente assim, e o numero vem das duas.
+  I_media implicita no tr do DS (A)                    | esp       0.13 | med      7.304 A      | erro +5518.73 %
+                                                       |   fonte: 168 nC / 23 ns; corrente de fonte do IR2104 = 130 mA [IR2104 p.1]
+
+==============================================================================
+3. SLEW DE Vgs  dV/dt = dV / t   (dV = 10 V, do 0 aos 10 V como o DS caracterizou)
+==============================================================================
+  [MEDIDO] dV/dt = dV/t, com dV = 10 V (0 -> 10 V, como o DS caracterizou Qg) e
+  t do §2. O slew nao e' um degree of freedom: com a corrente do driver travada
+  em 130/270 mA, ele e' consequencia de Qg.
+
+  dV/dt = 10 V / (168 nC / 130 mA = 1.2923 us) =  0.00774 V/ns   [Qg typ, IO+ 130 mA]   [MEDIDO]
+  dV/dt = 10 V / (168 nC / 270 mA = 0.6222 us) =  0.01607 V/ns   [Qg typ, IO- 270 mA]   [MEDIDO]
+  dV/dt = 10 V / (210 nC / 130 mA = 1.6154 us) =  0.00619 V/ns   [Qg max, IO+ 130 mA]   [MEDIDO]
+  dV/dt = 10 V / (210 nC / 270 mA = 0.7778 us) =  0.01286 V/ns   [Qg max, IO- 270 mA]   [MEDIDO]
+
+  [MEDIDO] Checagem cruzada contra o slew implicito no rise time do DS:
+  dV/dt = 10 V / tr = 10 V / 23 ns = 0.4348 V/ns [DS FET p.4, Table 5].
+  [MEDIDO] O slew com Qg real e' 0.00774 V/ns; o slew implicito no DS e' 0.4348 V/ns -- 56x maior, o mesmo fator de corrente do §2.
+  [MEDIDO] A premissa P-06 com I = 1,2 A dava 0.3000 V/ns (39x o slew real).
+
+  CONSEQUENCIA DE EMI/RINGING: com Ciss = 12 nF typ / 15,6 nF max [DS FET p.4, Table 5],
+  a MESMA corrente de gate (130 mA) carrega, pelo capacitor de entrada do proprio
+  transistor, uma corrente reativa I_Ciss = Ciss*dV/dt = 12 nF x 0.00774 V/ns = 0.093 A = 71 % de I_gate  [MEDIDO]
+  [MEDIDO] Total de corrente no no durante o comutador = 1.71x I_gate.
+  [MEDIDO] Com Ciss max (15.6 nF) sobe para 1.93x.
+  [EST] E' essa corrente, e nao a do gate, que alimenta o Rg e o laco de retorno -- ou
+  seja, a origem fisica do ringing que o §7 do FASE0_ESPECIFICACAO.md tenta amortecer
+  com Rg >= 6,3 ohm. O slew lento NAO protege o projeto; ele so' troca slew por calor.
+
+==============================================================================
+4. CORRENTE DE PICO NECESSARIA PARA COMUTAR EM 25 ns
+==============================================================================
+  Alvo: t = 25 ns (periodo de 20 kHz = 50 us; 25 ns = 0,05 % do periodo)
+  [EST como alvo de projeto]. I_pico = Qg / t_alvo. [MEDIDO]
+
+  I_pico = 168 nC / 25 ns =  6.72 A  [Qg typ 168 nC]  [MEDIDO]
+  I_pico = 210 nC / 25 ns =  8.40 A  [Qg max 210 nC]  [MEDIDO]
+  I_pico p/ 25 ns (Qg typ) vs IO+ do IR2104            | esp       0.13 | med       6.72 A      | erro +5069.23 %
+                                                       |   fonte: 168 nC / 25 ns
+  I_pico p/ 25 ns (Qg typ) vs IO- do IR2104            | esp       0.27 | med       6.72 A      | erro +2388.89 %
+                                                       |   fonte: 168 nC / 25 ns
+  I_pico p/ 25 ns (Qg max) vs IO- do IR2104            | esp       0.27 | med        8.4 A      | erro +3011.11 %
+                                                       |   fonte: 210 nC / 25 ns
+  I_pico p/ 25 ns (Qg typ) vs premissa 1,2 A           | esp        1.2 | med       6.72 A      | erro +460.00 %
+                                                       |   fonte: a premissa do dimensionamento_fase0.py: Vgs/Rg = 10/10 = 1,2 A
+
+  [MEDIDO] Para caber nos 25 ns com Qg = 168 nC o driver teria de entregar
+  6.72 A, ou seja 51.7x o IO+ e 24.9x o IO- do IR2104.
+  [MEDIDO] O Qg de 40 nC da premissa exigiria 1.60 A -- era por isso que
+  o projeto original 'fechava': ele nunca viu o numero 168.
+
+  DIMENSIONAMENTO DO Rg EXTERNO -- e por que o Rg de 10 ohm NAO resolve:
+    Rg_total = Rg_ext + RG_interno = 10.0 + 1.3 = 11.3 ohm [MEDIDO]
+    Corrente pelo Rg se o driver fosse ideal e infinito: 10 V / 11.3 ohm = 0.885 A  [MEDIDO]
+    Corrente que o driver REAL entrega: limitada a 130 mA (fonte) / 270 mA (drain).
+    [MEDIDO] O Rg so' limitaria se fosse menor que 76.9 ohm (fonte). Com 10 ohm,
+    quem manda e' o driver: 0.885 A desejado vs 130 mAdisponivel =
+    deficit de 6.8x. AUMENTAR Rg nao cria corrente; ele apenas
+    [EST]_amortece o ring, ao custo de piorar ainda mais o slew. Para 25 ns de verdade
+    seria preciso Rg_total < 1.49 ohm, o que viola o amortecimento do §7 do
+    FASE0_ESPECIFICACAO.md (Rg >= 6,3 ohm para Z0 = 3,16 ohm). [MEDIDO: o alvo de 25 ns e
+    INCOMPATIVEL com o amortecimento ja especificado -- sao duas exigencia que nao cabem]
+    no mesmo resistor.]
+
+  SE a carga de gate viesse de um capacitor local em vez do buck (a ideologia do
+  dimensionamento_fase0.py §2), a corrente seria a do capacitor e nao a do driver:
+    C_local =     1 uF : dV = Qg/C =  168.00 mV por comutacao de 1.29 us [MEDIDO] -- viavel
+    C_local =    10 uF : dV = Qg/C =   16.80 mV por comutacao de 1.29 us [MEDIDO] -- viavel
+    C_local =   100 uF : dV = Qg/C =    1.68 mV por comutacao de 1.29 us [MEDIDO] -- viavel
+  [EST] Com C_local grande o suficiente (>= 1 uF) a queda e' pequena, MAS o caminho de
+  corrente fecha no capacitor e o gate sobe por conta propria; o IR2104 nao precisa
+  sustentar os 168 nC, apenas repor a perda de Qg/Cboot no bootstrap. Isso muda a
+  questao: e' a opcao (b) da §8.
+
+==============================================================================
+5. PERDA DE COMUTACAO NO MOSFET  P_sw = Qg * Vgs * f_pwm
+==============================================================================
+  Formula usual de carga de gate. ATENCAO: ela conta a POTENCIA DE PORTA (a energia
+  que o sinal de controle entrega e dissipa no Rg), nao a perda dentro do MOSFET.
+  A perda no MOSFET e' E_off * f, com E_off = P_off * V_f. Ver a ressalva abaixo.
+
+  P_sw/FET =   168 nC * 10 V * 20 kHz =   33.60 mW  [Qg typ 168 nC] [MEDIDO]
+  P_sw/FET =   210 nC * 10 V * 20 kHz =   42.00 mW  [Qg max 210 nC] [MEDIDO]
+  P_sw/FET =    40 nC * 10 V * 20 kHz =    8.00 mW  [P-06 40 nC (premissa)] [MEDIDO]
+
+  P_sw/FET  real x premissa P-06 (mW)                  | esp          8 | med       33.6 mW     | erro +320.00 %
+                                                       |   fonte: 168 nC x 10 V x 20 kHz
+
+  [MEDIDO] A Fase 0 subestimava a potencia de gate em 4.20x (typ) e
+  5.25x (max). Em W, no banco inteiro:
+    24 FETs x Qg typ  -> 0.806 W   (a Fase 0 Assumeiu 0.192 W)
+    24 FETs x Qg max  -> 1.008 W
+  [MEDIDO] Erro absoluto de orcamento = 614 mW/banco (tip), 816 mW (max).
+
+  RESSALVA METODOLOGICA (nao e' premissa, e' uma correcao que o redator fez):
+    P_sw = Qg*Vgs*f e' a POTENCIA DE PORTA. A perda Joule no MOSFET durante a comutacao e'
+    P_sw,mosfet = E_off * f, e E_off = P_off * V_f. O DS nao traz E_off/E_on para este
+    part (so' tr/tf, [DS FET p.4 Table 5]), e nao ha curva de transitorio com 168 nC de
+    gate a 130 mA. [MEDIDO] Logo a perda REAL de comutacao e' NAO DETERMINADA nesta maquina.
+    Ordem de grandeza com o modelo classico E_off ~ 0,5*Vds*I*t_r  [EST]:
+      E_off ~ 0,5 x 22.2 V x 30,0 A x  1292.3 ns =  430.34 uJ ->  206.56 W nos 24 FETs   [t_r que o IR2104 leva a 130 mA]   [EST]
+      E_off ~ 0,5 x 22.2 V x 30,0 A x    23.0 ns =    7.66 uJ ->    3.68 W nos 24 FETs   [t_r do DS (23 ns)]   [EST]
+      E_off ~ 0,5 x 25.2 V x 30,0 A x  1292.3 ns =  488.49 uJ ->  234.48 W nos 24 FETs   [t_r que o IR2104 leva a 130 mA]   [EST]
+      E_off ~ 0,5 x 25.2 V x 30,0 A x    23.0 ns =    8.69 uJ ->    4.17 W nos 24 FETs   [t_r do DS (23 ns)]   [EST]
+    [EST] O modelo de 0,5*Vds*I*t_r e' grosseiro, mas o FATOR de t_r e' real: 56x entre o que o DS mediu e o que o IR2104 consegue. E' o mesmo
+    fator do §2, dagora em watts. [MEDIDO] A conclusao nao depende do modelo: depende do t_r.
+
+  O QUE O P-06 ERRADO CUSTOU (contas do §1 x §5, todas [MEDIDO]):
+    (a) slew      : assumido 1,2 A -> 0.300 V/ns; real a 130 mA -> 0.0077 V/ns  = 39x otimista demais
+    (b) pot de gate: assumido 192.0 mW; real 806.4 mW (banco)
+    (c) tempo morto : assumido suficiente; real 0.622 us so' para baixar o gate do off-FET
+    (d) sizing do MOSFET: FASE0_ESPECIFICACAO.md linha 249 exige 'Qg <= 60 nC' -- o FET de
+        referencia tem 168 nC: a propria especificacao de compra REJEITA o componente de referencia.
+
+==============================================================================
+6. DISSIPACAO DO GATE DRIVER COM Qg REAL  (20 kHz x 3 fases x 4 motores)
+==============================================================================
+  Topologia: 12 drivers (3 por motor x 4 motores), 2 FETs por driver, bootstrap.
+
+  6a) ENERGIA DE GATE POR COMUTACAO (o que o driver entrega ao gate, tirado do
+  bootstrap/buck de 12 V [MEDIDO em fase3_pcb/gera_pcb_v7.py linha 239]
+  ATENCAO: o Qg de 168 nC foi medido ate 10 V [DS FET p.4, Table 6]. A 12 V o Qg efetivo
+  seria MAIOR e NAO DETERMINADO -- entao estes numeros sao um LOWER BOUND. [MEDIDO]
+    Qg typ: E/FET = Qg*Vtrilho = 168 nC x 12 V = 2.0 uJ | E/driver = 4.0 uJ | P = E/driver x 20 kHz = 80.6 mW/driver | 12 drivers = 967.7 mW  [MEDIDO]
+    Qg max: E/FET = Qg*Vtrilho = 210 nC x 12 V = 2.5 uJ | E/driver = 5.0 uJ | P = E/driver x 20 kHz = 100.8 mW/driver | 12 drivers = 1209.6 mW  [MEDIDO]
+
+  P de gate no banco (mW) -- Qg typ                    | esp      230.4 | med      967.7 mW     | erro +320.00 %
+                                                       |   fonte: 12 drivers x 2 FETs x Qg x 12 V x 20 kHz
+
+  6b) CORRENTE NO TRILHO DE 12 V  (E/12 V -> corrente media, mais o pico de 130/270 mA)
+  I_carga de gate no trilho 12 V (mA) -- Qg typ        | esp       19.2 | med      80.64 mA     | erro +320.00 %
+                                                       |   fonte: a Fase 0 calculou 24*40nC*20kHz = 19,2 mA (dimensionamento_fase0.py linha 'i12_total')
+  I_carga de gate no trilho 12 V (mA) -- Qg max        | esp       19.2 | med      100.8 mA     | erro +425.00 %
+                                                       |   fonte: 24*210nC*20kHz
+
+  I_12V total = 12 x 180 uA (tip) + 80.6 mA = 82.8 mA  [MEDIDO]
+  I_12V total = 12 x 325 uA (max) + 100.8 mA = 104.7 mA  [MEDIDO]
+  A Fase 0 Assumption para esse trilho: 12 x 2,5 mA + 19,2 mA = 49.2 mA  [PREMISSA P-11 + P-06]  (FASE0_ESPECIFICACAO.md linha 284)
+  I no trilho de 12 V (mA) -- Qg typ                   | esp       49.2 | med       82.8 mA     | erro  +68.29 %
+                                                       |   fonte: 12 x 180 uA + 24 x 168 nC x 20 kHz
+
+  [MEDIDO] O BUCK DE 12 V (0,60 A, dimensionamento_fase0.py) SEGUE VALENDO: pior caso
+  104.7 mA = 17.5 % do que ele entrega -> folga de 5.7x.
+  [MEDIDO] Ou seja: o trilho de 12 V NAO e' o item que quebra. O que quebra e' o pico
+  de 130/270 mA na saida do driver, que vem do bootstrap e do capacitor local, nao do buck.
+
+  6c) DISSIPACAO NO CORPO DO DRIVER
+  [MEDIDO] O driver dissipa, no minimo, a energia de gate que ele entrega menos o que
+  volta (nao volta nada: Qg e' dissipada no resistor de gate). Add-se a:
+    P_quiesc = 12 V x 12 x 180 uA = 25.9 mW (tip) [MEDIDO]
+    P_quiesc = 12 V x 12 x 325 uA = 46.8 mW (max) [MEDIDO]
+    Total no trilho de 12 V (Qg typ) = gate   967.7 mW + quiesc  25.9 mW =   993.6 mW  [MEDIDO]
+    Total no trilho de 12 V (Qg max) = gate  1209.6 mW + quiesc  46.8 mW =  1256.4 mW  [MEDIDO]
+
+  [MEDIDO] Isso e' 1.7x
+  o que a Fase 0 orcava com as premissas (590.4 mW:
+  230.4 mW de gate + 360.0 mW de quiescencia. [MEDIDO]
+  [MEDIDO] Reparto por driver: 82.8 mW com Qg typ, 104.7 mW com Qg max.
+  [EST] Um SOIC-8 sem dissipador, com plano de terra curto, dissipa da ordem de 200 mW
+  envelope de um SOIC-8 sem dissipador, mas so' se o bootstrape estiver proximo e o
+  plano de terra do driver conduzindo. Medir com camera termica na Fase 4.
+
+==============================================================================
+7. DEAD-TIME: O RTL ENTREGA 518,75 ns, O GATE EXIGE ~1,29 us
+==============================================================================
+  [MEDIDO em fase2_simulacao/verilog/RELATORIO_VERILOG.md §2] dead-time do RTL do MCPWM = 518.750 ns
+  [DS DRV p.3, Dynamic Electrical Characteristics 'DT'] dead-time interno do IR2104 = 400 / 520 / 650 ns (min/typ/max, VBIAS=15 V, CL=1000 pF)
+
+  REGRA: o dead-time tem de ser >= o tempo de o gate do FET que esta DESLIGANDO ser
+  descarregado ate Vgs_off, senao os dois FETs conduzem juntos. O turn-off e' feito
+  pelo lado DRAIN do driver, entao usa-se IO- = 270 mA.
+
+  Numeros [MEDIDO], Qg = 168 nC (typ):
+  Dead-time necessario = Qg/IO- (Qg typ, ns)           | esp      518.8 | med      622.2 ns     | erro  +19.95 %
+                                                       |   fonte: 168 nC / 270 mA, comparado com os 518,750 ns do RTL
+  Dead-time necessario = Qg/IO+ (Qg typ, ns) [pior]    | esp      518.8 | med       1292 ns     | erro +149.12 %
+                                                       |   fonte: 168 nC / 130 mA -- o caso que o enunciado desta missao cita como ~1,29 us
+  Dead-time necessario = Qg/IO- (Qg max, ns)           | esp      518.8 | med      777.8 ns     | erro  +49.93 %
+                                                       |   fonte: 210 nC / 270 mA
+  Dead-time necessario = Qg/IO+ (Qg max, ns) [pior]    | esp      518.8 | med       1615 ns     | erro +211.40 %
+                                                       |   fonte: 210 nC / 130 mA
+
+  [MEDIDO] Margem: com Qg typ e IO- 270 mA o gate precisa de 622.2 ns, contra
+  518.750 ns de dead-time -> FALTAM 103.5 ns (19.9 % de estouro). No pior caso (Qg max, 130 mA) sao
+  1615.4 ns necessarios -> FALTAM 1096.6 ns, ou seja o dead-time precisa CRESCER 3.11x.
+
+  [MEDIDO] E o pior caso nao e' 25 ns de alvo de projeto, e' o max do FET: 210 nC e'
+  'defined by design, not subject to production test' [DS FET p.4, nota 1 da Table 6] --
+  o 210 nC NAO e' um limite garantido em producao, e' o valor de projeto. O 168 nC tip
+  tambem e' 'not subject to production test'. [MEDIDO] Consequencia: o orcamento de
+  dead-time nao pode ser fechado com o tipico nem com o maximo; tem de ser medido.
+
+  O QUE MUDA NO PROJETO (numeros, nao adjetivos):
+    (a) O dead-time do IR2104 e' INTERNO e FIXO (400/520/650 ns, [DS DRV p.3]) -- o
+        firmware nao programa. Os 518.750 ns do MCPWM sao um SEGUNDO dead-time,
+        somado ao interno. [MEDIDO] Os dois se somam: o pior caso do IR2104
+        (650 ns) + RTL (518.750 ns) = 1168.8 ns de janela
+        total, contra 1292.3 ns necessarios so' para o TURN-ON a 130 mA com Qg typ
+        (1.11x) e 1615.4 ns com Qg max (1.38x).
+        [MEDIDO] Repare: a janela MAXIMA do IR2104 (650 ns) e' suficiente para o
+        turn-off a 270 mA (622.2 ns) mas nao para o turn-on a 130 mA.
+    (b) 518.750 ns de dead-time a 20 kHz e' 1.038 % do periodo
+        e' 2.075 % do tempo de ON (duty 50 %). Elevar para 1615 ns
+        custa 4.39 % de duty -- aceitavel, e nao e' o problema.
+    (c) O problema real e' a CONDUTAO CRUZADA: se o gate nao desceu, os dois FETs da
+        mesma fase conduzem juntos e a perda deixa de ser I^2*Rds(on), virando Vds*I.
+        [MEDIDO] Com Vds = 25,2 V e I = 30 A (P-03) o teto do modelo e' 756 W num so
+        dispositivo, contra 450 mW de regime ohmico. [EST] O valor real
+        depende da curva de transferencia, que o DS da como figura (p. 7) e nao como tabela:
+        NAO DETERMINADO com o rigor de um numero de tabela.
+    (d) O dead-time LONGO tem custo proprio: durante ele a corrente da fase flui pelo
+        diodo de corpo do FET oposto. Qrr = 235/470 nC [DS FET p.4, Table 7] a 100 A/us.
+        [MEDIDO] A cada comutacao, 235 nC (typ) / 470 nC (max) de carga
+        de recuperacao injetados no barramento -- 140 % / 280 % da propria
+        carga de gate (Qg typ). Isso e' perda
+        real e' ja' conta no duty loss, mas NAO estava em nenhum orcamento do projeto.
+
+  RESPOSTA DIRETA A PERGUNTA DA MISSAO ('o que muda'): o numero nao muda a frequencia
+  nem a tensao; muda (1) o gate driver, que precisa de pre-driver ou de substituicao
+  por um de corrente maior; (2) a fonte de corrente de gate, que precisa de um
+  capacitor local porque 168 nC a 130 mA e' 1,29 us; (3) o orcamento de dead-time, que
+  so' fecha com medicao de bancada do gate em vez do numero de RTL; (4) a escolha do
+  MOSFET, que a especificacao de compra atual ('Qg <= 60 nC') REJEITA.
+
+==============================================================================
+8. QUANTAS VEZES O Qg REAL EXCEDE O QUE O IR2104 ENTREGA
+==============================================================================
+  Pergunta operacional: na janela de dead-time que o RTL abre, quanta carga de gate o
+  IR2104 consegue entregar, e quanta o FET precisa? Q_entregue = I_driver * t_janela.
+
+    RTL 518,750 ns                   =    518.8 ns -> Q entregue a 130 mA =    67.4 nC | a 270 mA =   140.1 nC   [MEDIDO]
+    IR2104 interno typ 520 ns        =    520.0 ns -> Q entregue a 130 mA =    67.6 nC | a 270 mA =   140.4 nC   [MEDIDO]
+    IR2104 interno max 650 ns        =    650.0 ns -> Q entregue a 130 mA =    84.5 nC | a 270 mA =   175.5 nC   [MEDIDO]
+    somados RTL + IR2104 typ         =   1038.8 ns -> Q entregue a 130 mA =   135.0 nC | a 270 mA =   280.5 nC   [MEDIDO]
+    somados RTL + IR2104 max         =   1168.8 ns -> Q entregue a 130 mA =   151.9 nC | a 270 mA =   315.6 nC   [MEDIDO]
+    [referencia] Qg/IO- typ          =    622.2 ns -> Q entregue a 130 mA =    80.9 nC | a 270 mA =   168.0 nC   [MEDIDO]
+    [referencia] Qg/IO+ typ          =   1292.3 ns -> Q entregue a 130 mA =   168.0 nC | a 270 mA =   348.9 nC   [MEDIDO]
+
+  Excesso = Qg_real / Q_entregue. [MEDIDO]
+
+    Qg typ / janela 'RTL 518,750 ns' a 130 mA  -> driver entrega   67.4 nC, falta   168 nC =  2.49x  [MEDIDO]
+    Qg typ / janela 'RTL 518,750 ns' a 270 mA  -> driver entrega  140.1 nC, falta   168 nC =  1.20x  [MEDIDO]
+    Qg max / janela 'RTL 518,750 ns' a 130 mA  -> driver entrega   67.4 nC, falta   210 nC =  3.11x  [MEDIDO]
+    Qg max / janela 'RTL 518,750 ns' a 270 mA  -> driver entrega  140.1 nC, falta   210 nC =  1.50x  [MEDIDO]
+    Qg typ / janela 'IR2104 interno typ 520 ns' a 130 mA  -> driver entrega   67.6 nC, falta   168 nC =  2.49x  [MEDIDO]
+    Qg typ / janela 'IR2104 interno typ 520 ns' a 270 mA  -> driver entrega  140.4 nC, falta   168 nC =  1.20x  [MEDIDO]
+    Qg max / janela 'IR2104 interno typ 520 ns' a 130 mA  -> driver entrega   67.6 nC, falta   210 nC =  3.11x  [MEDIDO]
+    Qg max / janela 'IR2104 interno typ 520 ns' a 270 mA  -> driver entrega  140.4 nC, falta   210 nC =  1.50x  [MEDIDO]
+    Qg typ / janela 'IR2104 interno max 650 ns' a 130 mA  -> driver entrega   84.5 nC, falta   168 nC =  1.99x  [MEDIDO]
+    Qg typ / janela 'IR2104 interno max 650 ns' a 270 mA  -> driver entrega  175.5 nC, falta   168 nC =  0.96x  [MEDIDO]
+    Qg max / janela 'IR2104 interno max 650 ns' a 130 mA  -> driver entrega   84.5 nC, falta   210 nC =  2.49x  [MEDIDO]
+    Qg max / janela 'IR2104 interno max 650 ns' a 270 mA  -> driver entrega  175.5 nC, falta   210 nC =  1.20x  [MEDIDO]
+    Qg typ / janela 'somados RTL + IR2104 typ' a 130 mA  -> driver entrega  135.0 nC, falta   168 nC =  1.24x  [MEDIDO]
+    Qg typ / janela 'somados RTL + IR2104 typ' a 270 mA  -> driver entrega  280.5 nC, falta   168 nC =  0.60x  [MEDIDO]
+    Qg max / janela 'somados RTL + IR2104 typ' a 130 mA  -> driver entrega  135.0 nC, falta   210 nC =  1.56x  [MEDIDO]
+    Qg max / janela 'somados RTL + IR2104 typ' a 270 mA  -> driver entrega  280.5 nC, falta   210 nC =  0.75x  [MEDIDO]
+    Qg typ / janela 'somados RTL + IR2104 max' a 130 mA  -> driver entrega  151.9 nC, falta   168 nC =  1.11x  [MEDIDO]
+    Qg typ / janela 'somados RTL + IR2104 max' a 270 mA  -> driver entrega  315.6 nC, falta   168 nC =  0.53x  [MEDIDO]
+    Qg max / janela 'somados RTL + IR2104 max' a 130 mA  -> driver entrega  151.9 nC, falta   210 nC =  1.38x  [MEDIDO]
+    Qg max / janela 'somados RTL + IR2104 max' a 270 mA  -> driver entrega  315.6 nC, falta   210 nC =  0.67x  [MEDIDO]
+
+  Excesso do Qg real na janela do RTL, a 130 mA        | esp          1 | med      2.491 x      | erro +149.12 %
+                                                       |   fonte: 168 nC / (130 mA x 518,75 ns)
+  Excesso do Qg real na janela do RTL, a 270 mA        | esp          1 | med      1.199 x      | erro  +19.95 %
+  Excesso do Qg real na janela RTL+IR2104 typ, 130 mA  | esp          1 | med      1.244 x      | erro  +24.41 %
+  Excesso do Qg real na janela RTL+IR2104 max, 270 mA  | esp          1 | med     0.5324 x      | erro  -46.76 %
+
+  [MEDIDO] Leitura honesta dos dois extremos da tabela:
+    (a) MELHOR CASO ABSOLUTO: janela somada de 1169 ns, lado de DRAIN (270 mA).
+        O driver entrega 316 nC contra a demanda de 168 nC (Qg typ) ->
+        0.53x, ou seja SOBRA carga: 47 % de folga.
+        Com Qg max (210 nC) ainda fecha: 0.67x, folga de 33 %.
+    (b) PIOR CASO ABSOLUTO: lado de FONTE (130 mA), janela do RTL isolada (518.750 ns).
+        2.49x a 130 mA -- o driver entrega 67 nC de 168 nC.
+    (c) Logo o veredito NAO e' 'o IR2104 nunca da conta'. E': o lado de DRAIN da conta se
+        a janela for 1169 ns ou mais; o lado de FONTE nao da conta na janela do RTL, e mesmo
+        na janela somada ele fica em 1.11x (Qg typ) e 1.38x (Qg max).
+    [MEDIDO] Conclusao de projeto: o IR2104 como driver de 168 nC e' MARGINAL -- funciona
+    no turn-off e falha no turn-on a corrente nominal. Isso NAO fecha especificacao nenhuma.
+
+  O QUE ISSO SIGNIFICA NA PRATICA (a consequencia pedida):
+  1. O gate NAO SOBE EM TEMPO. [MEDIDO] Em 518,75 ns, com 130 mA, o gate carrega
+     67 nC de 168 nC = 40 %. Se o comando
+     dura 518,75 ns, o FET chega a Vgs = 4.0 V -- e o DS diz
+     VGS(th) = 2,2/3,0/3,8 V (min/typ/max) e Vplateau = 4.4 V [DS FET p.4, Tables 4 e 6].
+     [MEDIDO] Com 130 mA em 518,75 ns o gate chega a 4.0 V, acima do
+     VGS(th) max (3,8 V) mas MUITO abaixo do patamar (4.4 V) e muito abaixo do
+     ponto em que Rds(on) foi medido (10 V).
+  2. O FET PASSA A DISSIPAR EM ESTADO INTERMEDIARIO. [MEDIDO + EST] Com Vgs no meio da
+     curva, o ponto de operacao sai da regiao ohmica e vai para a de saturacao do MOSFET:
+     a potencia passa a ser Vds*I_load, e nao I^2*Rds(on). No pior instante do dead-time,
+     com Vds = 25,2 V e I = 30 A (P-03) atravessando o FET em regime linear:
+     [EST] P ~ Vds*I = 25,2 x 30 = 756 W durante 774 ns; a 20 kHz,
+     isso da 11.7 W medios POR FET. [EST] O modelo Vds*I e' o
+     limite superior, nao uma previsao -- o numero real depende da curva de transferencia,
+     que o DS da como figura (p. 7) e nao como tabela. O que E' solido e' a ordem: a perda
+     intermediaria e' 26x a perda de conducao de regime
+     do proprio FET (450 mW a 30 A de pico, P-05 = 2,0 mOhm). A razao e' o numero que
+     manda: nao e' uma perda marginal, e' uma perda dominante.
+  3. O DUTY EFETIVO CAI. [MEDIDO] Se o gate leva 1.29 us para subir contra
+     50 us de periodo, ha 2.6 % do periodo em que o
+     FET esta fora de regime apos o comando, e 774 ns de dead-time
+    alem dos 519 ns ja' orcados -- 3.09 % de duty
+     adicional perdido nos 50 us de ON. O torque medio do motor cai junto.
+  4. O DANO E' ACUMULATIVO. [EST] A perda em regime intermediario ocorre a cada comutacao,
+     960000 vezes por segundo no banco (24 FETs x 2 x 20 kHz), sempre no mesmo ponto
+     da curva termica. Nao e' um evento raro que o thermal average esconde.
+
+  DUAS CONTAS INDEPENDENTES DA MESMA CONCLUSAO (mesma fisica, numeros de outra natureza):
+    (i) Pela corrente: Qg/tr_do_DS = 7.30 A contra os 130 mA que o IR2104
+        declara -> 56.2x. Vem da Table 5 contra a p.1. [§2]
+    (ii) Pela janela: na janela maxima possivel (RTL 519 ns + DT interno max
+         650 ns = 1169 ns) a 270 mA, o driver entrega
+         316 nC de uma demanda de 168 nC ->
+         0.53x, ou seja 47 % de deficit;
+         a 130 mA, 1.11x. Vem da Table 6 contra as p.1 e 3. [§8]
+    [MEDIDO] As duas contas concordam no veredito (o driver nao cobre a carga de gate) e
+    discordam no fator, porque uma mede corrente de pico e a outra mede energia dentro de
+    uma janela. Isso e' esperado, e por isso as duas estao aqui: uma so' nao fecha o orcamento.
+
+==============================================================================
+9. O QUE ESTE SCRIPT NAO DETERMINA (e por que)
+==============================================================================
+  - Perda de comutacao real do MOSFET (E_off/E_on)
+      NAO DETERMINADO: o IPB017N10N5 nao publica E_on/E_off nas Tabelas 4-7; ha tr/tf e ha curvas em p. 7-8, nao tabela
+  - Rds(on) efetivo com Vgs = 12 V (o trilho da placa)
+      NAO DETERMINADO: o DS caracteriza RDS(on) so' em VGS=6 V e VGS=10 V [p.4 Table 4]; o layout alimenta os drivers a 12 V
+  - Qg efetivo com Vgs = 12 V
+      NAO DETERMINADO: o DS caracteriza Qg para VGS=0 to 10 V [p.4 Table 6]; o numero a 12 V NAO DETERMINADO
+  - Zg saida do driver / Rth de saida do IR2104
+      NAO DETERMINADO: nao ha parametro de impedancia de saida no IR2104 p.1-3; so' ha tr/tf com CL=1000 pF
+  - Ciss, ESR, ESL, corrente nominal do XT60 e Vf do diodo de bootstrap
+      NAO DETERMINADO: P-15: sem o datasheet do componente ESCOLHIDO. [REVERSAO_PREMISSAS_v5.md] mantem [N/D offline]
+  - Temperatura de juncao com Qg real
+      NAO DETERMINADO: exige a curva de transitorio de comutacao do FET com Qg = 168 nC, que so' a Fase 2 (ngspice) e a Fase 4 (bancada) produzem
+  - Efeito termico de Qg maior sobre Tja do encapsulamento
+      NAO DETERMINADO: exige o modelo termico do package escolhido (TO-252 / PowerPAK 5x6), que P-15 ainda nao fixou
+
+==============================================================================
+10. REEXECUCAO DA FASE 0 COM OS VALORES CORRIGIDOS -- QUE LIMITE ESTOURA?
+==============================================================================
+  Os scripts originais NAO foram modificados nem reescritos. Eles rodaram como esta:
+      cp dimensionamento_fase0.py verifica_limites_entrada_v4.py /tmp/f0ro/
+      cd /tmp/f0ro && python3.9 dimensionamento_fase0.py
+      cd /tmp/f0ro && python3.9 verifica_limites_entrada_v4.py
+  (copia para fora para nao sobrescrever os .json/.txt de evidencia versionados).
+  As saidas reais das duas execucoes estao transcritas abaixo, linha a linha, e depois
+  cada numero e' recalculado com Qg real para dizer o que muda.
+
+  10a) dimensionamento_fase0.py -- §2 DRIVE DE GATE (saida real, sem edicao)
+      Potencia de gate por FET: Qg*Vgs*f = 40 nC * 12.0 V * 20 kHz = 9.60 mW
+      Por driver (2 FETs) = 19.20 mW | 12 drivers = 230.40 mW
+      Corrente de pico de gate: Rg=10 ohm -> 1.20 A | Rg=5 ohm -> 2.40 A (vem do cap de bootstrap + 10 uF local, nao do buck)
+      Tempo de subida estimado t_r = Qg/Ipk = 33.33 ns com Rg=10 ohm
+      Capacitor de bootstrap: Cboot >= 20*Qg = 800 nF -> adotar 1 uF/25 V X7R
+      Queda no bootstrap a cada ciclo: dV = Qg/Cboot = 0.040 V
+      Trilho 12 V: quiesciencia 12*2.5 mA = 30 mA + 19.2 mA (carga de gate) = 49 mA -> BUCK 12 V / 0.60 A com folga 3x
+      [executado, saida real]
+
+  10b) verifica_limites_entrada_v4.py -- §3/§4 (saida real, sem edicao)
+      Gate: Z0=3.16 ohm -> Rg>=6.3 ohm (adotado 10 ohm) | f_ring=25.2 MHz
+      ADC: janela 2 us = 4.0 % do periodo de 50 us | dead-time 520 ns = 1.0 % de duty
+      pico (30 A): P/FET=0.583 W -> 24 FETs=13.99 W | Tj(Rth=60C/W, Ta=25C) = 60.0 C
+      [executado, saida real]
+
+  10c) REFAZENDO OS MESMOS NUMEROS COM Qg REAL  [MEDIDO]
+
+  L1: Tempo de subida de gate (o script assumeu 33,33 ns com 1,2 A)
+      esp      33.33 ns  | med       1292 ns  | erro  +3777.31 %
+      168 nC / 130 mA. O 1,2 A do script e' 9,2x o IO+ que o IR2104 declara [p.1]
+  L2: Bootstrap adotado: queda dV = Qg/Cboot com Cboot = 1 uF
+      esp         40 mV  | med        168 mV  | erro   +320.00 %
+      168 nC / 1 uF; Cboot minimo passa de 800 nF para 3,36 uF (20*Qg)
+  L3: Corrente no trilho de 12 V orcada para o buck de 0,60 A
+      esp       49.2 mA  | med      104.7 mA  | erro   +112.80 %
+      12 x 325 uA + 24 x 210 nC x 20 kHz. ESTOURADO? nao: 104,7 mA de 600 mA
+  L4: Dead-time de projeto do RTL (medido em Verilog)
+      esp      518.8 ns  | med      622.2 ns  | erro    +19.95 %
+      turn-off a 270 mA. ESTOURADO: 622,2 ns contra 518,750 ns = +19,95 %
+  L5: Potencia de gate por FET (orcada)
+      esp          8 mW  | med       33.6 mW  | erro   +320.00 %
+      168 nC x 10 V x 20 kHz. ESTOURADO: 4,20x, mas so' 25,6 mW -- nao e' limite termico
+  L6: Slew de gate (o v4 nao fixa limite de slew; o Rg >= 6,3 ohm e' que fixa)
+      esp        0.3 V/ns | med   0.007738 V/ns | erro    -97.42 %
+      0,3000 V/ns assumido (33,33 ns de subida com 1,2 A) contra o real a 130 mA
+  L7: Rg total para comutar em 25 ns
+      esp         10 ohm | med      1.488 ohm | erro    -85.12 %
+      Rg ja' especificado = 10 ohm (FASE0_ESPECIFICACAO.md linha 251); o alvo de 25 ns exigiria 1,49 ohm
+  L8: Perda de comutacao no MOSFET, limite de 0,583 W/FET do v4 §3
+      esp      0.583 W   | med       9.77 W   | erro  +1575.79 %
+      0,5 x 25,2 V x 30 A x 1292 ns x 20 kHz [EST, modelo grosseiro]. Com t_r do DS (23 ns) daria 0,17 W
+
+  VEREDITO POR LIMITE (a tabela acima da o numero; esta da o veredito):
+  ESTOURADO com folga pequena:
+    L4 dead-time: 622.2 ns necessarios contra 518.750 ns do RTL = +19.95 % (turn-off, Qg typ, 270 mA); +211 % no turn-on com Qg max a 130 mA. ESTOURADO.
+    L1 tempo de subida: 1292 ns contra 33 ns orcados = 39x mais lento. ESTOURADO (o script nao checava esse limite).
+    L2 bootstrap: 168 mV de queda por comutacao contra 40 mV orcados. O 1 uF adotado NAO E' MAIS SUFICIENTE: o minimo vira 3.36 uF (20*Qg = 20 x 168 nC), ou aceita-se queda de 168 mV por comutacao, 1.7 % da tensao de gate. ESTOURADO.
+  ESTOURADO com impacto termico -- este e' o grave:
+    L8 perda de comutacao: com o t_r que o IR2104 REALMENTE leva (1292 ns), o modelo
+       classico da 9.8 W/FET contra o limite implicito de 0,583 W/FET que o
+       verifica_limites_entrada_v4.py §3 usou. [EST] O modelo e' grosseiro, mas 17x
+       acima do limite NAO se explica por erro de modelo -- e' o mesmo fator de t_r do §2.
+       Com o t_r do DS (23 ns) o mesmo modelo daria 0.174 W/FET, abaixo do limite.
+    [MEDIDO] Tj correspondente com Rth = 60 C/W e Ta = 25 C: 611 C (modelo) contra 60 C que o v4 reportou.
+    [EST] Leitura honesta: 0,5*Vds*I*t_r e' ordem de grandeza, nao projeto termico. O que
+    fecha sem modelo nenhum e' a razao t_r = 56x. E' ela que estouraria.
+  NAO ESTOURADO:
+    L3 trilho de 12 V: 104.7 mA contra os 600 mA do buck = 17.5 % de uso, folga 5.7x. O buck de 0,60 A adotado continua
+    dimensionando certo. [MEDIDO]
+    L5 potencia de gate por FET: 33.6 mW/FET, contra 8 mW orcados.
+    Erro de orcamento de 25.6 mW/FET, mas isso NAO e' limite termico: e'
+    a energia dissipada no Rg. Com Rg = 11,3 ohm e 130 mA, o pico instantaneo no Rg e'
+    I^2*Rg = 0.191 W, sustentado por 1.2923 us a cada comutacao; a media
+    em um periodo de 50 us, com o gate conduzindo 1,29 us dele, e' 4.94 mW/FET -- mesma ordem de 33.6 mW.
+    [MEDIDO] Nada estoura termicamente; o orcamento e' que mudou.
+    L6/L7: nao ha 'estouro' numerico porque o v4 nao fixou limite de slew nem de Rg minimo;
+    o que existe e' INCOMPATIBILIDADE entre o alvo de 25 ns (Rg < 1.49 ohm) e o
+    amortecimento ja' especificado (Rg >= 6,3 ohm, Z0 = 3,16 ohm). Duas exigencia, um resistor.
+
+  LIMITES DO verifica_limites_entrada_v4.py QUE NAO AFETAM (verificados um a um):
+    - Ripple de barramento e banco de capacitores (§1, §2): dependem de fpwm, Ipk, C e ESR.
+      Nenhum desses quatro mudou com P-06/P-11. [MEDIDO] as saidas sao identicas.
+    - Termica de regime (§3, primeiro bloco): depende so' de Rds(on) (P-05, mantida em 2,0 mOhm)
+      e de I. Nao muda. [MEDIDO]
+    - Vias, Z0, f_ring, ADC: nao dependem de Qg nem de Iq. Nao mudam. [MEDIDO]
+    - Balanco no cruzeiro (§4): a parcela 'conversores' usa 12 x 0,049 A do trilho orcado;
+      com Qg real sobe para 0.105 A, o que muda o total de 173 W para 182 W. [MEDIDO] Folga de 3,5 % vira 9.2 % -- nenhum limite estourado.
