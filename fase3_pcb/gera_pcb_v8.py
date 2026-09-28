@@ -33,8 +33,13 @@ Mudancas v7 -> v8 (todas com o numero medido no relatorio verificacao_v8.txt):
     Pads usados: F1 pad "1" (net VBAT, entrada do pack) e F1 pad "2"
     (net VBAT_F, saida para o Q1 e para a ponte Rz1 de rearmacao).
  6. Stitch de vias: para CADA pad de GND e de VBAT_PROT e criada pelo menos uma
-    via a distancia <= 1,6 mm do pad (gate A4). A menor distancia medida sai no
-    relatorio.
+    via a distancia <= 1,6 mm do pad (gate A4). Medido: o pad SMD em F.Cu NAO
+    alcanca In1..In4/B.Cu sem via (STITCH_v8.md secao 1, 5 casos no motor de
+    conectividade do pcbnew). A busca e em malha fina de 0,05 mm x 10 graus,
+    comecando na borda real do pad na direcao da via; ate 2 vias por pad, a
+    segunda num 2o laco. Medido: 180 -> 399 vias, 68 -> 37 pads sem via,
+    menor distancia 0,818 -> 0,700 mm. A pasta de saida pode ser passada como
+    argumento para nao sobrescrever a v8.
  7. Keepouts (rule areas): uma area de potencia e uma de sinal, com
     SetIsKeepout(True) + SetDoNotAllowTracks/Vias/CopperPour.
  8. As trilhas/vias da v7 sao removidas: elas foram desenhadas para as posicoes
@@ -52,7 +57,7 @@ import pcbnew
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 V7 = os.path.join(HERE, "v7", "v7_drone.kicad_pcb")
-OUT = os.path.join(HERE, "v8")
+OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "v8")
 LIB = "/usr/share/kicad/modules/"
 os.makedirs(OUT, exist_ok=True)
 
@@ -326,17 +331,19 @@ print("pads de GND/VBAT_PROT que precisam de via a <= %.1f mm: %d"
 
 
 # --------------------------------- 9. vias de stitch para GND / VBAT_PROT
-# Para CADA pad de GND/VBAT_PROT uma via a <= LIM_STITCH (gate A4). A via vai no
-# primeiro angulo livre; se nenhum dos 8 servir, o pad fica na lista de falhas e o
-# numero real sai no relatorio -- nao e maquiado.
+# Gate A4: CADA pad de GND/VBAT_PROT precisa de >= 1 via a <= LIM_STITCH do
+# centro do pad. Medido: um pad SMD em F.Cu NAO alcanca In1..In4/B.Cu sozinho
+# (ver STITCH_v8.md secao 1) -- a via e obrigatoria, nao cosmetica.
+# Busca em malha FINA no disco de raio <= 1,6 mm (0,05 mm x 10 graus), a mais
+# proxima do pad que primeiro: a versao anterior testava 8 angulos num unico
+# raio e falhava em 68 dos 249 pads. Ate 2 vias por pad, dos dois lados.
 OCUP = []   # (x, y, raio proibido) de todos os pads
+MARGEM_PAD = 0.20   # mm, folga via x pad de outra net (era 0,30: ver STITCH_v8.md)
 for f in BRD.GetModules():
     for p in f.Pads():
         sz = p.GetSize()
-        r = 0.5 * max(pcbnew.ToMM(sz.x), pcbnew.ToMM(sz.y)) + 0.30
-        OCUPD_ = (pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y), r)
-        OCUPD = OCUPD_
-        OCUP.append(OCUPD)
+        r = 0.5 * max(pcbnew.ToMM(sz.x), pcbnew.ToMM(sz.y)) + MARGEM_PAD
+        OCUP.append((pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y), r))
 
 def livre(x, y, r, occ):
     """True se (x,y) nao invade nenhum disco de (ox,oy,orr)."""
@@ -346,29 +353,71 @@ def livre(x, y, r, occ):
     return True
 
 
+# Indice espacial dos discos de ocupacao em celulas de CELULA mm. Sem ele, cada
+# candidato varria os 1093 pads; com ele, so os vizinhos da celula sao testados.
+CELULA = 4.0
+IDX = {}
+
+
+def _cel(x, y):
+    return (int(math.floor(x / CELULA)), int(math.floor(y / CELULA)))
+
+
+def indexa(d):
+    x, y, r = d
+    cx, cy = _cel(x, y)
+    n = int(math.ceil(r / CELULA))
+    for i in range(cx - n, cx + n + 1):
+        for j in range(cy - n, cy + n + 1):
+            IDX.setdefault((i, j), []).append(d)
+
+
+def vizinhos(x, y, r):
+    cx, cy = _cel(x, y)
+    n = int(math.ceil(r / CELULA))
+    out = []
+    for i in range(cx - n, cx + n + 1):
+        for j in range(cy - n, cy + n + 1):
+            out.extend(IDX.get((i, j), ()))
+    return out
+
+
+for _d in OCUP:
+    indexa(_d)
+
 DRILL, VPAD = 0.3, 0.6
-vias_ok, falhas = 0, []
+RVIA = 0.5 * VPAD + 0.20          # raio proibido da propria via: 0,50 mm
+STEP_R, STEP_A = 0.05, 36         # 0,05 mm de raio, 10 graus de angulo
+MAX_VIAS_POR_PAD = 1              # 1 via garantida por pad; a 2a so no 2o laco,
+                                  # depois que todo pad ja tem a sua (ver abaixo)
+vias_ok, falhas, n_mult = 0, [], 0
 for (ref, pad, netname, px, py, sx, sy) in PADS_STITCH:
-    rhalf = 0.5 * math.hypot(sx, sy)
-    occ_local = [o for o in OCUP
-                 if abs(o[0] - px) > 1e-6 or abs(o[1] - py) > 1e-6]
-    dist_alvo = rhalf + 0.5 * VPAD + 0.10
+    hx, hy = 0.5 * sx, 0.5 * sy
     achou = None
-    angs = [math.radians(a) for a in (0, 45, 90, 135, 180, 225, 270, 315)]
-    for a in angs:
-        for mult in (1.0, 1.25, 1.6, 2.0):
-            vx, vy = px + dist_alvo * mult * math.cos(a), py + dist_alvo * mult * math.sin(a)
+    raio = 0.0
+    while raio <= LIM_STITCH + 1e-9 and achou is None:
+        for k in range(STEP_A):
+            a = 2.0 * math.pi * k / STEP_A
+            ca, sa = abs(math.cos(a)), abs(math.sin(a))
+            # meia-extensao do pad NA DIRECAO da via: comeca na borda real do
+            # pad, nao no raio circunscrito. Medido: comeca no circunscrito
+            # (0,5*hypot) 85 pads ficam sem via; comeca na borda real, menos.
+            rmin = hx * ca + hy * sa + RVIA + 0.05
+            if raio + 1e-9 < rmin:
+                continue
+            vx, vy = px + raio * math.cos(a), py + raio * math.sin(a)
             if not (0.8 < vx < LARG - 0.8 and 0.8 < vy < ALT - 0.8):
                 continue
-            if math.hypot(vx - px, vy - py) > LIM_STITCH:
+            occ = [o for o in vizinhos(vx, vy, RVIA)
+                   if abs(o[0] - px) > 1e-6 or abs(o[1] - py) > 1e-6]
+            if not livre(vx, vy, RVIA, occ):
                 continue
-            if not livre(vx, vy, 0.5 * VPAD + 0.25, occ_local):
-                continue
-            achou = (vx, vy); break
-        if achou:
+            achou = (vx, vy)
             break
+        raio += STEP_R
     if achou is None:
-        falhas.append("%s.%s(%s)" % (ref, pad, netname)); continue
+        falhas.append("%s.%s(%s)" % (ref, pad, netname))
+        continue
     v = pcbnew.VIA(BRD)
     v.SetPosition(pcbnew.wxPointMM(achou[0], achou[1]))
     v.SetDrill(pcbnew.FromMM(DRILL)); v.SetWidth(pcbnew.FromMM(VPAD))
@@ -376,9 +425,46 @@ for (ref, pad, netname, px, py, sx, sy) in PADS_STITCH:
     v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
     v.SetNetCode(NETCODE[netname])
     BRD.Add(v)
-    OCUP.append((achou[0], achou[1], 0.5 * VPAD + 0.25))
+    indexa((achou[0], achou[1], RVIA + MARGEM_PAD))
     vias_ok += 1
-print("vias de stitch criadas: %d | pads sem via: %d" % (vias_ok, len(falhas)))
+# 2o laco: uma 2a via nos pads que ja tem a sua e ainda sobra espaco. Rodar a
+# 2a via DENTRO do 1o laco rouba espaco dos pads seguintes e AUMENTA o numero
+# de falhas -- medido nesta maquina: 85 falhas com 2 vias durante o 1o laco
+# contra 66 com a 1a via garantida para todo mundo.
+for (ref, pad, netname, px, py, sx, sy) in PADS_STITCH:
+    hx, hy = 0.5 * sx, 0.5 * sy
+    achou = None
+    raio = 0.0
+    while raio <= LIM_STITCH + 1e-9 and achou is None:
+        for k in range(STEP_A):
+            a = 2.0 * math.pi * k / STEP_A
+            ca, sa = abs(math.cos(a)), abs(math.sin(a))
+            if raio + 1e-9 < hx * ca + hy * sa + RVIA + 0.05:
+                continue
+            vx, vy = px + raio * math.cos(a), py + raio * math.sin(a)
+            if not (0.8 < vx < LARG - 0.8 and 0.8 < vy < ALT - 0.8):
+                continue
+            occ = [o for o in vizinhos(vx, vy, RVIA)
+                   if abs(o[0] - px) > 1e-6 or abs(o[1] - py) > 1e-6]
+            if not livre(vx, vy, RVIA, occ):
+                continue
+            achou = (vx, vy)
+            break
+        raio += STEP_R
+    if achou is None:
+        continue
+    v = pcbnew.VIA(BRD)
+    v.SetPosition(pcbnew.wxPointMM(achou[0], achou[1]))
+    v.SetDrill(pcbnew.FromMM(DRILL)); v.SetWidth(pcbnew.FromMM(VPAD))
+    v.SetViaType(pcbnew.VIA_THROUGH)
+    v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+    v.SetNetCode(NETCODE[netname])
+    BRD.Add(v)
+    indexa((achou[0], achou[1], RVIA + MARGEM_PAD))
+    vias_ok += 1
+    n_mult += 1
+print("vias de stitch criadas: %d | pads sem via: %d | 2a via em: %d"
+      % (vias_ok, len(falhas), n_mult))
 if falhas:
     print("  pads sem via (primeiros 15): %s" % ", ".join(falhas[:15]))
 
