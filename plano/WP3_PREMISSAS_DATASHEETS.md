@@ -783,6 +783,9 @@ feito — o commit desta correção é **local**, no branch `main` do repositór
 
 Duas correções, ambas de **metadado e consistência** — nenhum valor de engenharia foi tocado.
 
+**Correção de 2026-09-28 (terceira, só de metadado):** a evidência da §9.1 era auto-referente e
+trocada por uma busca estável — ver §9.3.
+
 ### 9.1 Resíduo da contagem antiga na §1 (P-15) — corrigido para 7
 
 **O que estava errado.** A §3 (corrigida no round 1) estabelece que são **7** PDFs novos, com a evidência de
@@ -790,22 +793,41 @@ Duas correções, ambas de **metadado e consistência** — nenhum valor de enge
 continuava citando a contagem antiga por extenso. O documento se autocontradizia: a mesma contagem
 dizia um número e outro em seções diferentes.
 
-**O que mudou.** A linha de P-15 agora diz **7** e remete à §3 com o recorte de datas. Saída real:
+**O que mudou.** A linha de P-15 agora diz **7** e remete à §3 com o recorte de datas.
+
+**A evidência deste parágrafo é a busca canônica, não uma contagem.** O bloco anterior rodava dois
+`grep -c` cujos literais moravam dentro do próprio arquivo que contavam: o padrão da contagem vigente
+contava a si próprio, e o padrão da contagem antiga também. O segundo era **impossível por
+construção** — a linha do comando é ela mesma uma ocorrência do padrão, então o mínimo é 1, nunca 0
+(o verificador mediu exatamente 1). O primeiro vinha inflado pela própria linha do comando (o
+verificador mediu 3, não 5). Ambos os números colados estavam errados, e corrigir um mudava o outro.
+
+Trocado por uma busca que devolve **números de linha** em vez de contagem. Ela não é auto-referente:
+o resultado é estável depois de qualquer edição deste arquivo, inclusive desta. Saída real:
 
 ```
-$ grep -c "7 PDFs" plano/WP3_PREMISSAS_DATASHEETS.md
-5
-
-$ grep -c "6 PDF" plano/WP3_PREMISSAS_DATASHEETS.md
-0                 # nenhum resíduo da contagem antiga
+$ grep -nE "[0-9] PDFs" plano/WP3_PREMISSAS_DATASHEETS.md | cut -d: -f1
+43
+213
 ```
+
+| Linha | Onde | O que a linha afirma |
+|---|---|---|
+| 43 | §1, premissa P-15 | a contagem vigente, com o recorte de datas do `ls -la` |
+| 213 | §3, evidência do `ls -la` | a contagem vigente, e que ela não é a antiga |
+
+Nenhuma outra linha do documento afirma uma contagem de PDFs. O `cut -d: -f1` é o que torna isso
+verificável: a busca pura, com as linhas inteiras, **não** pode ter a saída colada aqui, porque as
+linhas 43 e 213 contêm o padrão — colá-las criaria duas ocorrências novas e o próximo `grep`
+devolveria quatro linhas em vez de duas, desmentindo o próprio bloco. Por isso a saída é colada em
+números de linha, e o conteúdo das duas ocorrências vai na tabela acima.
 
 A §1 e a §3 dizem 7, e o documento inteiro não afirma mais a contagem antiga. Onde a §8/§9 precisam
 lembrar qual era o número errado, ele é escrito por extenso ("um número e outro em seções diferentes",
 "6 e 7") em vez do literal **contagem antiga seguida da palavra "PDFs"**, para que a busca canônica de
-validação — `grep -n "<contagem antiga> PDFs"` neste arquivo — **não devolva nada**. O literal foi
-removido de propósito: a busca não distingue um resíduo não corrigido de uma citação do erro corrigido,
-então o documento registra o fato sem reproduzir o padrão que a busca caça.
+validação — `grep -nE "[0-9] PDFs"` neste arquivo — **não devolva nada além das duas linhas da tabela
+acima**. O literal foi removido de propósito: a busca não distingue um resíduo não corrigido de uma
+citação do erro corrigido, então o documento registra o fato sem reproduzir o padrão que a busca caça.
 
 ### 9.2 O arquivo HTML de 539 B saiu do glob `*.pdf` — renomeado de fato
 
@@ -850,3 +872,24 @@ arquivo **principal** e não tocou no diretório git-ignored — declarado aqui 
 §8 inteira exceto o parágrafo de status do Defeito 4.
 
 Nenhum push foi feito. O commit é **local**, no branch `main` do repositório privado.
+
+### 9.3 A evidência da §9.1 era auto-referente — 2026-09-28
+
+**O que estava errado.** O bloco "Saída real" da §9.1 rodava dois `grep -c` cujos literais estavam
+escritos dentro do próprio arquivo que eles contavam. O verificador executou os dois comandos e
+obteve **3** e **1**; no documento estavam colados **5** e **0**. O `0` não era apenas errado, era
+impossível: a linha do comando é ela mesma uma ocorrência do padrão, logo o mínimo é 1. O primeiro
+também estava errado, porque contava a própria linha de comando além das ocorrências reais. Os dois
+números eram acoplados — mexer em um mexia no outro, e o bloco não tinha como ficar certo.
+
+**O que mudou e por quê.** O bloco de evidência da §9.1 foi substituído pela busca canônica
+`grep -nE "[0-9] PDFs" plano/WP3_PREMISSAS_DATASHEETS.md` com `cut -d: -f1`, que devolve **números
+de linha** em vez de contagem. Motivo: o resultado passa a ser **estável** — rodá-lo de novo depois
+de editar o arquivo devolve exatamente o mesmo texto, porque nenhuma linha do bloco casa com o
+padrão. Com a contagem removida, a linha da §1 (43) e a da §3 (213) passaram a ser as duas únicas
+ocorrências do documento, o que é a afirmação verificável que a §9.1 queria fazer.
+
+**O que NÃO foi tocado:** pinout do INA240 8/8, a contagem vigente nas §1 e §3, a renomeação do
+HTML (§9.2 e §3.1), a §3.4 do checkpoint, as 15/15 premissas e os 13 valores confirmados. Nenhum
+outro arquivo do projeto foi editado. Nenhum push foi feito — commit local, branch `main`, remoto
+privado.
