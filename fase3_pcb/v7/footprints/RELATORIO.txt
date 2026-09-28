@@ -1,0 +1,59 @@
+RELATORIO DE GERACAO - pick-and-place e footprints da placa v7
+gerado por fase3_pcb/gera_cpl_v7.py (Python 3.9.2, pcbnew 5.1.9+dfsg1-1+deb11u1)
+
+ENTRADA (somente leitura)
+  /opt/jupyter/work/drone/fase3_pcb/v7/v7_drone.kicad_pcb
+  md5 do board: 3dd3b23c93a1158713139c4edc80abce
+
+SAIDA 1 - pick-and-place
+  arquivo            : /opt/jupyter/work/drone/fase3_pcb/v7/v7_drone-pos.csv
+  linhas (com cabec.): 320
+  linhas de dados    : 319
+  referencias unicas : 319
+  referencias dup.   : 0
+  board: modulos      : 319
+
+  Units: PosX/PosY em milesimos de milimetro (0,001 mm).
+  Convencao: Y para cima, origem no canto inferior esquerdo da placa.
+  Y_pos = 160.1000 - Y_board   (H = altura da placa = 160.1000 mm)
+  X_pos = X_board, sem deslocamento: o canto inferior esquerdo da placa esta em
+  X=9.9500 mm no sistema de coordenadas do board, entao o X do CSV e a coordenada do
+  board, e nao uma medida relativa a borda. Para quem precisar da medida relativa a
+  borda, subtrair 9.9500 do PosX. Isso vale para as 319 referencias, sem excecao.
+  Rot em graus, mesmo sentido do board (anti-horario).
+  Side: top = F.Cu, bottom = B.Cu.
+
+  FOOTPRINTS SEM 'Position' DEFINIDO NO BOARD
+  (sem '(at ...)' no .kicad_pcb -> posicao calculada pelo centro dos pads)
+    nenhum: os 319 modulos do board tem '(at ...)'.
+  Total de refs com posicao CALCULADA: 0
+
+SAIDA 2 - bibliotecas de footprints (EXTRACAO do board)
+  pasta: /opt/jupyter/work/drone/fase3_pcb/v7/footprints
+  bibliotecas         : 16
+  arquivos .kicad_mod : 35
+  cada .kicad_mod tem reference, value, user, pads e a geometria
+  fp_line/fp_arc/fp_circle copiados do board, sem alteracao de valor.
+  NAO reproduzido (o board nao carrega): lib nickname, modelos 3D, grupo path.
+  HandDrawn_Inline NAO tem biblioteca real: sao os 6 modulos desenhados a mao,
+  sem nome de footprint no board. Os arquivos sao extracao fiel desses modulos.
+
+    Button_Switch_SMD         1 footprints   bib real no sistema: SIM
+    Buzzer_Beeper             1 footprints   bib real no sistema: SIM
+    Capacitor_SMD             6 footprints   bib real no sistema: SIM
+    Connector_AMASS           2 footprints   bib real no sistema: SIM
+    Connector_USB             1 footprints   bib real no sistema: SIM
+    Diode_SMD                 2 footprints   bib real no sistema: SIM
+    Fuse                      1 footprints   bib real no sistema: SIM
+    HandDrawn_Inline          6 footprints   bib real no sistema: NAO
+    Inductor_SMD              2 footprints   bib real no sistema: SIM
+    LED_SMD                   1 footprints   bib real no sistema: SIM
+    MountingHole              1 footprints   bib real no sistema: SIM
+    Package_LGA               1 footprints   bib real no sistema: SIM
+    Package_SO                2 footprints   bib real no sistema: SIM
+    Package_TO_SOT_SMD        4 footprints   bib real no sistema: SIM
+    Resistor_SMD              3 footprints   bib real no sistema: SIM
+    TestPoint                 1 footprints   bib real no sistema: SIM
+
+  Todos os footprints nomeados foram localizados em /usr/share/kicad/modules.
+
