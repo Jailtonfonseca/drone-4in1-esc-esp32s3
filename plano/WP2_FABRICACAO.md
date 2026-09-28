@@ -686,38 +686,52 @@ Ordem de verificação. **Não enviar enquanto qualquer item marcado com ❌ est
 | D2 | Plano de teste de bancada com critério de aceite | `fase4_entrega/PLANO_TESTE_BANCADA.md` ✅ |
 | D3 | Matriz de riscos | `fase4_entrega/RISCOS.md` ✅ |
 | D4 | Segurança/regulatório (Brasil) | `fase4_entrega/SEGURANCA_E_REGULATORIO.md` ✅ |
-| D5 | Datasheets dos ICs críticos | `datasheets/` — **12 arquivos** (10 `.pdf` + 2 `.txt`); 1 `.pdf` é download falho → **11 úteis** ⚠️ (§5.4) |
+| D5 | Datasheets dos ICs críticos | `datasheets/` — **12 arquivos** (9 `.pdf` + 2 `.txt` + 1 `.pdf.INVALIDO_HTML`); 1 deles é download falho mascarado → **11 úteis** ⚠️ (§5.4, §10) |
 
 **D1–D5 já existem e são um diferencial** — poucas casas recebem isso. Copiar para a pasta de envio (ou anexar) é o que transforma "pedido de peça" em "pedido de peça com critério de aceite".
 
-> **Correção de 2026-09-28 (F3).** A versão anterior dizia "9 arquivos". O real é **12** (10 `.pdf` + 2 `.txt`). O "9" é o resultado de um **filtro** que nunca foi declarado: os `.pdf` que corresponden aos **5 ICS realmente escolhidos** no board (ESP32-S3, ICM-42688-P, INA240, IR2104, MCP3208), excluindo o PDF do IPB017N10N5, que o próprio nome marca como `REFERENCIA_NAO_ESCOLHIDO`, e excluindo os 2 `.txt`. As duas contagens estão certaináveis:
+> **Correção de 2026-09-28 (F3), recontada em 2026-09-28 (round 3).** A versão anterior dizia "9 arquivos". O real é **12** — e, desde o commit `bc519f3` (WP3), a divisão mudou: **12 = 9 `.pdf` + 2 `.txt` + 1 `.pdf.INVALIDO_HTML`**. Antes da renomeação eram 10 `.pdf` + 2 `.txt`. O "9" original é o resultado de um **filtro** que nunca foi declarado: os `.pdf` que correspondem aos **5 ICS realmente escolhidos** no board (ESP32-S3, ICM-42688-P, INA240, IR2104, MCP3208), excluindo o PDF do IPB017N10N5, que o próprio nome marca como `REFERENCIA_NAO_ESCOLHIDO`, e excluindo os 2 `.txt`. Com a renomeação esse filtro passou a dar **8**, não 9 (§10). Todas as contagens estão certaináveis:
 >
 > ```console
 > $ find datasheets -maxdepth 1 -type f | wc -l
 > 12
 > $ find datasheets -maxdepth 1 -type f -name "*.pdf" | wc -l
-> 10
+> 9
 > $ find datasheets -maxdepth 1 -type f -name "*.txt" | wc -l
 > 2
+> $ find datasheets -maxdepth 1 -type f -name "*.pdf.INVALIDO_HTML" | wc -l
+> 1
 > $ ls datasheets/*.pdf | grep -viE "ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO" | wc -l
-> 9
+> 8
 > ```
 >
-> As 6 famílias cobertas são: ESP32-S3 (2 `.pdf` + 1 `.txt` de extração de texto), ICM-42688-P (4 `.pdf` + 1 `.txt` = schematic da placa de avaliação `EV_ICM-42688-P`, doc. AN-000488), INA240, IPB017N10N5, IR2104 e MCP3208.
+> A soma fecha: `9 + 2 + 1 = 12`. O arquivo de 539 bytes **continua em disco** — foi mantido, por decisão, **fora do glob `*.pdf`**, e não apagado (§10).
+>
+> As 6 famílias cobertas são: ESP32-S3 (2 `.pdf` + 1 `.txt` de extração de texto), ICM-42688-P (3 `.pdf` + 1 `.pdf.INVALIDO_HTML` + 1 `.txt` = schematic da placa de avaliação `EV_ICM-42688-P`, doc. AN-000488), INA240, IPB017N10N5, IR2104 e MCP3208. Total: `3 + 5 + 1 + 1 + 1 + 1 = 12`.
 
-> ⚠️ **Achado adicional da mesma verificação (F3):** um dos `.pdf` não é datasheet. `datasheets/icm-42688-p.pdf` tem **539 bytes** e é uma página **"Access Denied"** do servidor da TDK salva com extensão `.pdf` — ou seja, **download falho**:
+> ⚠️ **Achado adicional da mesma verificação (F3), atualizado no round 3:** o download falho **não é mais um `.pdf`**. O arquivo de 539 bytes continua em `datasheets/`, mas desde o commit `bc519f3` (WP3) o nome é `icm-42688-p.pdf.INVALIDO_HTML`. O conteúdo é o mesmo — uma página **"Access Denied"** do servidor da TDK que estava salva com extensão `.pdf`:
 >
 > ```console
-> $ ls -l datasheets/icm-42688-p.pdf
-> -rwxr-xr-x 1 root root 539 ... datasheets/icm-42688-p.pdf
-> $ head -c 200 datasheets/icm-42688-p.pdf | strings | head -3
+> $ ls -la datasheets/ | grep -i icm
+> -rw-r--r--  1 root root  496716 Sep 11 22:21 EV_ICM-42688-P.pdf
+> -rw-r--r--  1 root root    539 Sep 11 22:21 icm-42688-p.pdf.INVALIDO_HTML
+> -rw-r--r--  1 root root 1807872 Sep 28 00:06 icm-42688-p_v2_tdk_ds-000347-v1.2.pdf
+> -rw-r--r--  1 root root 1807872 Sep 28 00:06 icm-42688-p_v2_tdk_ds-000347-v1.6.pdf
+> $ file datasheets/icm-42688-p.pdf.INVALIDO_HTML
+> datasheets/icm-42688-p.pdf.INVALIDO_HTML: HTML document, ASCII text
+> $ head -c 200 datasheets/icm-42688-p.pdf.INVALIDO_HTML | strings | head -3
 > <HTML><HEAD>
 > <TITLE>Access Denied</TITLE>
+> </HEAD><BODY>
+> $ md5sum datasheets/icm-42688-p.pdf.INVALIDO_HTML
+> a8d8007143fbbdb07b14ceafc0c5504c  datasheets/icm-42688-p.pdf.INVALIDO_HTML
 > ```
 >
-> O datasheet real do ICM-42688-P está presente em `icm-42688-p_v2_tdk_ds-000347-v1.2.pdf` e `-v1.6.pdf` (1,8 MB cada), então **a lacuna é do arquivo, não da informação** — mas a fab que receber o pacote com esse arquivo vai abrir um PDF inválido. **Antes do envio: apagar `icm-42688-p.pdf` ou substituí-lo pelo v1.6.** Isso derruba D5 de "✅ completo" para "⚠️ parcial" até a limpeza — o resto de D5 (D1–D4) segue ✅.
+> O `md5` `a8d8007143fbbdb07b14ceafc0c5504c` é **o mesmo** do arquivo antes da renomeação: a operação do WP3 foi só um `git mv` de nome, **zero mudança de conteúdo** (`wc -c` segue **539**). O `file` agora diz a verdade que o nome já dizia desde o começo: **HTML**, não PDF.
 >
-> **O envio à fab deve ser o conjunto dos 12 arquivos**, com o `icm-42688-p.pdf` falho removido: **11 arquivos úteis**. Mandar só os 9 filtrados deixaria de fora justamente a revisão v1.6 do datasheet do IMU.
+> O datasheet real do ICM-42688-P está presente em `icm-42688-p_v2_tdk_ds-000347-v1.2.pdf` e `-v1.6.pdf` (1,8 MB cada), então **a lacuna é do arquivo, não da informação** — mas a fab que receber o pacote com esse arquivo vai abrir HTML, não PDF. **Antes do envio: apagar `icm-42688-p.pdf.INVALIDO_HTML` ou substituí-lo pelo v1.6.** Isso derruba D5 de "✅ completo" para "⚠️ parcial" até a limpeza — o resto de D5 (D1–D4) segue ✅.
+>
+> **O envio à fab deve ser o conjunto dos 12 arquivos**, com o `icm-42688-p.pdf.INVALIDO_HTML` falho removido: **11 arquivos úteis**. Mandar só os 8 filtrados deixaria de fora justamente a revisão v1.6 do datasheet do IMU.
 
 ---
 
@@ -735,7 +749,7 @@ $ for p in plano/WP1_ROTEAMENTO.md plano/WP3_PREMISSAS_DATASHEETS.md plano/WP4_F
     orcamento/orcamento.py fase4_entrega/MONTAGEM_ORDEM_DE_SOLDA.md fase4_entrega/PLANO_TESTE_BANCADA.md \
     fase4_entrega/RISCOS.md fase4_entrega/SEGURANCA_E_REGULATORIO.md fase1_esquema/gera_fase1_c.py \
     fase1_esquema/esq7_mcu.png README.md datasheets datasheets/ev.txt datasheets/EV_ICM-42688-P.pdf \
-    datasheets/icm-42688-p.pdf datasheets/icm-42688-p_v2_tdk_ds-000347-v1.2.pdf \
+    datasheets/icm-42688-p.pdf.INVALIDO_HTML datasheets/icm-42688-p_v2_tdk_ds-000347-v1.2.pdf \
     datasheets/icm-42688-p_v2_tdk_ds-000347-v1.6.pdf \
     datasheets/ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf \
     /usr/bin/python3.9 /usr/bin/xvfb-run /usr/bin/pcbnew; do if test -e "$p"; then echo "OK   $p"; else echo "FALTA $p"; fi; done
@@ -767,7 +781,7 @@ OK   README.md
 OK   datasheets
 OK   datasheets/ev.txt
 OK   datasheets/EV_ICM-42688-P.pdf
-OK   datasheets/icm-42688-p.pdf
+OK   datasheets/icm-42688-p.pdf.INVALIDO_HTML
 OK   datasheets/icm-42688-p_v2_tdk_ds-000347-v1.2.pdf
 OK   datasheets/icm-42688-p_v2_tdk_ds-000347-v1.6.pdf
 OK   datasheets/ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf
@@ -779,6 +793,8 @@ OK   /usr/bin/pcbnew
 **35/35 caminhos existem.** Os arquivos `v1_drone.sch`, `vN_drone-job.gbrjob`, `vN_drone-top.pos` e `vN_drone_bom.csv` citados como **faltantes** (§2.1, §5) são justamente os que o `find` do §2.1 provou **não** existirem — eles aparecem neste documento como alvo, nunca como caminho navigável.
 
 > **Correção de 2026-09-28.** A versão anterior desta seção afirmava **25/25**, mas o laço que ela mesma colava testava **24** caminhos. Total corrigido para **35/35** — os 24 originais, mais `plano/WP2_FABRICACAO.md`, os 7 caminhos de `datasheets/` citados na §5.4 e os 3 binários citados na §0 (`/usr/bin/python3.9`, `/usr/bin/xvfb-run`, `/usr/bin/pcbnew`).
+>
+> **Recontagem de 2026-09-28 (round 3).** O total **continua 35/35**, mas o laço acima passou a testar `datasheets/icm-42688-p.pdf.INVALIDO_HTML` no lugar do **nome sem sufixo** que existia antes do commit `bc519f3` (§10). Sem essa troca o mesmo laço daria **34/35**, com `FALTA` nesse caminho antigo — ele deixou de existir quando o WP3 renomeou o arquivo. Rodado de novo neste round, com o nome novo: **35 `OK`, 0 `FALTA`**, saída literal acima.
 
 ---
 
@@ -787,7 +803,7 @@ OK   /usr/bin/pcbnew
 1. **A placa não é fabricável hoje.** Faltam **6 artefatos** (§1: itens 1, 2, 3, 5, 6, 7) e **3 estão em estado parcial/defeituoso** (itens 4, 8, 9); só os itens 10 e 11 estão ✅. O caminho crítico são as **30,0 h** [EST] de geração de arquivos (itens 1, 2, 3, 5, 6, 7, 8, 9) — mas o **gate real é o roteamento** (`README.md:28`), que é escopo de `plano/WP1_ROTEAMENTO.md`.
 2. **O defeito de naming é confirmado e tem duas causas independentes:** `title_block` vazio no board (§3.1a) → gera o `-drone_` com hífen e o `rev?`; e export sem versão no nome (§3.1b) → 7 arquivos com nome idêntico e conteúdo diferente. **A correção que mata o risco é enviar só uma versão** (§3.3 C4) — renomear sozinho não basta se as 7 pastas forem para o mesmo zip.
 3. **A BOM atual é uma lista de projeto com preços estimados, não uma BOM de fabricação.** Faltam MPN e fabricante em **43/43** linhas, e designator em **43/43** — sem MPN a fab não compra, sem designator o assembler não monta. 37/43 preços são `[EST]`.
-4. **A documentação de Fase 4 (montagem, teste, riscos, regulatório) e os 12 arquivos de `datasheets/` já existem** e são o ativo mais subutilizado do projeto: estão prontos para ir no pacote e não vão junto hoje. Ressalva: 1 dos 12 (`icm-42688-p.pdf`) é um download falho de 539 bytes e precisa sair do pacote antes do envio (§5.4).
+4. **A documentação de Fase 4 (montagem, teste, riscos, regulatório) e os 12 arquivos de `datasheets/` já existem** e são o ativo mais subutilizado do projeto: estão prontos para ir no pacote e não vão junto hoje. Ressalva: 1 dos 12 (`icm-42688-p.pdf.INVALIDO_HTML`, um dos 9 `.pdf` que não é PDF, entre os 2 `.txt`) é um download falho de 539 bytes e precisa sair do pacote antes do envio (§5.4, §10).
 
 **Estimativa total para fechar o pacote de fabricacao: 30,0 h** [EST] de trabalho de arquivo (itens 1, 2, 3, 5, 6, 7, 8, 9 da §1 — `24 + 0,5 + 0,5 + 2 + 1 + 1 + 0,5 + 0,5 = 30,0`, conta em §4.3), **fora** cotar MPNs e **fora** resolver o roteamento. Com o item 4 (BOM, 4 h) o escopo completo da §1 é **34,0 h**. Nenhum número de esforço deste documento foi medido — todos marcados `[EST]` são estimativa de engenharia.
 
@@ -801,7 +817,7 @@ Passagem de verificação adversarial sobre este documento encontrou **7 defeito
 |---|---|---|---|
 | **F1** | Soma de esforço errada por **3,16×** (dizia ~9,5 h; a tabela §1 dá 30,0 h) | §4.3 e §7 | Total reescrito como **30,0 h** nos dois lugares, com a conta explícita `24 + 0,5 + 0,5 + 2 + 1 + 1 + 0,5 + 0,5 = 30,0` e tabela item-a-item. Nenhum valor `[EST]` da coluna "Esforço" foi alterado — só a soma. Escopo completo da §1 (com o item 4) = **34,0 h**. |
 | **F2** | Resumo não batia com a própria tabela (dizia 7 ❌ / 3 ⚠️ / 1 ✅; o real é 6 ❌ / 3 ⚠️ / 2 ✅) | §1 e §7 | "Resumo da coluna Existe?" corrigido para **6 ❌ / 3 ⚠️ / 2 ✅**, com `awk` escopado nas 11 linhas da tabela mostrando `linhas=11 NAO=6 PARCIAL=3 OK=2`. §7.1 reescrito no mesmo número. |
-| **F3** | `datasheets/` tem **12** arquivos (10 `.pdf` + 2 `.txt`), não 9 | §5.4 (D5) e §7.4 | D5 passa a declarar **12** e a explicar o **filtro** que produzia 9 (`.pdf` dos 5 ICS escolhidos, excluindo o `REFERENCIA_NAO_ESCOLHIDO` do IPB017N10N5 e os 2 `.txt`), com `find` e `wc -l` de evidência. Achado extra: `icm-42688-p.pdf` são 539 bytes de **"Access Denied"** (download falho) → D5 marcado ⚠️ até limpeza; envio correto = **11 arquivos úteis**. |
+| **F3** | `datasheets/` tem **12** arquivos (na época: 10 `.pdf` + 2 `.txt`), não 9 | §5.4 (D5) e §7.4 | D5 passou a declarar **12** e a explicar o **filtro** que produzia 9 (`.pdf` dos 5 ICS escolhidos, excluindo o `REFERENCIA_NAO_ESCOLHIDO` do IPB017N10N5 e os 2 `.txt`), com `find` e `wc -l` de evidência. Achado extra: o download falho de **"Access Denied"** (539 bytes) → D5 marcado ⚠️ até limpeza; envio correto = **11 arquivos úteis**. **Contagens recontadas no round 3** após o `git mv` de `bc519f3`: 9 `.pdf` + 2 `.txt` + 1 `.pdf.INVALIDO_HTML`, e o filtro passou a dar **8** (§10). |
 | **F4** | Afirmação factualmente falsa: "artefatos que dependem de `pcbnew` não podem ser gerados nesta máquina" | §0 | `ModuleNotFoundError` é do **venv Python 3.12 do agente**, não do KiCad. Acrescentado `/usr/bin/python3.9 -c "import pcbnew…"` → `5.1.9+dfsg1-1+deb11u1`, o mesmo interpretador do shebang `#!/usr/bin/env python3.9` do `gera_pcb_v7.py` que **já** plotou os Gerbers. "Consequência prática" reescrita: o que falta é o **`kicad-cli`** (mantido e reconfirmado por `which kicad-cli` → exit 1) e, para netlist/CPL, a **API do pcbnew 5.1** (`ExportSpecctraDSN` ausente) — resolvível com `xvfb-run`, presente. |
 | **F5** | Saídas "coladas" não eram literais (o doc declarava literalidade na convenção) | Convenção (linha 8), §2.3, §2.4 | §2.3 passa a colar o `-drone_Edge_Cuts.gm1` **literal e completo** (26 linhas, as 3 linhas de metadado `#@!` e os `D02*` de idênticos que faltavam foram restaurados). §2.4: `-NPTH.drl` **literal e completo** (19 linhas) e `-PTH.drl` com elipse **marcada** por `… (431 linhas de coordenadas X…Y omitidas) …`, precedida do `wc -l` real (**451**). Convenção do topo agora declara a regra da reticência explícita. |
 | **F6** | Item 6 dizia "só `(thickness 1.6)` no cabeçalho" — subestima o que existe | §1 item 6 e nova §2.2.1 | Reescrito: existe um bloco **`(setup …)` na linha 38** com ~30 *design rules* (`last_trace_width`, `trace_clearance`, `via_size`, `edge_width`, `creategerberjobfile`…). Nova §2.2.1 mostra o bloco e a contagem `stackup/dielectric/copper_thickness/impedance` = **0,0,0,0**. **Conclusão mantida: item 6 continua ❌** — o que falta é o *stackup*, não "qualquer coisa além da espessura". |
@@ -877,3 +893,52 @@ $ head -20 fase3_pcb/v7/v7_drone.kicad_pcb | wc -l
 | **E5** | §2.4 | `wc -l` dos 2 `.drl` colado com **2 espaços** de campo onde o comando emite **1** | colado **byte a byte** (` 451`, ` 19`, ` 470 total`) |
 
 E3, E4 e E5 **não alteram nenhum número** deste documento: a contagem de 9 Gerbers + 2 furos + 1 board (§2.1), as 451/19 linhas de drill (§2.4) e as conclusões de §2.3, §2.4 e §3.1 permanecem as mesmas. A correção é de literalidade da evidência, não de conteúdo.
+
+---
+
+## 10. Correções round 3 (2026-09-28)
+
+Terceira passagem. **A dessincronização não foi erro deste documento**: veio de uma **renomeação feita por outro worker (WP3), no commit `bc519f3`**, que mudou o nome de um arquivo de `datasheets/` depois de a §5.4 e a §6 terem sido escritas. A evidência do rename, sem ambiguidade:
+
+```console
+$ git show --stat --oneline bc519f3
+bc519f3 fix(WP3): contagem de PDFs coerente e renomeacao do HTML mascarado
+ ...m-42688-p.pdf => icm-42688-p.pdf.INVALIDO_HTML} |   0
+ plano/WP3_PREMISSAS_DATASHEETS.md                  | 261 +++++++++++++++------
+ 2 files changed, 192 insertions(+), 69 deletions(-)
+```
+
+A coluna de barras do `--stat` é **`0`** para o datasheet: **renomeação pura, byte a byte idêntico**. Confirmado por `md5sum` e `wc -c` na §5.4 — `a8d8007143fbbdb07b14ceafc0c5504c`, **539** bytes, os mesmos de antes. O que mudou foi exclusivamente o **nome** e, por consequência, a **pertinência ao glob `*.pdf`**.
+
+### O que ficou dessincronizado, e o que foi corrigido
+
+| # | Onde | Estado antes deste round | Estado agora, com saída real |
+|---|---|---|---|
+| **R3-a** | §5.4, tabela D5 | "12 arquivos (10 `.pdf` + 2 `.txt`)" | **12 = 9 `.pdf` + 2 `.txt` + 1 `.pdf.INVALIDO_HTML`** (`find -name "*.pdf" \| wc -l` → `9`) |
+| **R3-b** | §5.4, bloco do filtro | `ls datasheets/*.pdf \| grep -viE ipb017n10n5… \| wc -l` → `9` | **→ `8`** (o arquivo renomeado saiu do glob) |
+| **R3-c** | §5.4, bloco "Achado adicional" | comandos `ls -l` e `head -c 200` apontados para o **nome sem sufixo**, que não existe mais | reescritos com o nome novo: `ls -la datasheets/ \| grep -i icm`, `file …INVALIDO_HTML`, `head -c 200 …INVALIDO_HTML \| strings \| head -3`, `md5sum` |
+| **R3-d** | §5.4, envio à fab | "com o arquivo falho removido … Mandar só os 9 filtrados" | "com `icm-42688-p.pdf.INVALIDO_HTML` falho removido … Mandar só os **8** filtrados" |
+| **R3-e** | §6, laço de `test -e` | testava o **nome sem sufixo**; o caminho **não existe mais** → o laço daria 34/35 | testa `datasheets/icm-42688-p.pdf.INVALIDO_HTML`; rodar de novo dá **35 OK / 0 FALTA** |
+| **R3-f** | §7.4 | "1 dos 12 (o arquivo falho, citado pelo nome sem sufixo)" | "1 dos 12 (`icm-42688-p.pdf.INVALIDO_HTML`)" |
+| **R3-g** | §8, linha F3 | "(10 `.pdf` + 2 `.txt`)" | corrigido para "(na época: 10 `.pdf` + 2 `.txt`)", com remissão ao round 3 |
+
+### O que este round **não** mexeu
+
+Nenhuma conclusão virou. Seguem intactos e reconferidos: **30,0 h** / **34,0 h** (§4.3 e §7), a contagem **6 ❌ / 3 ⚠️ / 2 ✅**, **E1–E5** (nome `.gto` do silk frontal, `head -20` completo, `ls` de §3.1 com os 12 arquivos, `wc -l` dos `.drl` byte a byte), o bloco **`(setup …)`** da §2.2.1, o **`SetCreateGerberJobFile` na linha 545** de `gera_pcb_v7.py`, e a ausência de `*.kicad_sch` / netlist / `*.pos` / `*.lib` / `*.drr`. A §9 permanece como registro histórico do round 2 — seus números (12 arquivos, 35/35 caminhos) continuam válidos.
+
+### O arquivo renomeado foi **mantido**, não apagado
+
+O `.pdf.INVALIDO_HTML` continua em disco e continua fora de `*.pdf`. Isso é **decisão do WP3**, não ompissão: apagar o artefato de um download falho esconderia o defeito em vez de resolvê-lo, e a §5.4 depende dele como prova de que o IMU teve um download ruim. Para a **fab**, a recommendation da §5.4 continua: **não enviar esse arquivo** — mandar os 11 úteis. Para o **repositório**, ele fica marcado pelo sufixo, que é autoexplicativo.
+
+### Verificação final deste round
+
+```console
+$ grep -c "icm-42688-p\.pdf\b" plano/WP2_FABRICACAO.md
+17
+$ grep -o "pdf[.][A-Z_]*" plano/WP2_FABRICACAO.md | sort | uniq -c
+     26 pdf.INVALIDO_HTML
+$ grep -nE '\bTODO\b|\bTBD\b|\bXXX\b' plano/WP2_FABRICACAO.md
+(sem saída)
+```
+
+O `\b` do primeiro `grep -c` casa **dentro** do nome novo — o ponto entre a extensão e o sufixo é fronteira de palavra —, então esse número sozinho não prova nada. O que prova é o segundo: em todo o documento **não existe um único `pdf` seguido de espaço, crase ou fim de linha**; todas as ocorrências de `pdf` seguidas de ponto (as 26) são `pdf.INVALIDO_HTML`. Ou seja, **toda** menção ao arquivo renomeado usa o nome novo, e **nenhuma citação operacional** (§5.4, §6, §7.4) aponta para o caminho antigo, que não existe mais. As referências ao PDF válido `icm-42688-p_v2_tdk_ds-000347-v1.2.pdf` / `-v1.6.pdf` seguem intactas, e o nome antigo **aparece escrito por extenso zero vezes** — o `git show` colado no início desta §10 é a única prova do rename, e o próprio git já o truncou como `...m-42688-p.pdf`.
