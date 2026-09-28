@@ -5,7 +5,9 @@
 **Data da auditoria:** 2026-09-28
 **Escopo:** o que falta no repositório para que uma casa de fabricação produza a placa **sem adivinhar nada**, e qual é o defeito de naming dos Gerbers.
 
-> **Convenção:** todo número citado veio de um comando executado nesta auditoria, com o comando e a saída colados na seção de evidência. Os valores da coluna **Esforço** são **estimativas de engenharia** marcadas como `[EST]` — não são medidos e não são promessa de prazo.
+> **Convenção:** todo número citado veio de um comando executado nesta auditoria, com o comando e a saída colados na seção de evidência. Saídas longas têm a reticência marcada **explicitamente** por `… (N linhas omitidas) …`, com `wc -l` do arquivo logo acima — nada é truncado em silêncio. Os valores da coluna **Esforço** são **estimativas de engenharia** marcadas como `[EST]` — não são medidos e não são promessa de prazo.
+>
+> **Revisado em 2026-09-28** após verificação adversarial — ver §8, "Correções após verificação adversarial". Sete defeitos (F1–F7) foram corrigidos; nenhuma conclusão de ausência foi alterada.
 
 ---
 
@@ -19,13 +21,37 @@ $ pcbnew --version
 /usr/bin/kicad
 $ test -e /usr/bin/kicad-cli && echo "SIM" || echo "NAO"
 NAO (test -e /usr/bin/kicad-cli -> falha)
+$ which kicad-cli
+NAO ENCONTRADO (which -> exit 1)
+$ which python3
+/root/.qwenpaw/venv/bin/python3
+$ python3 --version
+Python 3.12.13
 $ python3 -c "import pcbnew; print(pcbnew.GetBuildVersion())"
 ModuleNotFoundError: No module named 'pcbnew'
+$ which python3.9
+/usr/bin/python3.9
+$ /usr/bin/python3.9 -c "import pcbnew,sys; print(sys.version.split()[0], pcbnew.GetBuildVersion())"
+3.9.2 5.1.9+dfsg1-1+deb11u1
+$ head -1 fase3_pcb/gera_pcb_v7.py
+#!/usr/bin/env python3.9
 ```
 
-O `pcbnew` está instalado como **binário GUI** (`/usr/bin/pcbnew`) e sem `DISPLAY` não abre. O `kicad-cli` **não existe** nesta máquina — coerente com o `README.md:104`: *"`kicad-cli` não existe nesta máquina: os Gerbers são gerados por script `pcbnew`."*
+> ⚠️ **Correção de 2026-09-28 (verificação adversarial, F4).** O `ModuleNotFoundError` acima **não** prova que o `pcbnew` é inacessível nesta máquina: `python3` no `PATH` é o **Python 3.12 do venv do agente** (`/root/.qwenpaw/venv/bin/python3`), que não tem o módulo. O módulo existe e é usável — no interpretador do sistema `/usr/bin/python3.9`, que é exatamente o que o `gera_pcb_v7.py` já usa (shebang `#!/usr/bin/env python3.9`) para plotar os 9 Gerbers e os 2 `.drl`.
 
-**Consequência prática:** qualquer artefato que dependa de `kicad-cli` (`.gbrjob`, `.pos`/CPL, PDF de_IRQ, step de 3D) **não pode ser gerado pela CLI nesta máquina** e exige o `pcbnew` sob Xvfb ou uma estação KiCad de verdade. Isso entra no esforço estimado de cada linha da tabela.
+O `pcbnew` está instalado **em duas formas**: o **módulo Python** em `/usr/bin/python3.9` (headless, sem `DISPLAY`) e o **binário GUI** em `/usr/bin/pcbnew`, que sem `DISPLAY` não abre. O `kicad-cli` **não existe** nesta máquina — confirmado por `test -e` e por `which` (exit 1) — coerente com o `README.md:104`: *"`kicad-cli` não existe nesta máquina: os Gerbers são gerados por script `pcbnew`."*
+
+**Consequência prática (corrigida):** o que **não** pode ser gerado nesta máquina é o que depende **`kicad-cli`** (exportação pela CLI: PDF de IRQ, step de 3D, `kicad-cli pcb export`). O que depende do **módulo `pcbnew`** **é** gerável headless, via `/usr/bin/python3.9` — é assim que os Gerbers e drills do §2.1 foram produzidos. A ressalva real para os itens 2 (netlist) e 3 (CPL) é outra e é de **API**, não de ferramental: o `pcbnew` 5.1.9 **não expõe** escritas de netlist nem de position file no Python.
+
+```console
+$ /usr/bin/python3.9 -c "import pcbnew; print('ExportSpecctraDSN' in dir(pcbnew), [f for f in dir(pcbnew) if 'Position' in f])"
+False []
+$ which Xvfb xvfb-run
+/usr/bin/Xvfb
+/usr/bin/xvfb-run
+```
+
+Ou seja: netlist e CPL exigem o **GUI** — que existe e roda sob `xvfb-run`. Isso entra no esforço estimado de cada linha da tabela.
 
 Versão do formato do board e do gerador, lida do próprio arquivo:
 
@@ -56,14 +82,30 @@ $ head -20 fase3_pcb/v7/v7_drone.kicad_pcb
 | 3 | **Pick-and-place / CPL** (`.pos` ou `.csv` de posições) | ❌ **NÃO** | `find` não retorna `*.pos` (§2.1) | **Assembler** (se SMT) — é o arquivo que a máquina de montagem lê para colocar os 319 módulos | 0,5 h [EST] | `pcbnew` → `File > Fabrication Outputs > Footprint Position File` (unidades mm, lado Top/Bot separados) |
 | 4 | **BOM de fabricação amarrado ao board** | ⚠️ **PARCIAL** | Existem 2 CSVs de 43 linhas, mas `conf` mostra 37 `[EST]` e não há PN (§2.5) | Compras, assembler, **você** | 4 h [EST] | `cd orcamento && python3 orcamento.py` gera `orcamento_detalhado.csv`; falta o *join* com o `.kicad_pcb` |
 | 5 | **Bibliotecas de símbolos / footprints** (`.lib` / `.pretty/`) | ❌ **NÃO** | `find` não retorna `*.lib` (§2.1); 30 footprints distintos embutidos no `.kicad_pcb` | Fab, assembler, **você** (reabrir o projeto em outra máquina) | 2 h [EST] | `pcbnew` → `File > Archive Footprints`; `eeschema` → `Preferences > Manage Symbol Libraries > Export` |
-| 6 | **Stackup da placa** | ❌ **NÃO** | Só `(thickness 1.6)` no cabeçalho; nenhum bloco de stackup/impedância (§0 e §2.2) | **Fab** — sem isso a casa assume Defaults e pode errar a impedância do barramento de potência | 1 h [EST] | `pcbnew` → `File > Board Setup > Physical Stackup` → salvar como `.kicad_pcb` |
+| 6 | **Stackup da placa** | ❌ **NÃO** | Existe um bloco `(setup …)` na linha 38 com ~30 *design rules* de DRC/plot, mas **zero** `stackup`, `dielectric`, `copper_thickness` e `impedance` no arquivo inteiro (§0 e §2.2) | **Fab** — sem isso a casa assume Defaults e pode errar a impedância do barramento de potência | 1 h [EST] | `pcbnew` → `File > Board Setup > Physical Stackup` → salvar como `.kicad_pcb` |
 | 7 | **Drill map / desenho dos furos** | ❌ **NÃO** | Só 2 `.drl`; nenhum `.drr`, nenhum mapa visual | Fab, **você** (saber onde furar a fixação) | 1 h [EST] | `pcbnew` → `File > Fabrication Outputs > Drill Drawing/Map` |
-| 8 | **Unidade e zero declarados (`.gbrjob` + nota)** | ⚠️ **PARCIAL** | `%MOMM*%` e `FORMAT={... absolute / metric / decimal}` presentes, mas **sem** `.gbrjob` (§2.1, §2.4) | Fab, CAM | 0,5 h [EST] | `pcbnew` → `File > Fabrication Outputs > Gerber Job File` (KiCad 5.1 grava `.gbrjob` ao lado dos `.g*`) |
+| 8 | **Unidade e zero declarados (`.gbrjob` + nota)** | ⚠️ **PARCIAL** | `%MOMM*%` e `FORMAT={... absolute / metric / decimal}` presentes, mas **sem** `.gbrjob` — desligado deliberadamente em `gera_pcb_v7.py:545` (§2.1, §2.4, §2.6) | Fab, CAM | 0,5 h [EST] | trocar `SetCreateGerberJobFile(False)` por `True` em `gera_pcb_v7.py:545` e replotar — o KiCad 5.1 grava `.gbrjob` ao lado dos `.g*` |
 | 9 | **Contorno de placa em Edge.Cuts nativo** | ⚠️ **DEFEITO** | `gr_line` em Edge.Cuts = **0**; `gr_poly` = **1** (§2.3) | Fab (o `.gm1` exportado está bom, o `.kicad_pcb` não) | 0,5 h [EST] | Plotar 4 `gr_line` fechadas em Edge.Cuts no lugar do `gr_poly` |
 | 10 | **Gerbers + drill exports** | ✅ **SIM** | 9 `.g*` + 2 `.drl` em `fase3_pcb/v7/` (§2.1) | Fab | — | `cd fase3_pcb && python3 gera_pcb_v7.py` |
 | 11 | **Documentação de montagem e teste** | ✅ **SIM** | `MONTAGEM_ORDEM_DE_SOLDA.md`, `PLANO_TESTE_BANCADA.md`, `RISCOS.md`, `SEGURANCA_E_REGULATORIO.md` | Fab, assembler, **você** | — | já escritos à mão |
 
-**Resumo da coluna "Existe?":** de 11 itens, **7 não existem**, **3 existem de forma parcial/defeituosa** e **1 está ok** (os exports). Somando o defeito de naming (§3), a placa **não é fabricável hoje** sem antes resolver os itens 1, 2, 3, 5, 6, 7, 8 e 9.
+**Resumo da coluna "Existe?":** de 11 itens, **6 não existem** (1, 2, 3, 5, 6, 7), **3 existem de forma parcial/defeituosa** (4, 8, 9) e **2 estão ok** (10 — os exports, e 11 — a documentação). Somando o defeito de naming (§3), a placa **não é fabricável hoje** sem antes resolver os itens 1, 2, 3, 5, 6, 7, 8 e 9.
+
+```console
+$ awk -F'|' '/^\| *[0-9]+ \|/ {c=$4; gsub(/^ *| *$/,"",c);
+        if (c ~ /^❌/) nao++; else if (c ~ /^⚠️/) parc++; else if (c ~ /^✅/) ok++; n++}
+      END{print "linhas="n, "NAO="nao, "PARCIAL="parc, "OK="ok}' plano/WP2_FABRICACAO.md
+linhas=11 NAO=6 PARCIAL=3 OK=2
+```
+
+**Soma do esforço [EST] dos itens 1, 2, 3, 5, 6, 7, 8, 9** (a coluna que trava o envio):
+
+```console
+$ awk 'BEGIN{print 24+0.5+0.5+2+1+1+0.5+0.5}'
+30
+```
+
+**24 + 0,5 + 0,5 + 2 + 1 + 1 + 0,5 + 0,5 = 30,0 h** [EST]. (Item 4 — BOM de fabricação, 4 h — fica fora desse total por estar em §4; somando-o, o escopo completo da §1 seria **34,0 h**.)
 
 ---
 
@@ -151,6 +193,37 @@ O que **existe** no cabeçalho, para não exaggerar o diagnóstico:
 
 > **Achado colateral:** o `(general (zones 0))` do cabeçalho **contradiz** as 3 zonas reais do arquivo. É porque o cabeçalho é escrito à mão pelo `gera_pcb_v7.py`, não pelo `pcbnew`. Nenhuma fab lê esse contador, mas é a mesma raiz do defeito de naming: **o cabeçalho do arquivo não é gerado pela ferramenta, é escrito pelo script.** (§3, correção C3.)
 
+#### 2.2.1 O bloco `(setup …)` existe — mas **não** é stackup
+
+Correção de 2026-09-28 (F6). A evidência do item 6 da §1 dizia "só `(thickness 1.6)` no cabeçalho", o que **subestima** o que existe: há um bloco `(setup …)` na **linha 38** com as *design rules* de DRC/plot do KiCad. O que **não** existe é o *stackup* — e é isso que mantém o item 6 em ❌:
+
+```console
+$ grep -n "(setup" fase3_pcb/v7/v7_drone.kicad_pcb
+38:  (setup
+$ sed -n '38,46p' fase3_pcb/v7/v7_drone.kicad_pcb
+  (setup
+    (last_trace_width 0.25)
+    (trace_clearance 0.2)
+    (zone_clearance 0.508)
+    (zone_45_only no)
+    (trace_min 0.2)
+    (via_size 0.8)
+    (via_drill 0.4)
+    (via_min_size 0.4)
+```
+
+O bloco tem ~30 regras de DRC/plot (`last_trace_width`, `trace_clearance`, `via_size`, `edge_width`, `creategerberjobfile`, …). **O que a fab precisa e não está** são as quatro chaves do *stackup* físico:
+
+```console
+$ for k in stackup dielectric copper_thickness impedance; do printf "%-16s %s\n" "$k" "$(grep -c "$k" fase3_pcb/v7/v7_drone.kicad_pcb)"; done
+stackup          0
+dielectric       0
+copper_thickness 0
+impedance        0
+```
+
+**4 de 4 = 0.** Não há espessura de cobre por camada, nem dielétrico, nem largura/espessura do *core*, nem alvo de impedância. O `(general (thickness 1.6))` do cabeçalho dá só a espessura **total** do board — insuficiente para a fab escolher o *stackup*, e insuficiente para casar a impedância do barramento de potência. **Conclusão do item 6 mantida: ❌ não existe stackup.**
+
 ### 2.3 Contorno da placa: o `.gm1` está bom, o `.kicad_pcb` está errado
 
 ```console
@@ -165,22 +238,36 @@ $ grep -E "Edge.Cuts" fase3_pcb/v7/v7_drone.kicad_pcb | sed -E 's/^ +//' | cut -
 
 O contorno da placa está modelado como **um polígono** (`gr_poly`), e não como o **percurso fechado de linhas** que o KiCad 5.1 e qualquer CAM esperam em `Edge.Cuts`.
 
-**O `.gm1` exportado está correto** — fecha os 4 cantos e volta ao início:
+**O `.gm1` exportado está correto** — fecha os 4 cantos e volta ao início. Saída **literal e completa**, as 26 linhas do arquivo, sem elipse:
 
 ```console
+$ wc -l fase3_pcb/v7/-drone_Edge_Cuts.gm1
+26 fase3_pcb/v7/-drone_Edge_Cuts.gm1
 $ cat fase3_pcb/v7/-drone_Edge_Cuts.gm1
+G04 #@! TF.GenerationSoftware,KiCad,Pcbnew,5.1.9+dfsg1-1+deb11u1*
+G04 #@! TF.CreationDate,2026-09-11T22:33:22-03:00*
+G04 #@! TF.ProjectId,,58585858-5858-4585-9858-585858585858,rev?*
+G04 #@! TF.SameCoordinates,Original*
 G04 #@! TF.FileFunction,Profile,NP*
 %FSLAX46Y46*%
 G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
+G04 Created by KiCad (PCBNEW 5.1.9+dfsg1-1+deb11u1) date 2026-09-11 22:33:22*
 %MOMM*%
 %LPD*%
 G01*
+G04 APERTURE LIST*
+G04 #@! TA.AperFunction,Profile*
 %ADD10C,0.100000*%
+G04 #@! TD*
+G04 APERTURE END LIST*
 D10*
 X10000000Y-10000000D02*
 X230000000Y-10000000D01*
+X230000000Y-10000000D02*
 X230000000Y-170000000D01*
-X100000000Y-170000000D01*
+X230000000Y-170000000D02*
+X10000000Y-170000000D01*
+X10000000Y-170000000D02*
 X10000000Y-10000000D01*
 M02*
 ```
@@ -193,11 +280,21 @@ Coordenadas lidas em formato 4.6 (coordenadas em 1/1.000.000 mm — na prática 
 
 ### 2.4 Furos: unidades, zero e o que falta
 
+> ⚠️ **Correção de 2026-09-28 (F5).** O `-PTH.drl` tem **451 linhas** e o `-NPTH.drl` tem **19**. A versão anterior deste documento colava trechos **sem marcar a elipse** e ainda omitia as linhas de metadado `#@!` do cabeçalho. Abaixo: o `-NPTH.drl` **literal e completo** (19 linhas, cabe a inteiro) e o `-PTH.drl` com a elipse **explicitamente marcada** por `… (N linhas omitidas) …`.
+
 ```console
+$ wc -l fase3_pcb/v7/-PTH.drl fase3_pcb/v7/-NPTH.drl
+  451 fase3_pcb/v7/-PTH.drl
+   19 fase3_pcb/v7/-NPTH.drl
+  470 total
+
 $ head -20 fase3_pcb/v7/-PTH.drl
 M48
 ; DRILL file {KiCad 5.1.9+dfsg1-1+deb11u1} date Fri Sep 11 22:33:22 2026
 ; FORMAT={-:-/ absolute / metric / decimal}
+; #@! TF.CreationDate,2026-09-11T22:33:22-03:00
+; #@! TF.GenerationSoftware,Kicad,Pcbnew,5.1.9+dfsg1-1+deb11u1
+; #@! TF.FileFunction,Plated,1,4,PTH
 FMAT,2
 METRIC
 T1C30.000
@@ -212,11 +309,15 @@ T8C450.000
 G90
 G05
 T1
+… (431 linhas de coordenadas X…Y omitidas) …
 
 $ cat fase3_pcb/v7/-NPTH.drl
 M48
 ; DRILL file {KiCad 5.1.9+dfsg1-1+deb11u1} date Fri Sep 11 22:33:22 2026
 ; FORMAT={-:-/ absolute / metric / decimal}
+; #@! TF.CreationDate,2026-09-11T22:33:22-03:00
+; #@! TF.GenerationSoftware,Kicad,Pcbnew,5.1.9+dfsg1-1+deb11u1
+; #@! TF.FileFunction,NonPlated,1,4,NPTH
 FMAT,2
 METRIC
 T1C320.000
@@ -291,6 +392,23 @@ PROTECAO;TVS unidirecional;standoff >= 30 V, clamp ~38 V [N/D offline];1;Diode_S
 ```
 
 O marcador **`[N/D offline]`** aparece dentro do `valor_especificacao` — é a lista se declarando incompleta. Confirmado em 2 linhas de amostra; a coluna existe para registrar exatamente esse tipo de lacuna.
+
+### 2.6 O `.gbrjob` não falta por limitação do KiCad 5.1 — foi desligado no script
+
+Correção de 2026-09-28 (F7). A versão anterior deste documento atribuía a ausência do `.gbrjob` ao KiCad 5.1 e listava `pcbnew → File > Fabrication Outputs > Gerber Job File` como o comando que o geraria. **Isso era factualmente errado:** o `gera_pcb_v7.py` **desliga deliberadamente** a geração do *job file* na linha **545**:
+
+```console
+$ grep -n "SetCreateGerberJobFile" fase3_pcb/gera_pcb_v7.py
+545:po.SetSubtractMaskFromSilk(True); po.SetCreateGerberJobFile(False)
+$ sed -n '543,546p' fase3_pcb/gera_pcb_v7.py
+po.SetScale(1); po.SetMirror(False); po.SetUseGerberAttributes(False)
+po.SetUseGerberProtelExtensions(True); po.SetExcludeEdgeLayer(False)
+po.SetSubtractMaskFromSilk(True); po.SetCreateGerberJobFile(False)
+$ find . -path ./.git -prune -o -type f -iname "*.gbrjob" -print | wc -l
+0
+```
+
+`SetCreateGerberJobFile(False)` é o estado **default** do plotador, então o KiCad 5.1.9 tem toda a capacidade de gravar o `.gbrjob` ao lado dos `.g*` — **ele simplesmente não foi pedido**. A ausência é uma decisão do script, não uma limitação da ferramenta. Isso muda o item 8 de ❌ para ⚠️ (unidade/zero **estão** declarados no header de cada arquivo; o que falta é o `.gbrjob` e uma nota legível) e muda o esforço: **não é preciso usar o GUI**, é uma linha booleana e um replot — por isso o item 8 continua em **0,5 h** [EST] e §3.3 ganhou a correção **C7**.
 
 ---
 
@@ -421,6 +539,9 @@ Substituir o `gr_poly` de Edge.Cuts por **4 `gr_line` fechadas** entre (10,10), 
 **C6 — Não escrever o cabeçalho à mão.**
 Arazão do `(zones 0)` falso: `gera_pcb_v7.py` escreve o bloco `general` manualmente. Deixar o `pcbnew` gerar o cabeçalho ao salvar elimina a classe inteira de inconsistência entre header e conteúdo.
 
+**C7 — Ligar o Gerber Job File no script.** *(adicionado em 2026-09-28, ver §2.6)*
+Trocar `po.SetCreateGerberJobFile(False)` por `True` em `fase3_pcb/gera_pcb_v7.py:545` e replotar. O `.gbrjob` passa a ser gravado ao lado dos 9 `.g*`, sem passar pelo GUI. É a correção mais barata da lista: uma linha booleana.
+
 ---
 
 ## 4. BOM: de lista de componentes a BOM de fabricação
@@ -456,7 +577,30 @@ O `.kicad_pcb` tem **319 módulos** distribuídos em **30 footprints distintos**
 
 O caminho é: `pcbnew` → `File > Fabrication Outputs > BOM`, gerando `v7_drone_bom.csv` (com `Ref` e `Value`), depois um `join` por footprint com `lista_componentes_fase0.csv` para adicionar as colunas comerciais. Estimativa: **4 h** [EST] para o script de join, mais o tempo de cotar os 6 itens que hoje não têm preço real (fora do escopo desta WP — é trabalho de compra).
 
-> **Pragmaticamente:** os itens 1–3, 5–9 da tabela §1 somam ~**9,5 h** [EST] de trabalho de arquivo. Sem esses 9,5 h **não existe envio para fabricação**. Esta é a métrica que importa.
+> **Pragmaticamente:** os itens 1–3, 5–9 da tabela §1 somam **30,0 h** [EST] de trabalho de arquivo. Sem essas 30,0 h **não existe envio para fabricação**. Esta é a métrica que importa.
+>
+> **Conta, item a item** (coluna "Esforço" da §1, valores `[EST]`):
+>
+> ```console
+> $ awk 'BEGIN{print 24+0.5+0.5+2+1+1+0.5+0.5}'
+> 30
+> ```
+>
+> | Item | Artefato | Esforço |
+> |---|---|---|
+> | 1 | Esquema nativo | 24 h |
+> | 2 | Netlist | 0,5 h |
+> | 3 | Pick-and-place / CPL | 0,5 h |
+> | 5 | Bibliotecas de símbolos / footprints | 2 h |
+> | 6 | Stackup | 1 h |
+> | 7 | Drill map | 1 h |
+> | 8 | Unidade/zero (`.gbrjob` + nota) | 0,5 h |
+> | 9 | Contorno em `gr_line` | 0,5 h |
+> | | **Total** | **30,0 h** |
+>
+> O item 4 (BOM de fabricação amarrada ao board, 4 h) está fora deste total porque é escopo de §4; somando-o, o escopo completo da §1 seria **34,0 h**.
+>
+> > **Correção de 2026-09-28 (F1).** A versão anterior deste parágrafo afirmava **~9,5 h**. A conta da própria tabela da §1 dá **30,0 h** — o total anterior estava errado por **3,16×**. Nenhum valor da coluna "Esforço" mudou; só a soma estava errada.
 
 ---
 
@@ -511,9 +655,38 @@ Ordem de verificação. **Não enviar enquanto qualquer item marcado com ❌ est
 | D2 | Plano de teste de bancada com critério de aceite | `fase4_entrega/PLANO_TESTE_BANCADA.md` ✅ |
 | D3 | Matriz de riscos | `fase4_entrega/RISCOS.md` ✅ |
 | D4 | Segurança/regulatório (Brasil) | `fase4_entrega/SEGURANCA_E_REGULATORIO.md` ✅ |
-| D5 | Datasheets dos ICs críticos | `datasheets/` — 9 arquivos (ESP32-S3, ICM-42688-P, INA240, IR2104, MCP3208) ✅ |
+| D5 | Datasheets dos ICs críticos | `datasheets/` — **12 arquivos** (10 `.pdf` + 2 `.txt`); 1 `.pdf` é download falho → **11 úteis** ⚠️ (§5.4) |
 
 **D1–D5 já existem e são um diferencial** — poucas casas recebem isso. Copiar para a pasta de envio (ou anexar) é o que transforma "pedido de peça" em "pedido de peça com critério de aceite".
+
+> **Correção de 2026-09-28 (F3).** A versão anterior dizia "9 arquivos". O real é **12** (10 `.pdf` + 2 `.txt`). O "9" é o resultado de um **filtro** que nunca foi declarado: os `.pdf` que corresponden aos **5 ICS realmente escolhidos** no board (ESP32-S3, ICM-42688-P, INA240, IR2104, MCP3208), excluindo o PDF do IPB017N10N5, que o próprio nome marca como `REFERENCIA_NAO_ESCOLHIDO`, e excluindo os 2 `.txt`. As duas contagens estão certaináveis:
+>
+> ```console
+> $ find datasheets -maxdepth 1 -type f | wc -l
+> 12
+> $ find datasheets -maxdepth 1 -type f -name "*.pdf" | wc -l
+> 10
+> $ find datasheets -maxdepth 1 -type f -name "*.txt" | wc -l
+> 2
+> $ ls datasheets/*.pdf | grep -viE "ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO" | wc -l
+> 9
+> ```
+>
+> As 6 famílias cobertas são: ESP32-S3 (2 `.pdf` + 1 `.txt` de extração de texto), ICM-42688-P (4 `.pdf` + 1 `.txt` = schematic da placa de avaliação `EV_ICM-42688-P`, doc. AN-000488), INA240, IPB017N10N5, IR2104 e MCP3208.
+
+> ⚠️ **Achado adicional da mesma verificação (F3):** um dos `.pdf` não é datasheet. `datasheets/icm-42688-p.pdf` tem **539 bytes** e é uma página **"Access Denied"** do servidor da TDK salva com extensão `.pdf` — ou seja, **download falho**:
+>
+> ```console
+> $ ls -l datasheets/icm-42688-p.pdf
+> -rwxr-xr-x 1 root root 539 ... datasheets/icm-42688-p.pdf
+> $ head -c 200 datasheets/icm-42688-p.pdf | strings | head -3
+> <HTML><HEAD>
+> <TITLE>Access Denied</TITLE>
+> ```
+>
+> O datasheet real do ICM-42688-P está presente em `icm-42688-p_v2_tdk_ds-000347-v1.2.pdf` e `-v1.6.pdf` (1,8 MB cada), então **a lacuna é do arquivo, não da informação** — mas a fab que receber o pacote com esse arquivo vai abrir um PDF inválido. **Antes do envio: apagar `icm-42688-p.pdf` ou substituí-lo pelo v1.6.** Isso derruba D5 de "✅ completo" para "⚠️ parcial" até a limpeza — o resto de D5 (D1–D4) segue ✅.
+>
+> **O envio à fab deve ser o conjunto dos 12 arquivos**, com o `icm-42688-p.pdf` falho removido: **11 arquivos úteis**. Mandar só os 9 filtrados deixaria de fora justamente a revisão v1.6 do datasheet do IMU.
 
 ---
 
@@ -523,17 +696,22 @@ Todo caminho citado neste documento foi conferido:
 
 ```console
 $ cd /opt/jupyter/work/drone
-$ for p in plano/WP1_ROTEAMENTO.md plano/WP3_PREMISSAS_DATASHEETS.md plano/WP4_FIRMWARE.md \
+$ for p in plano/WP1_ROTEAMENTO.md plano/WP3_PREMISSAS_DATASHEETS.md plano/WP4_FIRMWARE.md plano/WP2_FABRICACAO.md \
     fase3_pcb/v7/v7_drone.kicad_pcb fase3_pcb/v7/-drone_F_Cu.gtl fase3_pcb/v7/-drone_Edge_Cuts.gm1 \
     fase3_pcb/v7/-PTH.drl fase3_pcb/v7/-NPTH.drl fase3_pcb/v8 fase3_pcb/gera_pcb_v7.py \
     fase3_pcb/rota_v7.py fase3_pcb/verifica_fase3_v6.py fase0_especificacao/lista_componentes_fase0.csv \
     orcamento/orcamento_detalhado.csv orcamento/orcamento_por_bloco.csv orcamento/ORCAMENTO.md \
     orcamento/orcamento.py fase4_entrega/MONTAGEM_ORDEM_DE_SOLDA.md fase4_entrega/PLANO_TESTE_BANCADA.md \
     fase4_entrega/RISCOS.md fase4_entrega/SEGURANCA_E_REGULATORIO.md fase1_esquema/gera_fase1_c.py \
-    fase1_esquema/esq7_mcu.png README.md; do if test -e "$p"; then echo "OK   $p"; else echo "FALTA $p"; fi; done
+    fase1_esquema/esq7_mcu.png README.md datasheets datasheets/ev.txt datasheets/EV_ICM-42688-P.pdf \
+    datasheets/icm-42688-p.pdf datasheets/icm-42688-p_v2_tdk_ds-000347-v1.2.pdf \
+    datasheets/icm-42688-p_v2_tdk_ds-000347-v1.6.pdf \
+    datasheets/ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf \
+    /usr/bin/python3.9 /usr/bin/xvfb-run /usr/bin/pcbnew; do if test -e "$p"; then echo "OK   $p"; else echo "FALTA $p"; fi; done
 OK   plano/WP1_ROTEAMENTO.md
 OK   plano/WP3_PREMISSAS_DATASHEETS.md
 OK   plano/WP4_FIRMWARE.md
+OK   plano/WP2_FABRICACAO.md
 OK   fase3_pcb/v7/v7_drone.kicad_pcb
 OK   fase3_pcb/v7/-drone_F_Cu.gtl
 OK   fase3_pcb/v7/-drone_Edge_Cuts.gm1
@@ -555,17 +733,47 @@ OK   fase4_entrega/SEGURANCA_E_REGULATORIO.md
 OK   fase1_esquema/gera_fase1_c.py
 OK   fase1_esquema/esq7_mcu.png
 OK   README.md
+OK   datasheets
+OK   datasheets/ev.txt
+OK   datasheets/EV_ICM-42688-P.pdf
+OK   datasheets/icm-42688-p.pdf
+OK   datasheets/icm-42688-p_v2_tdk_ds-000347-v1.2.pdf
+OK   datasheets/icm-42688-p_v2_tdk_ds-000347-v1.6.pdf
+OK   datasheets/ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf
+OK   /usr/bin/python3.9
+OK   /usr/bin/xvfb-run
+OK   /usr/bin/pcbnew
 ```
 
-**25/25 caminhos existem.** Os arquivos `v1_drone.sch`, `vN_drone-job.gbrjob`, `vN_drone-top.pos` e `vN_drone_bom.csv` citados como **faltantes** (§2.1, §5) são justamente os que o `find` do §2.1 provou **não** existirem — eles aparecem neste documento como alvo, nunca como caminho navigável.
+**35/35 caminhos existem.** Os arquivos `v1_drone.sch`, `vN_drone-job.gbrjob`, `vN_drone-top.pos` e `vN_drone_bom.csv` citados como **faltantes** (§2.1, §5) são justamente os que o `find` do §2.1 provou **não** existirem — eles aparecem neste documento como alvo, nunca como caminho navigável.
+
+> **Correção de 2026-09-28.** A versão anterior desta seção afirmava **25/25**, mas o laço que ela mesma colava testava **24** caminhos. Total corrigido para **35/35** — os 24 originais, mais `plano/WP2_FABRICACAO.md`, os 7 caminhos de `datasheets/` citados na §5.4 e os 3 binários citados na §0 (`/usr/bin/python3.9`, `/usr/bin/xvfb-run`, `/usr/bin/pcbnew`).
 
 ---
 
 ## 7. Conclusão
 
-1. **A placa não é fabricável hoje.** Faltam 7 artefatos (§1) e 3 estão em estado defeituoso. O caminho crítico são os **~9,5 h** [EST] de geração de arquivos — mas o **gate real é o roteamento** (`README.md:28`), que é escopo de `plano/WP1_ROTEAMENTO.md`.
+1. **A placa não é fabricável hoje.** Faltam **6 artefatos** (§1: itens 1, 2, 3, 5, 6, 7) e **3 estão em estado parcial/defeituoso** (itens 4, 8, 9); só os itens 10 e 11 estão ✅. O caminho crítico são as **30,0 h** [EST] de geração de arquivos (itens 1, 2, 3, 5, 6, 7, 8, 9) — mas o **gate real é o roteamento** (`README.md:28`), que é escopo de `plano/WP1_ROTEAMENTO.md`.
 2. **O defeito de naming é confirmado e tem duas causas independentes:** `title_block` vazio no board (§3.1a) → gera o `-drone_` com hífen e o `rev?`; e export sem versão no nome (§3.1b) → 7 arquivos com nome idêntico e conteúdo diferente. **A correção que mata o risco é enviar só uma versão** (§3.3 C4) — renomear sozinho não basta se as 7 pastas forem para o mesmo zip.
 3. **A BOM atual é uma lista de projeto com preços estimados, não uma BOM de fabricação.** Faltam MPN e fabricante em **43/43** linhas, e designator em **43/43** — sem MPN a fab não compra, sem designator o assembler não monta. 37/43 preços são `[EST]`.
-4. **A documentação de Fase 4 (montagem, teste, riscos, regulatório) e os 9 datasheets já existem** e são o ativo mais subutilizado do projeto: estão prontos para ir no pacote e não vão junto hoje.
+4. **A documentação de Fase 4 (montagem, teste, riscos, regulatório) e os 12 arquivos de `datasheets/` já existem** e são o ativo mais subutilizado do projeto: estão prontos para ir no pacote e não vão junto hoje. Ressalva: 1 dos 12 (`icm-42688-p.pdf`) é um download falho de 539 bytes e precisa sair do pacote antes do envio (§5.4).
 
-**Estimativa total para fechar o pacote de fabricacao: ~9,5 h** [EST] de trabalho de arquivo (itens 1, 2, 3, 5, 6, 7, 8, 9 da §1), **fora** cotar MPNs e **fora** resolver o roteamento. Nenhum número de esforço deste documento foi medido — todos marcados `[EST]` são estimativa de engenharia.
+**Estimativa total para fechar o pacote de fabricacao: 30,0 h** [EST] de trabalho de arquivo (itens 1, 2, 3, 5, 6, 7, 8, 9 da §1 — `24 + 0,5 + 0,5 + 2 + 1 + 1 + 0,5 + 0,5 = 30,0`, conta em §4.3), **fora** cotar MPNs e **fora** resolver o roteamento. Com o item 4 (BOM, 4 h) o escopo completo da §1 é **34,0 h**. Nenhum número de esforço deste documento foi medido — todos marcados `[EST]` são estimativa de engenharia.
+
+---
+
+## 8. Correções após verificação adversarial (2026-09-28)
+
+Passagem de verificação adversarial sobre este documento encontrou **7 defeitos (F1–F7)**, todos corrigidos nesta data. Nenhuma **ausência** foi revista: as confirmações de que não existem `schematic`, `netlist`, CPL, `libs`, `stackup` e `drill map` foram reconferidas — inclusive dentro de `.ipynb_checkpoints` e em `/opt/jupyter/work` inteiro — e **permanecem válidas**. Nenhuma seção fora das listadas abaixo foi reescrita.
+
+| # | Defeito | Onde estava | O que mudou |
+|---|---|---|---|
+| **F1** | Soma de esforço errada por **3,16×** (dizia ~9,5 h; a tabela §1 dá 30,0 h) | §4.3 e §7 | Total reescrito como **30,0 h** nos dois lugares, com a conta explícita `24 + 0,5 + 0,5 + 2 + 1 + 1 + 0,5 + 0,5 = 30,0` e tabela item-a-item. Nenhum valor `[EST]` da coluna "Esforço" foi alterado — só a soma. Escopo completo da §1 (com o item 4) = **34,0 h**. |
+| **F2** | Resumo não batia com a própria tabela (dizia 7 ❌ / 3 ⚠️ / 1 ✅; o real é 6 ❌ / 3 ⚠️ / 2 ✅) | §1 e §7 | "Resumo da coluna Existe?" corrigido para **6 ❌ / 3 ⚠️ / 2 ✅**, com `awk` escopado nas 11 linhas da tabela mostrando `linhas=11 NAO=6 PARCIAL=3 OK=2`. §7.1 reescrito no mesmo número. |
+| **F3** | `datasheets/` tem **12** arquivos (10 `.pdf` + 2 `.txt`), não 9 | §5.4 (D5) e §7.4 | D5 passa a declarar **12** e a explicar o **filtro** que produzia 9 (`.pdf` dos 5 ICS escolhidos, excluindo o `REFERENCIA_NAO_ESCOLHIDO` do IPB017N10N5 e os 2 `.txt`), com `find` e `wc -l` de evidência. Achado extra: `icm-42688-p.pdf` são 539 bytes de **"Access Denied"** (download falho) → D5 marcado ⚠️ até limpeza; envio correto = **11 arquivos úteis**. |
+| **F4** | Afirmação factualmente falsa: "artefatos que dependem de `pcbnew` não podem ser gerados nesta máquina" | §0 | `ModuleNotFoundError` é do **venv Python 3.12 do agente**, não do KiCad. Acrescentado `/usr/bin/python3.9 -c "import pcbnew…"` → `5.1.9+dfsg1-1+deb11u1`, o mesmo interpretador do shebang `#!/usr/bin/env python3.9` do `gera_pcb_v7.py` que **já** plotou os Gerbers. "Consequência prática" reescrita: o que falta é o **`kicad-cli`** (mantido e reconfirmado por `which kicad-cli` → exit 1) e, para netlist/CPL, a **API do pcbnew 5.1** (`ExportSpecctraDSN` ausente) — resolvível com `xvfb-run`, presente. |
+| **F5** | Saídas "coladas" não eram literais (o doc declarava literalidade na convenção) | Convenção (linha 8), §2.3, §2.4 | §2.3 passa a colar o `-drone_Edge_Cuts.gm1` **literal e completo** (26 linhas, as 3 linhas de metadado `#@!` e os `D02*` de idênticos que faltavam foram restaurados). §2.4: `-NPTH.drl` **literal e completo** (19 linhas) e `-PTH.drl` com elipse **marcada** por `… (431 linhas de coordenadas X…Y omitidas) …`, precedida do `wc -l` real (**451**). Convenção do topo agora declara a regra da reticência explícita. |
+| **F6** | Item 6 dizia "só `(thickness 1.6)` no cabeçalho" — subestima o que existe | §1 item 6 e nova §2.2.1 | Reescrito: existe um bloco **`(setup …)` na linha 38** com ~30 *design rules* (`last_trace_width`, `trace_clearance`, `via_size`, `edge_width`, `creategerberjobfile`…). Nova §2.2.1 mostra o bloco e a contagem `stackup/dielectric/copper_thickness/impedance` = **0,0,0,0**. **Conclusão mantida: item 6 continua ❌** — o que falta é o *stackup*, não "qualquer coisa além da espessura". |
+| **F7** | `.gbrjob` atribuído a limitação do KiCad 5.1 | §1 item 8 e nova §2.6 | Causa correta registrada: `gera_pcb_v7.py:545` tem **`po.SetCreateGerberJobFile(False)`** — desligado **deliberadamente**, é o default do plotador. O KiCad 5.1 grava o `.gbrjob` normalmente. Comando do item 8 trocado de GUI para "trocar por `True` na linha 545 e replotar", e nova correção **C7** em §3.3. Esforço do item 8 inalterado (0,5 h). |
+
+**Sequências verificadas e confirmadas como ausentes** (mantidas sem alteração, reconferidas em `/opt/jupyter/work` inteiro e dentro de `.ipynb_checkpoints`): `*.kicad_sch`, `*.sch`, `*.net`, `*netlist*`, `*.pos`, `*.gbrjob`, `*.lib` — `find` retorna **0** para cada classe.
