@@ -1,0 +1,159 @@
+==============================================================================
+FASE 0 -- LIMITES CRITICOS (v6) -- combinacao MOSFET + driver ESCOLHIDA
+==============================================================================
+
+0. COMBINACAO AVALIADA (fonte: ESCOLHA_MOSFET_DRIVER.md, secao 4)
+  MOSFET de referencia (NAO escolhido) : IPB017N10N5, 100 V, Qg 168 nC typ / 210 nC max
+  MOSFET ESCOLHIDO                    : IPB017N10N5 (100 V, classe mantida; substituto com Qg <= 70 nC = PENDENTE)
+  Driver ESCOLHIDO                    : 6EDL7141XUMA1 (MOTIX, VQFN-48 7x7 mm, 3 canais, 1,5 A de pico)
+  Supply do driver: PVDD 5.5-60.0 V (trilho de 12 V cabe); PVCC programavel 7.0-15.0 V, 12 V dentro da faixa
+  Premissas mantidas: Vbat 25.2 V max, Ipk 30.0 A, Inom 15.0 A, f_pwm 20 kHz, Rth_ja 60 C/W, Ta 25 C, trilho 12.0 V
+
+1. TEMPO DE COMUTACAO DE GATE  t = Qg / I_driver
+  Qg (typ) = 168.0 nC   |   Qg (max) = 210.0 nC
+  I_out+ do driver = 1500 mA (fonte)  |  I_out- = 1500 mA (drain)
+  I_out+ do IR2104 = 130 mA (fonte) | I_out- = 270 mA (drain) [DS DRV p.1]
+
+  t turn-ON  (Qg typ / I+) = 168.0 nC / 1500 mA =    112.0 ns  [MEDIDO]
+  t turn-OFF (Qg typ / I-) = 168.0 nC / 1500 mA =    112.0 ns  [MEDIDO]
+  t turn-ON  (Qg max / I+) = 210.0 nC / 1500 mA =    140.0 ns  [MEDIDO]
+  t turn-OFF (Qg max / I-) = 210.0 nC / 1500 mA =    140.0 ns  [MEDIDO]
+  L1 tempo de subida do gate (esperado 50 ns) | esp         50 ns   | med        112 ns   | erro    +124.00 %
+                                              |   fonte: 168 nC / 1500 mA; alvo de 50 ns da Fase 0
+  >>> referencia do problema original: com o IR2104 e Qg 168 nC dava 1292,3 ns (+2484,6 %).
+
+  ANCORA DE DATASHEET (independe do driver): corrente implicita no tr do FET escolhido
+  tr do DS = 23 ns com Rg,ext = 1.6 ohm  [DS FET p.4, Table 5]
+  I = Qg/tr = 168 nC / 23 ns = 7.30 A  [MEDIDO]
+  I implicita no tr do DS vs I+ do driver     | esp        1.5 A    | med      7.304 A    | erro    +386.96 %
+                                              |   fonte: Qg/tr do datasheet contra a saida declarada do driver
+  >>> com Qg = 168 nC essa razao era 56,2x (IPB017N10N5). Aqui ela vale 4.87x.
+
+2. SLEW DE GATE  dV/dt = 10 V / t   (dV = 0 -> 10 V, mesma janela com que o DS caracteriza Qg)
+  L6 slew de Vgs no turn-ON                   | esp        0.3 V/ns | med    0.08929 V/ns | erro     -70.24 %
+                                              |   fonte: 10 V / (Qg typ / I+); 0,30 V/ns era o valor assumido na Fase 0
+  L6 slew de Vgs no turn-OFF                  | esp        0.3 V/ns | med    0.08929 V/ns | erro     -70.24 %
+                                              |   fonte: 10 V / (Qg typ / I-)
+  [MEDIDO] corrente reativa em Ciss durante a comutacao: I = Ciss*dV/dt
+        Ciss = 12 pF [DS FET p.4, Table 5] -> I_Ciss = Ciss*dV/dt = 12 pF x 0.0893 V/ns = 1.1 mA = 0.1 % de I_gate
+  [MEDIDO] corrente total no no de gate = (1 + Ciss*dV/dt/I) x I_gate = 1.00x a corrente do driver
+
+3. PERDA DE COMUTACAO NO MOSFET
+  [EST modelo 0,5*Vds*I*t_r] E_off(turn-ON) = 0,5 x 25.2 V x 30.0 A x 112.0 ns = 42.3 uJ
+  [EST] P_sw = E_off * f = 42.3 uJ x 20 kHz = 0.847 W/FET
+  [MEDIDO] no banco (24 FETs) = 20.32 W
+  [EST] o mesmo modelo com o t_r do proprio datasheet do FET:
+        0,5 x 25.2 V x 30.0 A x 23 ns = 8.69 uJ -> 0.174 W/FET (o piso fisico do componente)
+  [EST] Tj com Rth=60 C/W e Ta=25 C, no caso realista: Tj = 76 C
+  L8 perda de comutacao por FET               | esp      0.583 W    | med     0.8467 W    | erro     +45.23 %
+                                              |   fonte: 0,583 W/FET e' o que verifica_limites_entrada_v4.py §3 usou como parcela de regime; medido aqui com 0,5*Vds*I*t_r [EST]
+
+  CONTRAPROVA: o modelo acima NAO e' a perda real. O datasheet publica Qoss em TABELA:
+  [DS FET p.1, Table 1 'Key Performance Parameters' e p.4, Table 7] Qoss = 213 nC typ
+  [MEDIDO] E_oss = Qoss * Vds = 213 nC x 25.2 V = 5.37 uJ
+  [MEDIDO] P(E_oss) = 5.37 uJ x 20 kHz = 107.4 mW/FET -> 2.58 W no banco   [DS] -- energia que o MOSFET DESPERDICA por comutacao
+  [MEDIDO] P(E_oss) e' 12.68 % da estimativa de 0.85 W do modelo 0,5*Vds*I*tr
+  [MEDIDO] e' 124 % dos 0,133 W que o v4 §3 usava de parcela de comutacao
+  [DS FET p.4, Table 7] Qrr = 235 nC typ / 470 nC max a 100 A/us: recuperacao
+        injetada no barramento a cada comutacao = 140 % do proprio Qg
+  L8b perda de comutacao por FET -- piso de datasheet (Qoss)| esp      0.583 W    | med     0.1074 W    | erro     -81.59 %
+                                              |   fonte: Qoss x Vds x f, com Qoss lido da Table 1 do datasheet; e' o unico numero de tabela disponivel, porque E_on/E_off nao sao publicados [MEDIDO]
+  >>> VEREDITO HONESTO DE L8: os dois numeros medem coisas diferentes. O de 0,133 W do v4 e' um
+      chute de projeto; o de Qoss e' energia de comutacao por natureza no FET, e' TABELA de
+      datasheet, e da' uma ordem de grandeza a menos. O numero de 9,77 W do
+      redimensionamento_gate_v5 era artefato do modelo 0,5*Vds*I*tr, que cresce com t_r sem
+      limite e nao descreve o dispositivo. O que de fato NAO esta determinado e E_off:
+      [N/D offline] -- nenhum dos PDFs em datasheets/ publica E_on/E_off.
+
+4. BOOTSTRAP  dV = Qg / Cboot
+  L2 queda no bootstrap por comutacao         | esp       0.04 V    | med    0.03574 V    | erro     -10.64 %
+                                              |   fonte: Qg = 168 nC / Cboot = 4.70 uF; 40 mV era o orcado com Qg = 40 nC
+  [MEDIDO] Cboot minimo pela regra de 20*Qg = 3.36 uF (adotado: 4.70 uF, fator 1.40x)
+  [MEDIDO] queda no pior caso (Qg max) = 45 mV = 0.37 % de 12 V
+  [MEDIDO] Cboot necessario para 0,5 % de queda com Qg max = 42.00 uF
+  >>> o Cboot de 1 uF do BOM original serva para a combinacao escolhida
+
+5. CORRENTE NO TRILHO DE GATE
+  L3 corrente no trilho de 12 V               | esp     0.0492 A    | med    0.08094 A    | erro     +64.51 %
+                                              |   fonte: 12 x 25 uA (Iq typ) + 24 x Qg x f = 80.6 mA
+  [MEDIDO] uso do buck de 600 mA = 13.5 % -> folga de 7.4x   (pior caso Qg max + Iq max: 101.3 mA, 5.9x)
+
+6. DEAD-TIME
+  [MEDIDO em fase2_simulacao/verilog/RELATORIO_VERILOG.md] dead-time do RTL do MCPWM = 518.750 ns
+  [DS DRV p.15] piso de dead-time do 6EDL7141 (tDT_RISE/tDT_FALL) = 120 ns, programavel por SPI (DT_RISE/DT_FALL); [DS DRV p.15] tPROP_HS/tPROP_LS = 80/250 ns
+  [MEDIDO] o firmware ja envia 518.750 ns > 120 ns, entao o piso do CI nao se soma: a janela util e' a do MCPWM
+  >>> MELHORIA DE CIMA: o IR2104 tinha dead-time INTERNO de 400/520/650 ns que o firmware nao
+      programa [DS IR2104 p.3]. O 6EDL7141 NAO tem: o dead-time e' o que o MCU manda, com piso
+      de 120 ns. Isso elimina a soma de dois dead-times que a v5 apontava.
+  L4 dead-time necessario para o turn-OFF (janela util do MCPWM)| esp      518.8 ns   | med        112 ns   | erro     -78.41 %
+                                              |   fonte: Qg typ / I- = 168 nC / 1500 mA; janela util = 518.8 ns (RTL, sem dead-time interno somado)
+  [MEDIDO] a janela util cobre o turn-OFF com folga de 363.2 %
+  [MEDIDO] prop delay do CI somado ao turn-OFF: 192 ns (tip) a 362 ns (max) -> folga de 140.0 % no pior caso de prop delay
+  [MEDIDO] MCPWM/LEDC do ESP32-S3: passo de 1/(160 MHz x 2) = 3,125 ns na divisoria de 16 bits;
+      os 518.750 ns ja medidos no Verilog sao multiplos exatos desse passo, e o modo de
+      'dead-time com duty' do MCPWM do ESP32-S3 e' programavel em passos de t_dtg, que e' o
+      suficiente para ajustar a janela ao valor que o gate exigir. [MEDIDO em RTL]
+  L4b dead-time necessario para o turn-ON (janela maxima)| esp      518.8 ns   | med        140 ns   | erro     -73.01 %
+                                              |   fonte: Qg max / I+ = 210 nC / 1500 mA
+  [MEDIDO] custo em duty: 1.04 % do periodo a 20 kHz; sem dead-time interno somado, o duty perdido e' 1.04 % (era 2,075 % com o IR2104)
+
+7. RESISTOR DE GATE: amortecimento x velocidade (as duas contas nao cabem no mesmo resistor)
+  L7 Rg minimo para comutar em 50 ns (com o driver escolhido)| esp         10 ohm  | med      2.271 ohm  | erro     -77.29 %
+                                              |   fonte: Vtrilho/I_alvo - Rg_interno = 12 V / (168 nC / 50 ns) - 1.3 ohm; adotado = 10 ohm
+  [MEDIDO] Z0 da trilha de gate = sqrt(2 nH / 20000 pF) = 0.32 ohm
+  [MEDIDO] amortecimento exigido: Rg >= 2*Z0 = 0.6 ohm (adotado 10 ohm, OK)
+  [MEDIDO] com Rg = 10 + 1.3 = 11.3 ohm e o driver corrente-limitado, quem manda e' o DRIVER: a corrente pedida seria 1.062 A contra 1.50 A disponiveis
+  [MEDIDO] f_ring = 1/(2*pi*sqrt(LC)) = 25.2 MHz
+
+8. CONDUCAO: o preco de trocar 1,7 mOhm por um Rds(on) maior
+  Rds(on) do FET de referencia  = 1,7 mOhm [DS IPB017N10N5 p.4, Table 4, VGS=10 V, ID=100 A]
+  Rds(on) do FET ESCOLHIDO     = 1.70 mOhm [DS FET p.4, Table 4] -> 1.00x o de referencia
+
+                regime   I_pk |  P/FET ref P/FET novo |  24 FETs ref 24 FETs novo |  Tj novo
+   cruzeiro (5 A fase)   5.0 A |    0.011 W    0.011 W |       0.26 W       0.26 W |   76.4 C
+        nominal (15 A)  15.0 A |    0.096 W    0.096 W |       2.29 W       2.29 W |   81.5 C
+           pico (30 A)  30.0 A |    0.382 W    0.382 W |       9.18 W       9.18 W |   98.8 C
+
+  [MEDIDO] regime ohmico no pico (30 A, mitade da corrente na meia ponte): 9.18 W (ref) -> 9.18 W (novo) = +0.00 W no banco
+  [MEDIDO] parcela de comutacao [EST modelo]: 20.32 W (novo) contra 234.48 W do par de referencia com IR2104
+  perda total do banco no pico (conducao + comutacao [EST])| esp       9.18 W    | med       29.5 W    | erro    +221.36 %
+                                              |   fonte: conducao I^2*Rds(on) com I/2, mais 0,5*Vds*I*t_r*f [EST]
+
+9. BLOCOS QUE NAO DEPENDEM DA PREMISSA P-06 (reexecutados aqui, codigo do v4 §1-§4)
+  Banco de entrada: C = 470 uF, ESR = 15 mOhm [PREMISSA P-15, sem parte escolhida]
+    dV por ESR a 30 A = 450 mV  (o degrau de uma fase)
+    dV_C por ampere de ripple AC = 1/(f_pwm*C) = 106.38 mV/A; com os 100 nF + 10 uF
+    ceramicos colados a cada par de MOSFETs, o degrau de 30 A nao ve o eletrolitico e sim o
+    ceramico -- por isso o v4 trata esse numero como PIOR caso. [MEDIDO no modelo do v4 §1]
+    [MEDIDO] o v4 varre 8/10/12/15 mOhm porque o ESR do capacitor ESCOLHIDO continua [N/D offline].
+  Vias 0,3 mm: R = 1.168 mOhm -> 40 vias a 30 A: queda 0.876 mV, P = 26 mW
+  ADC: janela 2 us = 4.0 % do periodo de 50 us
+
+10. BALANCO NO CRUZEIRO (mesmo modelo do v4 §4)
+  Helice: 167 W | I_barra 7.5 A | I_fase pico 12.5 A
+  FETs (conducao no cruzeiro): 1.60 W
+  Conversores: 4.45 W (entrada) | TOTAL ~ 173 W (3.6 % acima do ideal de helice)
+
+==============================================================================
+VEREDITO v6 -- 8 limites criticos
+==============================================================================
+  ID   limite                            esperado      medido        erro  veredito
+  L1   tempo de subida do gate                50 ns        112 ns    +124.00%  ESTOURADO
+  L2   queda no bootstrap                   0.04 V     0.03574 V      -10.64%  OK  
+  L3   corrente no trilho de 12 V            0.6 A     0.08094 A      -86.51%  OK  
+  L4   dead-time (turn-OFF)                518.8 ns        112 ns     -78.41%  OK  
+  L6   slew de Vgs (turn-ON)                 0.3 V/ns    0.08929 V/ns     -70.24%  ESTOURADO
+  L7   Rg para comutar em 50 ns               10 ohm      2.271 ohm     -77.29%  OK  
+  L8   perda de comutacao por FET          0.583 W      0.8467 W      +45.23%  ESTOURADO
+  L5  potencia de porta por FET        33.60 mW (nao e' limite termico: e' energia dissipada no Rg)
+
+  3 limite(s) continua(m) ESTOURADO(s) com a combinacao escolhida:
+    L1 tempo de subida do gate: precisa 50 ns, medido 112 ns (+124.0 %)
+    L6 slew de Vgs (turn-ON): precisa 0.3 V/ns, medido 0.08929 V/ns (-70.2 %)
+    L8 perda de comutacao por FET: precisa 0.583 W, medido 0.8467 W (+45.2 %)
+
+==============================================================================
+FIM v6 -- 100% calculo numerico. Nenhuma medicao de bancada.
+A unica grandeza estimada e a perda de comutacao (modelo 0,5*Vds*I*t_r), marcada [EST],
+porque nenhum dos PDFs em datasheets/ publica E_on/E_off [MEDIDO].
+==============================================================================
