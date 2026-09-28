@@ -1,0 +1,74 @@
+==============================================================================
+FASE 3 -- VERIFICACAO DA v9   [VERIF]
+==============================================================================
+arquivo            : /opt/jupyter/work/drone/fase3_pcb/v9/v9_drone.kicad_pcb
+pcbnew             : 5.1.9+dfsg1-1+deb11u1
+
+pads de GND/VBAT_PROT sem via a 1,6 mm: QM101H.2, QM102H.2, QM103H.2, QM201H.2, QM202H.2, QM203H.2, QM301H.2, J2.A12, J2.A1, U_MCU.41, U_MCU.1, CoB2a.2, Cblk6.2, Cblk6.1, Cblk5.2, Cblk5.1, Cblk4.2, Cblk4.1, Cblk3.2, Cblk3.1, Cblk2.2, Cblk2.1, Cblk1.2, Cblk1.1, D1.2, D1.1, Q1.1, J1.2, UaM403.2, UaM403.1, RsM402.2, Rd2M203.2, CaM203.2, CaM203.1
+filled_polygon lidas do .kicad_pcb: 45  (zonas: 6, camadas: B.Cu, F.Cu, In1.Cu, In4.Cu)
+zonas de cobre com cobre: 6  -> 12V=8, 3V3=13, 3V3_A=5, 5V=5, GND=3, VBAT_PROT=11
+
+netlist
+  nets declaradas no board (GetNetCount()-1) : 191
+  nets com pelo menos 1 pad                 : 191
+  nets com pelo menos 1 trilha ou via      : 2
+  conexoes abertas do ratsnest (motor do pcbnew): 627
+  nets da v7 que saem no save (SDM1xx..SDM4xx, sem pad apos o D-13): 12
+  nets novas (SD_MCU): 1   -> 202 - 12 + 1 = 191
+
+geometria
+  footprints                                : 319
+  pads                                      : 1093
+  tracks                                    : 0
+  vias                                      : 402
+  zones (cobre + keepout)                   : 102 + 3
+  bbox                                      : 190.10 x 145.10 mm
+  soma dos bounding boxes dos footprints    : 16562.9 mm2
+
+cobertura por zona (raster de 0.25 mm, flood fill)
+  net          pads     ilhas    rotulo   sem_co  coberta
+  12V            47        16         6       12  nao
+  3V3            61        24        13        8  nao
+  3V3_A          17         6         5        1  nao
+  5V              9         6         5        3  nao
+  GND           207         2         1       18  nao
+  VBAT_PROT      42        28         1        9  nao
+
+------------------------------------------------------------------------------
+LINHAS QUE OS GATES LEEM
+------------------------------------------------------------------------------
+nets NAO roteadas : 189
+nets cobertas por zona : 0
+pares trilha x pad (net diferente) proximos: 0
+pads de GND/VBAT_PROT sem via a menos de 1.6 mm: 34
+rule_area (keepouts): 3
+camadas de cobre: 6
+dimensoes: 190.10 x 145.10 mm
+footprints / pads / tracks / vias: 319 / 1093 / 0 / 402
+ocupacao (soma dos footprints / area util): 16562.9 / 27583.5 = 60.05 %
+
+apoio a medicao
+  menor distancia pad GND/VBAT_PROT -> via : 0.700 mm (limite 1.60)
+  pads de GND/VBAT_PROT no board            : 249
+  token (keepout no arquivo)                : 3
+  token (stackup no .kicad_pcb)             : 0  (KiCad 5.1 nao aceita;
+    o stackup esta em v9/v9_drone_stackup.txt)
+  camadas de cobre presentes                : F.Cu, In1.Cu, In2.Cu, In3.Cu, In4.Cu, B.Cu
+  grid/snap gravado em (setup ...)          : aux_axis_origin=1 grid_origin=1
+
+------------------------------------------------------------------------------
+VEREDITO POR CRITERIO (nao maquiado)
+------------------------------------------------------------------------------
+  [FALHA] A4  pads GND/VBAT_PROT sem via < 1,6 mm        34                     (criterio: 0)
+  [OK  ] A8  keepout (rule_area) no arquivo             3                      (criterio: > 0)
+  [OK  ] camadas de cobre                               6                      (criterio: 6)
+  [OK  ] trilha x pad (net diferente) < 0,15 mm         0                      (criterio: 0)
+  [OK  ] contorno 190 x 145 mm                          190.1 x 145.1          (criterio: 190 x 145)
+  [OK  ] footprints preservados                         319                    (criterio: 319)
+  [OK  ] nets no board (202-12+1 = 191, D-13)           191                    (criterio: 191)
+  [OK  ] vias de stitch no board                        402                    (criterio: > 0)
+  [OK  ] zonas de cobre                                 102                    (criterio: > 0)
+  [OK  ] ocupacao                                       60.05 %                (criterio: <= 65 %)
+
+  VEREDITO: HA CRITERIOS EM FALHA (ver acima)
+==============================================================================

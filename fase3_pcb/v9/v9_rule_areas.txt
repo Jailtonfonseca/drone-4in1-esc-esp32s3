@@ -1,0 +1,12 @@
+# RULE AREAS DA v9 (keepouts) -- identificacao em sidecar
+#
+# KiCad 5.1.9 nao aceita (name ..) nem (title ..) em (zone ..):
+#   OSError Expecting "net, layer/layers, tstamp, hatch, priority,
+#   connect_pads, min_thickness, fill, polygon, filled_polygon, or
+#   fill_segments"   (medido nesta maquina, 2026-09-28).
+# As 3 areas abaixo sao reais: 3 tokens (keepout no .kicad_pcb,
+# cobrindo F.Cu, In1.Cu, In2.Cu, In3.Cu, In4.Cu e B.Cu.
+
+rule_area_potencia     x0=  0.00 y0=  0.00 x1=  0.90 y1=145.00 mm  (0.9 x 145.0 mm)  tracks/vias/pour = not_allowed
+rule_area_sinal        x0=189.10 y0=  0.00 x1=190.00 y1=145.00 mm  (0.9 x 145.0 mm)  tracks/vias/pour = not_allowed
+rule_area_separacao    x0=  0.00 y0=144.10 x1=190.00 y1=145.00 mm  (190.0 x 0.9 mm)  tracks/vias/pour = not_allowed

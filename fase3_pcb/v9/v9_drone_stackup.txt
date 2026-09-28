@@ -1,0 +1,25 @@
+# STACKUP DA v9 -- 6 camadas, F.Cu e B.Cu a 2 oz
+#
+# KiCad 5.1.9 NAO possui o token (stackup ...) no formato do .kicad_pcb:
+# injetar torna o board ILEGIVEL (OSError Unexpected "stackup").
+# Este sidecar e' o mesmo bloco de fase3_pcb/v8/v8_drone_stackup.txt --
+# a v9 muda a geometria da placa, nao o stackup.
+# Soma conferida: 1.6000 mm em 11 entradas.
+#
+(stackup
+      (layer F.Cu (type "copper") (thickness 0.0700))
+      (layer "dielectric 1" (type "prepreg") (thickness 0.2032) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
+      (layer In1.Cu (type "copper") (thickness 0.0350))
+      (layer "dielectric 2" (type "core") (thickness 0.3556) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
+      (layer In2.Cu (type "copper") (thickness 0.0180))
+      (layer "dielectric 3" (type "core") (thickness 0.3556) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
+      (layer In3.Cu (type "copper") (thickness 0.0350))
+      (layer "dielectric 4" (type "prepreg") (thickness 0.2032) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
+      (layer In4.Cu (type "copper") (thickness 0.0350))
+      (layer "dielectric 5" (type "core") (thickness 0.2194) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
+      (layer B.Cu (type "copper") (thickness 0.0700))
+      (copper_thickness 0.0700)
+      (dielectric_thickness 1.3370)
+      (edge_connector bevelled)
+      (impedance 50)
+    )
