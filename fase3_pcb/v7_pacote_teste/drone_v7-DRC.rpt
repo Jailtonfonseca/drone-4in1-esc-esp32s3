@@ -1,0 +1,27 @@
+RELATORIO DE DRC -- drone_v7
+gerado em: 2026-09-28 08:59:11
+board: /opt/jupyter/work/drone/fase3_pcb/v7/v7_drone.kicad_pcb
+pcbnew: 5.1.9+dfsg1-1+deb11u1
+
+RESULTADO: NAO DISPONIVEL NESTA MAQUINA (DRC nao executado).
+
+MOTIVO:
+  1. O modulo Python do pcbnew 5.1.9 nao exporta nenhuma API de DRC.
+     Varredura de dir(pcbnew) nao encontra DRC, DRC_ENGINE nem RunDRC; a API Python visivel e LAYER_DRC.
+  2. O pcbnew 5.1 so roda o DRC pela interface grafica (wxWidgets/GTK).
+     Nao existe kicad-cli nesta maquina para o 'kicad-cli pcb drc'.
+
+COMO GERAR O DRC NO v8 (nao automatizavel aqui):
+   /usr/bin/pcbnew /opt/jupyter/work/drone/fase3_pcb/v7/v7_drone.kicad_pcb
+   menu 'Inspect' -> 'Design Rules Checker' -> 'Run DRC' -> 'Save Report'
+
+VERIFICACOES FEITAS PELO SCRIPTO (substituem parcialmente o DRC):
+  - board gravado em /opt/jupyter/work/drone/fase3_pcb/v7_pacote_teste/_inspecao/board_para_drc.kicad_pcb para inspecao manual
+  - 4 camadas de cobre plotadas sem erro
+  - 2 arquivos de furo gerados
+  - 319 footprints exportados para pick-and-place (Top 319 + Bottom 0)
+  - 319 desses 319 footprints nao tem o bit 'placed' setado no board (KiCad: 'Not in position files'); entraram assim mesmo no .pos/.csv e
+    foram listados em drone_v7-PNA-FLAGS.txt para conference manual.
+
+ISTO NAO SUBSTITUI O DRC DA CASA: regras de clearance, largura de
+trilha e mascara continuam NAO VERIFICADAS por este arquivo.

@@ -1,0 +1,45 @@
+Footprints SEM o bit 'placed' (KiCad: 'Not in position files')
+=======================================================================*319 de 319 footprints.
+Eles SAIRAM no .pos/.csv mesmo assim; se algum destes nao deve
+ser montado, remova a linha a mao antes de mandar a casa.
+
+  U_BARO     CIMU       U_IMU      D3         D2         RCC2       RCC1       U_ESD     
+  J2         H4         H3         H2         H1         TP_UART_RX TP_UART_TX TP_WD     
+  TP_GND     TP_3V3A    TP_3V3     TP_5V      TP_12V     RBZ        Q_BZ       BZ1       
+  Rled       D_LED      NT1        CVB        RVB2       CEN        RT1        RVB1      
+  RSCL       RSDA       REN        RBOOT      SW2        SW1        U_MCU      Cadc4     
+  U11        Cadc3      U10        Cadc2      U9         Cadc1      U8         FLDO      
+  Cldo_o     Cldo_i     U_LDO      Cout_3V3_A1 Cout_3V32  Cout_3V31  Cout_5V2   Cout_5V1  
+  Cout_12V2  Cout_12V1  CinB3      CbstB3     Rf2B3      Rf1B3      CoB3b      CoB3a     
+  LB3        UB3        CinB2      CbstB2     Rf2B2      Rf1B2      CoB2b      CoB2a     
+  LB2        UB2        CinB1      CbstB1     Rf2B1      Rf1B1      CoB1b      CoB1a     
+  LB1        UB1        Chf4       Chf3       Chf2       Chf1       Cblk6      Cblk5     
+  Cblk4      Cblk3      Cblk2      Cblk1      Dz1        Rz1        Rg1        D1        
+  Q1         F1         J1         RsdM403    CbeM403    Rb2M403    Rb1M403    CdM403    
+  Rd2M403    Rd1M403    UaM403     RgfM403    RgoM403    CbM403     CaM403     DbM403    
+  CvM403     UM403      RsM403     QM403L     QM403H     RsdM402    CbeM402    Rb2M402   
+  Rb1M402    CdM402     Rd2M402    Rd1M402    UaM402     RgfM402    RgoM402    CbM402    
+  CaM402     DbM402     CvM402     UM402      RsM402     QM402L     QM402H     J_M4      
+  RsdM401    CbeM401    Rb2M401    Rb1M401    CdM401     Rd2M401    Rd1M401    UaM401    
+  RgfM401    RgoM401    CbM401     CaM401     DbM401     CvM401     UM401      RsM401    
+  QM401L     QM401H     RsdM303    CbeM303    Rb2M303    Rb1M303    CdM303     Rd2M303   
+  Rd1M303    UaM303     RgfM303    RgoM303    CbM303     CaM303     DbM303     CvM303    
+  UM303      RsM303     QM303L     QM303H     RsdM302    CbeM302    Rb2M302    Rb1M302   
+  CdM302     Rd2M302    Rd1M302    UaM302     RgfM302    RgoM302    CbM302     CaM302    
+  DbM302     CvM302     UM302      RsM302     QM302L     QM302H     J_M3       RsdM301   
+  CbeM301    Rb2M301    Rb1M301    CdM301     Rd2M301    Rd1M301    UaM301     RgfM301   
+  RgoM301    CbM301     CaM301     DbM301     CvM301     UM301      RsM301     QM301L    
+  QM301H     RsdM203    CbeM203    Rb2M203    Rb1M203    CdM203     Rd2M203    Rd1M203   
+  UaM203     RgfM203    RgoM203    CbM203     CaM203     DbM203     CvM203     UM203     
+  RsM203     QM203L     QM203H     RsdM202    CbeM202    Rb2M202    Rb1M202    CdM202    
+  Rd2M202    Rd1M202    UaM202     RgfM202    RgoM202    CbM202     CaM202     DbM202    
+  CvM202     UM202      RsM202     QM202L     QM202H     J_M2       RsdM201    CbeM201   
+  Rb2M201    Rb1M201    CdM201     Rd2M201    Rd1M201    UaM201     RgfM201    RgoM201   
+  CbM201     CaM201     DbM201     CvM201     UM201      RsM201     QM201L     QM201H    
+  RsdM103    CbeM103    Rb2M103    Rb1M103    CdM103     Rd2M103    Rd1M103    UaM103    
+  RgfM103    RgoM103    CbM103     CaM103     DbM103     CvM103     UM103      RsM103    
+  QM103L     QM103H     RsdM102    CbeM102    Rb2M102    Rb1M102    CdM102     Rd2M102   
+  Rd1M102    UaM102     RgfM102    RgoM102    CbM102     CaM102     DbM102     CvM102    
+  UM102      RsM102     QM102L     QM102H     J_M1       RsdM101    CbeM101    Rb2M101   
+  Rb1M101    CdM101     Rd2M101    Rd1M101    UaM101     RgfM101    RgoM101    CbM101    
+  CaM101     DbM101     CvM101     UM101      RsM101     QM101L     QM101H    
