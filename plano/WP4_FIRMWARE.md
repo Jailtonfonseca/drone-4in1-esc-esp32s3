@@ -234,7 +234,7 @@ Os pinos de PWM na tabela abaixo são **pads do módulo ESP32-S3-WROOM-1**, não
 | M0 | Toolchain e harness | Instalar ESP-IDF, criar o projeto CMake, gravar por USB-C e ler o log de boot pela UART0 | repositório vazio → binário que roda no MCU | build reproduzível a partir de um comando só, registrado no `README.md`; boot log pela UART0 lido em bancada | 12 |
 | M1 | Bring-up de placa | Clock, GPIO, LED, buzzer, botões, VBAT sense e temperatura em regime | binário → LED piscando, botão lido, VBAT medido | **VBAT medido: 2,385752 V @ 19,8 V · 2,674934 V @ 22,2 V · 3,036412 V @ 25,2 V** com erro < 2 % (`fase4_entrega/PLANO_TESTE_BANCADA.md` passo 10) | 16 |
 | M2 | PWM dos motores 1 e 2 (MCPWM) | 6 saídas com dead-time **em hardware**, 20 kHz, 12 bits | `duty[6]` → pads 4, 5, 6, 7, 12 e 17 do módulo | osciloscópio em 2 canais: período 50 000 ns ± 0,1 %; dead-time entre 250 ns e 2 µs; **sobreposição dos dois gates = 0** (passo 9) | 24 |
-| M3 | PWM dos motores 3 e 4 (LEDC) + defasagem | 6 saídas **sem** dead-time em HW + as 4 portadoras defasadas 90° | `duty[6]` → pads 18, 19, 20, 21, 22 e 8 do módulo | mesmo critério do M2 nos 6 canais; defasagem entre grupos medida **90,000° ± 1°**; clamp de duty em 2 % e 95 % verificado | 28 |
+| M3 | PWM dos motores 3 e 4 (LEDC) + defasagem | 6 saídas **sem** dead-time em HW + as 4 portadoras defasadas 90° | `duty[6]` → pads 18, 19, 20, 21, 22 e 8 do módulo | **janela de dead-time própria, diferente da do M2**: 400–650 ns (piso/máx de catálogo do `DT`, RF-14) e **não** 250 ns–2 µs — nos motores 3 e 4 o dead-time é **fixo no driver, não programável por firmware**, porque vão por LEDC; período 50 000 ns ± 0,1 %; defasagem entre grupos medida **90,000° ± 1°**; clamp de duty em 2 % e 95 % verificado | 28 |
 | M4 | Leitura dos 4× MCP3208 | 12 canais de corrente + 12 de BEMF por SPI, com *round-robin* e disparo na janela de 2 µs | `4×MCP3208` → corrente (A) e BEMF (V) | linearidade < 2 % entre 5 e 30 A, com **offset a 0 A anotado e subtraído** (passo 12); BEMF com erro < 1 % em 3 pontos (passo 11); 1 mV de saída ≈ 40 mA | 32 |
 | M5 | IMU ICM-42688-P | Leitura de rate e atitude por SPI a 1–4 kHz, com filtro | SPI → taxa angular (°/s) e atitude | IMU **estável com o motor parado**; com motor a 100 % de duty o ruído do giroscópio não cresce > 10× (critério `[EST]` de `fase4_entrega/RISCOS.md` R-07) | 16 |
 | M6 | Barômetro | Leitura de altitude a dezenas de Hz por I²C | I²C → altitude (m) | leitura estável em bancada; deriva < 1 m/10 min parado | 8 |
@@ -330,7 +330,7 @@ Três arquivos novos, nada editado, e nenhum deles é firmware:
 | **RF-11** | **A fase 0 e o layout não concordam sobre a arquitetura do ADC** | Fase 0 §4.2: *"ADC externo por SPI (16 canais, ou 2×8)"*; orçamento: 1× ADS7953 16 canais 1 Msps. Layout v7: 4× MCP3208 de 8 canais | `fase0_especificacao/FASE0_ESPECIFICACAO.md` §4.2; `orcamento/ORCAMENTO.md` §6; `fase3_pcb/gera_pcb_v7.py` linhas 377–394 | A escolha de 4× MCP3208 foi feita por custo (`fase3_pcb/gera_pcb_v7.py` linhas 15–18) e é a que **falha em RF-01 e RF-02**. Trocar de ADC é decisão de hardware, não de firmware. | 🔴 Crítica |
 | **RF-12** | **O gargalo do projeto é a aquisição, não o PID** | PID a 4 kHz × 6 eixos × 25 FLOP = 600 000 FLOP/s ≈ **0,4 %** de um núcleo a 160 MHz. Em paralelo, 12 leituras de corrente a 2,4 µs consomem **28,8 µs dos 50 µs** do período (57,6 %) | **[CALC §9.1]**; 160 MHz de `fase2_simulacao/verilog/pwm_deadtime.v` cabeçalho; 240 MHz e 5,54 CoreMark/MHz de `datasheets/esp32-s3_datasheet_en.pdf` | Se alguém otimizar o PID achando que ele é o problema, perde tempo. O que tem de ser otimizado é o disparo do ADC, o *buffering* por DMA e a prioridade das tarefas. | 🟢 Média (o risco é de *alocação de esforço*) |
 | **RF-13** | **Brownout do MCU passa por dentro do firmware** | Pico de TX WiFi 0,50 A sobre um buck de 3,3 V dimensionado para 1,50 A (folga 2,9×) | `fase0_especificacao/FASE0_ESPECIFICACAO.md` §7; `fase4_entrega/RISCOS.md` R-09 | O firmware tem de **registrar o motivo do reset** para distinguir brownout de watchdog — já é uma das 10 ações de `fase4_entrega/ANALISE_WIFI_CONTROLE.md` §6 item 8. Sem isso, um brownout em voo é indistinguível de um travamento. | 🟡 Alta |
-| **RF-14** | **O dead-time dos motores 3 e 4 tem piso de 400 ns — 118,75 ns abaixo do RTL** | `DT` = **mín 400 / typ 520 / máx 650 ns**, especificado a `VBIAS` (VCC, VBS) = 15 V, `CL` = 1000 pF, `TA` = 25 °C. O layout alimenta o `VCC` dos 12 drivers em **12 V** (pin 1 = `12V`), **abaixo** do ponto de caracterização, e as Figuras 11A/11B mostram o dead-time variando com temperatura e com tensão | `datasheets/ir2104_infineon_datasheet.pdf` p. 3 (tabela *Dynamic Electrical Characteristics*) e p. 14 (Figuras 11A e 11B) **[DATASHEET]**; 12 V em `fase3_pcb/gera_pcb_v7.py` linha 239 **[MEDIDO]**; 518,750 ns em `fase2_simulacao/verilog/RELATORIO_VERILOG.md` §2 **[MEDIDO]** | Pelo próprio RF-05, esse é o **único** dead-time dos motores 3 e 4. O piso garantido de **400 ns é 118,75 ns (22,89 %) menor** que os **518,750 ns** do RTL — então o firmware **não pode** derivar o orçamento de dead-time dos 6 pinos de LEDC do valor do RTL: no pior caso ele **sobrestima** a proteção. Nenhum ajuste de software fecha isso. **Mitigação** (nenhuma delas é de firmware): (a) **medir o dead-time real de um motor em bancada** e usar o valor medido, não o de projeto, antes de qualquer voo; (b) usar as resistências de gate `Rgo`/`Rgf` já presentes no layout (`fase3_pcb/gera_pcb_v7.py` linha 236) para limitar a corrente e o `dI/dt` de comutação, que é o mecanismo que converte dead-time curto em condução cruzada; (c) se a medição ficar abaixo do aceitável, mover os motores 3 e 4 para MCPWM e reduzir a contagem de motores por placa. | 🟡 Alta |
+| **RF-14** | **O dead-time dos motores 3 e 4 tem piso de 400 ns — 118,75 ns abaixo do RTL** | `DT` = **mín 400 / typ 520 / máx 650 ns**, especificado a `VBIAS` (VCC, VBS) = 15 V, `CL` = 1000 pF, `TA` = 25 °C. O layout alimenta o `VCC` dos 12 drivers em **12 V** (pin 1 = `12V`), **abaixo** do ponto de caracterização, e as Figuras 11A/11B mostram o dead-time variando com temperatura e com tensão | `datasheets/ir2104_infineon_datasheet.pdf` p. 3 (tabela *Dynamic Electrical Characteristics*) e p. 8 (Figuras 11A e 11B) **[DATASHEET]**; 12 V em `fase3_pcb/gera_pcb_v7.py` linha 239 **[MEDIDO]**; 518,750 ns em `fase2_simulacao/verilog/RELATORIO_VERILOG.md` §2 **[MEDIDO]** | Pelo próprio RF-05, esse é o **único** dead-time dos motores 3 e 4. O piso garantido de **400 ns é 118,75 ns (22,89 %) menor** que os **518,750 ns** do RTL — então o firmware **não pode** derivar o orçamento de dead-time dos 6 pinos de LEDC do valor do RTL: no pior caso ele **sobrestima** a proteção. Nenhum ajuste de software fecha isso. **Mitigação** (nenhuma delas é de firmware): (a) **medir o dead-time real de um motor em bancada** e usar o valor medido, não o de projeto, antes de qualquer voo; (b) usar as resistências de gate `Rgo`/`Rgf` já presentes no layout (`fase3_pcb/gera_pcb_v7.py` linha 236) para limitar a corrente e o `dI/dt` de comutação, que é o mecanismo que converte dead-time curto em condução cruzada; (c) se a medição ficar abaixo do aceitável, mover os motores 3 e 4 para MCPWM e reduzir a contagem de motores por placa. | 🟡 Alta |
 
 ### 7.2 RF-01 em detalhe: a conta que fecha
 
@@ -536,11 +536,32 @@ $ grep -n -i 'deadtime' /tmp/ir.txt
 255: Figure 4. Deadtime Waveform Definitions
 456: Deadtime (ns)
 458: Deadtime (ns)
-478: Figure 11A. Deadtime vs Temperature   Figure 11B. Deadtime vs Voltage       <- p.14
+478: Figure 11A. Deadtime vs Temperature   Figure 11B. Deadtime vs Voltage       <- p.8
 $ pdfinfo datasheets/ir2104_infineon_datasheet.pdf | grep -i pages
 Pages:          14
+$ for p in $(seq 1 14); do r=$(pdftotext -layout -f $p -l $p datasheets/ir2104_infineon_datasheet.pdf - | grep -c "Figure 11"); echo "p$p: $r"; done
+p1: 0
+p2: 0
+p3: 0
+p4: 0
+p5: 0
+p6: 0
+p7: 0
+p8: 1
+p9: 0
+p10: 0
+p11: 0
+p12: 0
+p13: 0
+p14: 0
 $ stat -c '%n %s bytes' datasheets/ir2104_infineon_datasheet.pdf
 datasheets/ir2104_infineon_datasheet.pdf 142488 bytes
+$ stat -c '%y' datasheets/ir2104_infineon_datasheet.pdf
+2026-09-27 23:50:19.315519303 -0300
+$ git log --diff-filter=A --format='%H %ad %s' --date=iso -- plano/WP4_FIRMWARE.md
+9784e2e5b78ff1e29dc40647a807c7cfa90bac20 2026-09-28 00:17:27 -0300 docs: WP1 auditoria de roteamento da Fase 3
+$ python3 -c "import datetime; a=datetime.datetime(2026,9,27,23,50,19); b=datetime.datetime(2026,9,28,0,17,27); print('delta =', int((b-a).total_seconds()//60), 'min')"
+delta = 27 min
 $ grep -n '"1": "12V"' fase3_pcb/gera_pcb_v7.py
 239:        setnets("U%s" % t, {"1": "12V", "2": "PWM_%s" % t, "3": "SD%s" % t, "4": "GND",
 $ python3 -c "print('delta min vs RTL = %.2f ns (%.2f %%)' % (518.75-400,(518.75-400)/518.75*100));
@@ -658,8 +679,11 @@ aqui; o resto do texto não foi reescrito.
 interno do IR2104 (~520 ns, rotulado como premissa, sem datasheet no disco para confirmar)."*
 
 **Por que estava errado.** `datasheets/ir2104_infineon_datasheet.pdf` tem **142 488 bytes** no disco
-e foi modificado às `2026-09-27 23:50:19`, **11 minutos antes** deste arquivo ser escrito. O valor
-não era premissa: é dado de catálogo.
+e o `mtime` do arquivo é `2026-09-27 23:50:19` — **o datasheet já estava no disco antes de este
+documento ser escrito e commitado**. (Uma versão anterior deste texto afirmava *"11 minutos antes"*;
+essa precisão foi removida em 2026-09-28 — ver §12.4, C3: o intervalo real apurado pelo `git` é de
+**27 minutos**, e a §9 não continha nenhum comando que sustentasse os 11.) O valor de catálogo não
+era premissa: é dado de catálogo.
 
 **O que mudou.**
 
@@ -712,3 +736,133 @@ A propriedade que importa — **todo caminho citado existe** — continua valend
 para 42, e a §0, a §9.3 e a §10 foram atualizadas para 42. Nenhum outro número do documento foi
 tocado: 41 → 42 caminhos, 13 → 14 riscos (um rebaixado, um criado), e os 12 canais, os 518,750 ns,
 os 20 kHz e as 320 h intactos.
+
+### 12.4 Correções round 2 (2026-09-28)
+
+Três correções pontuais, todas verificáveis por comando nesta máquina. O resto do documento — 12
+canais, 518,750 ns, 20 kHz, 320 h, RF-01 a RF-14, o inventário sem firmware e a tabela da §10 com 42
+caminhos — não foi tocado.
+
+#### C1 — página errada das Figuras 11A/11B na RF-14
+
+**O que estava errado.** A RF-14 e o comentário da §9.1 atribuíam as Figuras 11A/11B à **p. 14** de
+`datasheets/ir2104_infineon_datasheet.pdf`. A p. 14 é a *Leadfree Part Marking Information / Order
+Information*. As figuras estão na **p. 8**. Era um erro novo, introduzido no reparo anterior — o
+`grep` da §9.1 é feito sobre o texto extraído do PDF inteiro e por isso **não produz número de
+página**; a anotação `<- p.14` foi escrita à mão, e foi escrita errada.
+
+**Como se confirma.** Varredura página a página contando a ocorrência de `Figure 11`:
+
+```console
+$ cd /opt/jupyter/work/drone
+$ for p in $(seq 1 14); do r=$(pdftotext -layout -f $p -l $p datasheets/ir2104_infineon_datasheet.pdf - | grep -c "Figure 11"); echo "p$p: $r"; done
+p1: 0
+p2: 0
+p3: 0
+p4: 0
+p5: 0
+p6: 0
+p7: 0
+p8: 1
+p9: 0
+p10: 0
+p11: 0
+p12: 0
+p13: 0
+p14: 0
+```
+
+`p8: 1` e nenhuma outra página — a Figura 11 aparece uma única vez no documento, na **p. 8**. E a
+p. 14 confirma o que é:
+
+```console
+$ pdftotext -layout -f 8 -l 8 datasheets/ir2104_infineon_datasheet.pdf - | grep -A1 "Figure 11A"
+                        Figure 11A. Deadtime vs Temperature             Figure 11B. Deadtime vs Voltage
+$ pdftotext -layout -f 14 -l 14 datasheets/ir2104_infineon_datasheet.pdf - | head -5
+                        IR2104(S) & (PbF)
+                        LEADFREE PART MARKING INFORMATION
+                        Part number          IRxxxxxx
+                        Date code            YWW?                              IR logo
+```
+
+**O que mudou.** `p. 14` → `p. 8` em dois lugares: a coluna de origem da **RF-14** (§7.1) e o
+comentário `<- p.14` → `<- p.8` do `grep` na §9.1. A varredura de páginas foi acrescentada à §9.1
+como evidência, para que a próxima anotação de página venha de um comando e não da memória.
+
+#### C2 — critério de aceite do M3 incoerente com a RF-14
+
+**O que estava errado.** O M3 (dead-time dos 6 canais de LEDC) dizia *"mesmo critério do M2"*, e o
+M2 exige dead-time entre **250 ns e 2 µs**. Isso é irrealizável no M3 por dois motivos ao mesmo
+tempo, e a própria RF-14 já os dizia: (a) nos motores 3 e 4 o dead-time é **fixo dentro do
+IR2104**, não programável por firmware — vão por LEDC, que não tem dead-time em HW (RF-05), então
+nenhum ajuste de software muda o valor; (b) o piso de **250 ns** do critério do M2 fica **abaixo do
+mínimo de catálogo de 400 ns** do `DT`. Um critério que não pode ser atingido nem medido não é um
+critério de aceite, e medir o dead-time real em bancada é justamente a mitigação (a) da RF-14 — o
+critério antigo apontava para a medição errada.
+
+**De onde vêm os dois números.** `DT` na tabela *Dynamic Electrical Characteristics* da p. 3, com
+`VBIAS (VCC, VBS) = 15V, CL = 1000 pF and TA = 25°C`:
+
+```console
+$ pdftotext -layout -f 3 -l 3 datasheets/ir2104_infineon_datasheet.pdf - | grep -E "VBIAS \(VCC, VBS\) = 15V, CL|^    DT  "
+ VBIAS (VCC, VBS) = 15V, CL = 1000 pF and TA = 25°C unless otherwise specified.
+    DT       Deadtime, LS turn-off to HS turn-on &                400     520    650
+```
+
+400 ns (mín) / 520 ns (typ) / 650 ns (máx). E o layout alimenta o `VCC` dos 12 drivers em **12 V**,
+**abaixo** dos 15 V de caracterização — por isso a janela de catálogo 400–650 ns é o que o projeto
+tem à disposição, e não uma faixa programável:
+
+```console
+$ grep -n '"1": "12V"' fase3_pcb/gera_pcb_v7.py
+239:        setnets("U%s" % t, {"1": "12V", "2": "PWM_%s" % t, "3": "SD%s" % t, "4": "GND",
+```
+
+**O que mudou.** O critério do M3 passou a ter **duas janelas distintas**, uma por tipo de PWM:
+
+| | Motores 1 e 2 (**MCPWM**) — critério do M2 | Motores 3 e 4 (**LEDC + IR2104**) — critério do M3 |
+|---|---|---|
+| Onde o dead-time é gerado | MCPWM, **em hardware e programável** (`deadtime_i[15:0]`, 518,750 ns) | **IR2104, interno e fixo** — o firmware não o programa (RF-05) |
+| Janela de aceite | **250 ns – 2 µs**, programável pelo firmware | **400 – 650 ns**, conforme o `DT` de catálogo |
+| Origem do número | faixa escolhida por projeto | `datasheets/ir2104_infineon_datasheet.pdf` **p. 3** e RF-14 |
+| Tensão | — | `VBIAS` do projeto = **12 V**, abaixo dos **15 V** de caracterização |
+
+O texto do M3 agora diz, na íntegra: *"**janela de dead-time própria, diferente da do M2**: 400–650 ns
+(piso/máx de catálogo do `DT`, RF-14) e **não** 250 ns–2 µs — nos motores 3 e 4 o dead-time é
+**fixo no driver, não programável por firmware**, porque vão por LEDC; período 50 000 ns ± 0,1 %;
+defasagem entre grupos medida **90,000° ± 1°**; clamp de duty em 2 % e 95 % verificado"*. O
+período, a defasagem e o clamp de duty do M3 ficaram como estavam.
+
+#### C3 — "11 minutos" sem lastro
+
+**O que estava errado.** A §12.1 afirmava que o datasheet foi modificado *"11 minutos antes"* deste
+arquivo ser escrito. Não há lastro para os 11: a §9 não tinha nenhum comando que produzisse esse
+número, e o `git` mede outra coisa. Entre o `mtime` do datasheet e o commit que **adicionou** o
+WP4 vão **27 minutos**.
+
+```console
+$ cd /opt/jupyter/work/drone
+$ stat -c '%y' datasheets/ir2104_infineon_datasheet.pdf
+2026-09-27 23:50:19.315519303 -0300
+$ git log --diff-filter=A --format='%H %ad %s' --date=iso -- plano/WP4_FIRMWARE.md
+9784e2e5b78ff1e29dc40647a807c7cfa90bac20 2026-09-28 00:17:27 -0300 docs: WP1 auditoria de roteamento da Fase 3
+$ python3 -c "import datetime; a=datetime.datetime(2026,9,27,23,50,19); b=datetime.datetime(2026,9,28,0,17,27); print('delta =', int((b-a).total_seconds()//60), 'min')"
+delta = 27 min
+```
+
+O `commit` é o mesmo que adicionou os arquivos do WP1 — plano/WP1_ROTEAMENTO.md e
+plano/mede_v7_wp1.py, escritos aqui **sem crases** de propósito, para não alterar a contagem de 42
+caminhos da §10. O WP4 entrou no mesmo commit do WP1, o que também explica por que o assunto do
+commit fala em WP1.
+
+**O que mudou.** A precisão falsa saiu; o que os dados sustentam ficou, com o comando ao lado:
+
+> ...e o `mtime` do arquivo é `2026-09-27 23:50:19` — **o datasheet já estava no disco antes de
+> este documento ser escrito e commitado**. (Uma versão anterior deste texto afirmava *"11 minutos
+> antes"*; essa precisão foi removida em 2026-09-28 — ver §12.4, C3: o intervalo real apurado pelo
+> `git` é de **27 minutos**, e a §9 não continha nenhum comando que sustentasse os 11.)
+
+A **conclusão** da §12.1 não muda: o RF-05 estava errado ao classificar o dead-time do IR2104 como
+premissa, porque o datasheet **estava** no disco antes do documento. Só a precisão sem evidência
+saiu. Os comandos de `stat` e `git log` foram acrescentados à §9.1 para que a afirmação daqui
+tenha lastro no documento.
