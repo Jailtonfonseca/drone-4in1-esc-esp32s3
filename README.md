@@ -23,7 +23,7 @@ Yosys 0.9, gerbv 2.7.0 e matplotlib.
 | 1 | Esquema elétrico (8 figuras) | ✅ concluída |
 | 2 | Simulação SPICE + PWM em Verilog | ✅ concluída |
 | 3 | PCB (4 camadas) + Gerber | ⚠️ **em andamento — roteamento não finalizado** |
-| 4 | Entrega: montagem, teste, riscos, regulatório | ⚠️ documentação em andamento |
+| 4 | Entrega: montagem, teste, riscos, regulatório | ✅ **documentação escrita** — os 4 documentos de `fase4_entrega/` existem e acompanham o envio (F14 = "já escrito", `plano/WP2_FABRICACAO.md` §1 item 11). O que falta é **executar** a bancada (G3), não escrevê-la |
 
 **Não fabrique esta placa ainda.** O layout da Fase 3 ainda tem nets não roteadas
 (ver `fase3_pcb/v6/verificacao_v6.txt`) e o roteador `fase3_pcb/rota_v7.py` não fechou.
@@ -54,7 +54,8 @@ drone/
 ├── fase2_simulacao/                # Fase 2 — SPICE (ngspice) + Verilog (PWM/dead-time)
 ├── fase3_pcb/                      # Fase 3 — PCB KiCad + Gerber (v1 … v7)
 ├── fase4_entrega/                  # Fase 4 — documentação de entrega
-└── orcamento/                      # Orçamento de componentes (nacional e importação)
+├── orcamento/                      # Orçamento de componentes (nacional e importação)
+└── plano/                          # Plano de execução — WP1..WP5, DO_PROJETO e scripts
 ```
 
 ### Fase 0 — Especificação (`fase0_especificacao/`)
@@ -126,6 +127,12 @@ Scripts: `gera_fase1_a.py`, `gera_fase1_b.py`, `gera_fase1_c.py`, `gera_esq4.py`
 
 As quantidades vêm de `fase0_especificacao/lista_componentes_fase0.csv`. Itens sem cotação
 real coletada estão marcados `[EST]` no relatório.
+
+### Plano de execução (`plano/`)
+
+- `WP1_ROTEAMENTO.md` a `WP5_DECISOES.md` — as cinco auditorias consolidadas.
+- `DO_PROJETO.md`, `mede_v7_wp1.py` — definition of done e a contagem independente do layout.
+- A ordem de trabalho única está em [`PLANO_FINAL.md`](PLANO_FINAL.md), na raiz.
 
 ---
 

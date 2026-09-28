@@ -74,7 +74,7 @@ ordem de trabalho só. **Data de consolidação: 2026-09-28.**
 | RTL do PWM de 12 canais | dead-time **518,750 ns**, 20 kHz, **0 violações** em **362 060 ciclos** | `fase2_simulacao/verilog/RELATORIO_VERILOG.md` §4.3 | Modelo de referência validado, não firmware embarcado. |
 | Esforço de firmware | **320 h** `[EST]` = 160 h bancada + 160 h voo | `plano/WP4_FIRMWARE.md` §5 | 8,0 semanas de 40 h `[CALC na §9.2]`. |
 | Canais de ADC | ADC1 do ESP32-S3 tem **20 no máximo**; são necessários **26** | `plano/WP4_FIRMWARE.md` §4.1, `datasheets/esp32-s3_datasheet_en.pdf` | ADC externo por SPI é obrigatório por contagem fechada, não por premissa. |
-| Decisões pendentes | 14 (D-01..D-14); 4 bloqueantes hoje | `plano/WP5_DECISOES.md` §2 | D-01, D-02, D-06, D-08. |
+| Decisões pendentes | 15 (D-01..D-15); 4 bloqueantes hoje | `plano/WP5_DECISOES.md` §2 | D-01, D-02, D-06, D-08. |
 | Orçamento | nacional R$ 1.706 / importação R$ 1.354; **37 de 43 itens** `[EST]`; **0 de 43** com disponibilidade/lead time | `orcamento/ORCAMENTO.md` | Sem part number (§7, D-08) nenhuma compra é possível. |
 | Repositório | GitHub **público**, licença **MIT**, 3 commits no remoto | `LICENSE`, estado verificado em 2026-09-28 | Commits locais à frente, **não enviados**. Ver D-06. |
 | Validação em bancada | **nenhuma** | `fase4_entrega/RISCOS.md` §5, `fase4_entrega/PLANO_TESTE_BANCADA.md` | 30 A e 15 A seguem `[PREMISSA]`. |
@@ -138,10 +138,10 @@ de layout (E3, 2–3 semanas `[EST]`) e **sem** a cotação (F13, NÃO DETERMINA
 
 | Etapa | Depende de | O que é feito | Documento que detalha | Gate de passagem | Esforço `[EST]` |
 |---|---|---|---|---|---:|
-| **E0** | — | Responder D-08, D-02, D-03 e D-01. As outras 10 decisões vêm depois, mas nenhuma trava a E0. | `plano/WP5_DECISOES.md` §2 e §4 | As 3 respostas estão escritas e datadas | **NÃO DETERMINADO** — é tempo de decisão, não de trabalho |
+| **E0** | — | Responder D-08, D-02, D-03 e D-01. As outras 11 decisões vêm depois, mas nenhuma trava a E0. | `plano/WP5_DECISOES.md` §2 e §4 | As 3 respostas estão escritas e datadas | **NÃO DETERMINADO** — é tempo de decisão, não de trabalho |
 | **E1** | E0 (D-08 escolhe a peça) | Refazer o dimensionamento de gate drive com Qg = 168/210 nC e corrigir P-11 para 0,325 mA; reexecutar os scripts da Fase 0 | `plano/WP3_PREMISSAS_DATASHEETS.md` §6; `plano/WP5_DECISOES.md` D-11 | `fase0_especificacao/dimensionamento_fase0_saida_v2.txt` e `fase0_especificacao/verifica_limites_saida_v4.txt` reexecutados com o Qg novo | 4–6 h |
 | **E2** | E0 | Fechar part numbers, cotar com disponibilidade e lead time, e produzir a BOM de fabricação com MPN/fabricante em 43/43 linhas | `plano/WP5_DECISOES.md` D-08, D-14; `plano/WP2_FABRICACAO.md` §4; `orcamento/ORCAMENTO.md` | 43/43 itens com preço real e lead time | 4 h (BOM) + cotação **NÃO DETERMINADA** |
-| **E3** | E0 (D-02 + D-03), E1 | Layout novo: 6 camadas + contorno ~150×110 mm, preservando as 202 nets e os 319 footprints; as correções de stitch vias (D-10) e de `SD` (D-13) entram na **mesma** revisão | `plano/WP1_ROTEAMENTO.md` §4; `plano/WP5_DECISOES.md` §3.2 e §3.3 | G1 (§5) — as 7 linhas do painel de aceitação | **2–3 semanas** `[EST]` (`plano/WP5_DECISOES.md` §3.2 — em horas: **NÃO DETERMINADO**, nenhuma fonte converte) |
+| **E3** | E0 (D-02 + D-03), E1 | Layout novo: 6 camadas + contorno ~150×110 mm, preservando as 202 nets e os 319 footprints. **Pacote único de correções de layout, tudo na mesma revisão:** (a) stitch vias do D-10; (b) rotação do `SD` dos 12 IR2104 para um GPIO (D-13); (c) **fusível 30 A 1206 no polo positivo do VBAT (D-15, recomendação A)** — 1 footprint de 2 pinos, 0 GPIO, 0 net de sinal; (d) **definir os keepouts de potência e de sinal no gerador** (`rule_area` no `fase3_pcb/gera_pcb_v8.py`; hoje a v7 tem 0); (e) **D-09 fechada antes de começar**: com a recomendação A (manter os 12× INA240A2) **não há respin** — se você escolher B (INA181/INA241), a troca entra neste mesmo pacote e vira um quinto item | `plano/WP1_ROTEAMENTO.md` §4 e §3.3; `plano/WP5_DECISOES.md` §3.2, §3.3, §3.9 e §3.15 | G1 (§5) — as 8 linhas do painel de aceitação | **2–3 semanas** `[EST]` (`plano/WP5_DECISOES.md` §3.2 — em horas: **NÃO DETERMINADO**, nenhuma fonte converte) |
 | **E4** | E0, D-01, E2, E3 | Gerar os 8 artefatos que não existem, o `.gbrjob`, o Edge.Cuts nativo, o nome dos Gerbers e a BOM | `plano/WP2_FABRICACAO.md` §1 e §3.3 | G2 (§5) | 30,0 h (34,0 h com a BOM, já contada em E2) |
 | **E5** | E3, E4 | Montar a placa seguindo a ordem de solda | `fase4_entrega/MONTAGEM_ORDEM_DE_SOLDA.md` | placa montada sem curto; não há estimativa de horas no documento | **NÃO DETERMINADO** |
 | **E6** | E3, E4, E5, D-01 = B | Firmware de bancada M0–M6 + M10 + M11 | `plano/WP4_FIRMWARE.md` §5 | critérios de aceite de cada módulo, colados na §5 do WP4 | **160 h** |
@@ -149,7 +149,7 @@ de layout (E3, 2–3 semanas `[EST]`) e **sem** a cotação (F13, NÃO DETERMINA
 | **E8** | E7, E7 (com a decisão de bancada) | Firmware de voo M7 + M8 + M9 + M12 + M13 | `plano/WP4_FIRMWARE.md` §5 | todos os módulos com o critério de aceite medido | **160 h** |
 | **E9** | E8 | Voo com o link de comando, com failsafe e watchdog ativos | `fase4_entrega/ANALISE_WIFI_CONTROLE.md`; `fase4_entrega/RISCOS.md` | G4 (§5) | **NÃO DETERMINADO** |
 | **E10** | E3, E4 (independe de E6–E9) | Regulatório e segurança: registro/SISANT, peso, distância de operação | `fase4_entrega/SEGURANCA_E_REGULATORIO.md` | requisitos verificados por escrito | **NÃO DETERMINADO** |
-| **E0.1** | — | Pode rodar **em paralelo a E3 e E4**, em qualquer ordem: netlist de produção (0,5 h) e sketch do stackup (1 h) são comuns a todas as opções | `plano/WP5_DECISOES.md` §3.1 e §3.2 | arquivos gerados | 1,5 h |
+| **E0.1** | — | Pode rodar **em paralelo a E3 e E4**, em qualquer ordem: netlist de produção (0,5 h) e sketch do stackup (1 h) são comuns a todas as opções. **As 1,5 h já estão contidas nos 30,0 h de E4** (F4 = 0,5 h + F7 = 1 h, §2) — E0.1 é uma reordenação, **não some duas vezes** | `plano/WP5_DECISOES.md` §3.1 e §3.2 | arquivos gerados | 1,5 h **dentro dos 30,0 h de E4** |
 
 **Ordem de ataque recomendada para a próxima semana:** E0 (as 3 decisões) → E0.1 e E1/E2 em
 paralelo → E3 → E4 → E5 → E6 → E7. E10 pode ser feito em qualquer momento depois de E3.
@@ -158,8 +158,13 @@ paralelo → E3 → E4 → E5 → E6 → E7. E10 pode ser feito em qualquer mome
 
 ## 5. Gates
 
-Cada gate é binário e verificável por comando. O projeto só avança quando o gate inteiro é
-verdadeiro.
+Cada gate é binário e verificável por comando **ou por medição em bancada/voo**. O projeto só
+avança quando o gate inteiro é verdadeiro.
+
+- **G1 e G2 são de comando** — arquivo gerado, contagem e `find` rodam nesta máquina hoje.
+- **G3 e G4 são de medição em bancada e em voo** — não existe comando que os substitua, e
+  **nenhuma das duas medições foi feita**. É por isso que a ressalva "nada validado em bancada"
+  vale para o documento inteiro (§8.1).
 
 ### G1 — Layout fechado (`plano/WP1_ROTEAMENTO.md` §5.2)
 
@@ -172,11 +177,13 @@ verdadeiro.
 | A5 | trilhas em In1.Cu / In2.Cu | **0** (mantidas como plano) | `plano/mede_v7_wp1.py` |
 | A6 | largura da trilha de fase do motor | ≥ 6,29 mm | `plano/mede_v7_wp1.py`, `larguras de trilha` |
 | A7 | nome dos Gerbers começa com `-drone_` | **não** | `ls fase3_pcb/v8/*.gt*` |
+| A8 | keepouts de potência e de sinal definidos | **≥ 1** `rule_area` (hoje **0**) | `grep -c "rule_area" fase3_pcb/v7/v7_drone.kicad_pcb` devolve `0`; na v8 tem de devolver **> 0** |
 
 > **A2 e A1 não se substituem.** As duas primeiras linhas de `fase3_pcb/v8/verificacao_v8.txt` declaram `0`
 > também para nets que têm um único pad; por isso A1, medido à parte, é obrigatório como
 > contraprova (`plano/WP1_ROTEAMENTO.md` §5.3).
-> **Estado hoje:** A1 = 138, A4 = 309, A6 = ok, A5 = ok, A7 = falha; **A2 na v7 é
+> **Estado hoje:** A1 = 138, A4 = 309, A6 = ok, A5 = ok, A7 = falha, **A8 = 0** (nenhum keepout no
+> board, `plano/WP1_ROTEAMENTO.md` §3.3); **A2 na v7 é
 > NÃO DETERMINADO** (o 12 é da v6 — ver §1 e §8.5). O alvo A3 = 0 só tem medição na v6
 > (`fase3_pcb/v6/verificacao_v6.txt`) e precisa ser reconferido na v8.
 >
@@ -232,9 +239,15 @@ da largura de banda a 10 MHz). Fonte: `plano/WP4_FIRMWARE.md` §7.1.
 
 ## 7. Decisões pendentes
 
-As 14 decisões, com opção, recomendação e detalhe, estão em **`plano/WP5_DECISOES.md`**.
+As 15 decisões, com opção, recomendação e detalhe, estão em **`plano/WP5_DECISOES.md`**
+(`grep -cE '^\| \*\*D-[0-9]+\*\*' plano/WP5_DECISOES.md` → **15**; commit a7e4d35 criou a D-15).
 Quatro são bloqueantes hoje: **D-01, D-02, D-06, D-08**. Duas são emergência de segurança:
 **D-07** (failsafe e watchdog) e **D-13** (corte por software).
+
+A **D-15 — fusível/e-fuse de entrada** (recomendação A: fusível 30 A 1206, US$ 0,30 / R$ 4,93
+`[MEDIDO, orcamento/ORCAMENTO.md linha 89]`) é **trabalho de hardware**: acrescentar 1 footprint de
+2 pinos no polo positivo do VBAT. Como peça de layout, ela entra **na mesma revisão de E3** que
+empacota a D-10 e a D-13 (§4, E3) e é conferida pelo gate **G1/A8** junto com os keepouts.
 
 ### As 3 que mais destravam
 
@@ -278,7 +291,7 @@ Quatro são bloqueantes hoje: **D-01, D-02, D-06, D-08**. Duas são emergência 
 | `plano/WP2_FABRICACAO.md` | 11 artefatos de fabricação, naming dos Gerbers, BOM, checklist da fab |
 | `plano/WP3_PREMISSAS_DATASHEETS.md` | P-01..P-15, o que foi refutado e o que segue sem lastro |
 | `plano/WP4_FIRMWARE.md` | inventário de software, escopo mínimo de 14 módulos, riscos de firmware |
-| `plano/WP5_DECISOES.md` | D-01..D-14 com opções A/B/C e recomendação |
+| `plano/WP5_DECISOES.md` | D-01..D-15 com opções A/B/C e recomendação |
 | `fase4_entrega/PLANO_TESTE_BANCADA.md` | instrumentos, ensaios e critérios de aceite da bancada (G3) |
 | `fase4_entrega/MONTAGEM_ORDEM_DE_SOLDA.md` | ordem de solda e cuidados de montagem (E5) |
 | `fase4_entrega/RISCOS.md` | matriz severidade × probabilidade, mitigação e detecção |
@@ -289,3 +302,25 @@ Quatro são bloqueantes hoje: **D-01, D-02, D-06, D-08**. Duas são emergência 
 
 *Documento gerado em 2026-09-28 por consolidação das cinco auditorias. Nenhum número foi
 introduzido aqui sem fonte; todos os caminhos citados foram conferidos com `test -e`.*
+
+---
+
+## Correções round 2 (2026-09-28)
+
+Seis defeitos apontados por verificador de comando, corrigidos neste round. **Nenhum número
+existente foi alterado** — os 21 números-chave do documento continuam os mesmos.
+
+| # | Defeito | Correção | Verificação |
+|---|---|---|---|
+| 1 | 🔴 Contagem de decisões desatualizada (14) em três pontos | §1 linha "Decisões pendentes" → **15 (D-01..D-15)**; §7 → "As **15** decisões"; apêndice → "D-01..D-15"; E0 → "as outras **11** decisões vêm depois" | `grep -cE '^\| \*\*D-[0-9]+\*\*' plano/WP5_DECISOES.md` → **15** |
+| 2 | 🔴 D-15 sem dono | A D-15 (fusível 30 A 1206) entrou como item **(c)** do pacote único de correções de layout da **E3**, ao lado da D-10 e da D-13, e é citada na §7 | `plano/WP5_DECISOES.md` §3.15; `orcamento/ORCAMENTO.md` linha 89 |
+| 3 | 🔴 Keepouts sem dono nem verificação | **(a)** item **(d)** da E3: definir os keepouts de potência e de sinal no gerador; **(b)** critério **A8** no gate G1: `grep -c "rule_area" fase3_pcb/v7/v7_drone.kicad_pcb` → hoje **0**, tem de dar **> 0** na v8. A1..A7 já ocupavam os IDs, então A8 não colide; o gate passa de 7 para **8** linhas | `grep -c "rule_area" fase3_pcb/v7/v7_drone.kicad_pcb` → **0**; `plano/WP1_ROTEAMENTO.md` §3.3 |
+| 4 | 🟠 D-09 sem dono na revisão de layout | Item **(e)** da E3: D-09 é fechada **antes** de começar. Com a recomendação A (manter os 12× INA240A2) **o respin é desnecessário**; se você escolher B (INA181/INA241), a troca entra no mesmo pacote de E3 como quinto item | `plano/WP5_DECISOES.md` §3.9 |
+| 5 | 🟠 G3/G4 não verificáveis por comando | §5 agora diz "verificável por comando **ou por medição em bancada/voo**" e separa explicitamente: **G1 e G2 de comando**, **G3 e G4 de medição** — com a nota de que nenhuma das duas medições foi feita | `fase4_entrega/PLANO_TESTE_BANCADA.md`; §8.1 |
+| 6 | 🟡 Risco de dupla contagem em E0.1 | A linha E0.1 diz que as **1,5 h já estão contidas nos 30,0 h de E4** (F4 = 0,5 h + F7 = 1 h, §2) e que somar as duas seria contar o mesmo trabalho duas vezes | `plano/WP2_FABRICACAO.md` §1 itens 2 e 6 |
+
+**Preservado sem alteração:** a ordem das seções, o sumário executivo, os 21 números-chave
+(138, 309, 202/203, 220,10×160,10, 10, 319, 1.093, 30,0/34,0 h, 320 h, 6❌/3⚠️/2✅, Qg 168/210,
+DT 400/520/650, 518,750 ns, R$ 1.706, R$ 1.354, 37/43, 12 V vs 15 V, 4× MCP3208, 2× MCPWM) e a
+ressalva de que **nada foi validado em bancada**. Nenhum WP1..WP5, `plano/DO_PROJETO.md` ou
+`prd.json` foi tocado.
