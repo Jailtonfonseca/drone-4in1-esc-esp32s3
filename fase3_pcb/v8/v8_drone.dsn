@@ -1,0 +1,1221 @@
+(pcb "/opt/jupyter/work/drone/fase3_pcb/v8/v8_drone.kicad_pcb"
+  (parser
+    (string_quote ")
+    (space_in_quoted_tokens on)
+    (host_cad "KiCad's Pcbnew")
+    (host_version "(5.1.9)-1")
+    )
+  (resolution um 10)
+  (unit um)
+  (structure
+    (layer F.Cu
+      (type signal)
+      (property
+        (index 0)
+        )
+      )
+    (layer In2.Cu
+      (type signal)
+      (property
+        (index 2)
+        )
+      )
+    (layer B.Cu
+      (type signal)
+      (property
+        (index 5)
+        )
+      )
+    (boundary
+      (path pcb 0  50 50  162050 50  162050 144969  50 144969)
+      )
+    (via "Via_600_um" "Via_600_um")
+    (rule
+      (width 200)
+      (clearance 150)
+      (clearance 150 (type default_smd))
+      )
+    )
+  )
+  (placement
+    (component "AMASS_MR30PW-FB_1x03_P3.50mm_Horizontal|"
+      (place J_M1 111043 50654 front 270)
+      (place J_M2 90443 50654 front 270)
+      (place J_M3 69843 50654 front 270)
+      (place J_M4 49242 50654 front 270)
+      )
+    (component "AMASS_XT60-F_1x02_P7.20mm_Vertical|"
+      (place J1 123725 56222 front 180)
+      )
+    (component "Buzzer_CUI_CPT-9019S-SMT|"
+      (place BZ1 50318 82584 front 90)
+      )
+    (component "CP_Elec_8x10|"
+      (place Cblk1 112814 13575 front 90)
+      (place Cblk2 100314 13575 front 90)
+      (place Cblk3 87814 13575 front 90)
+      (place Cblk4 75314 13575 front 90)
+      (place Cblk5 62814 13575 front 90)
+      (place Cblk6 50314 13575 front 90)
+      )
+    (component "C_0402_1005Metric|"
+      (place CEN 97405 138907 front 90)
+      (place CIMU 88565 138550 front 90)
+      (place CVB 92985 138955 front 90)
+      (place CaM101 121613 126332 front 0)
+      (place CaM102 95594 126332 front 0)
+      (place CaM103 69575 126332 front 0)
+      (place CaM201 43556 126332 front 0)
+      (place CaM202 17537 126332 front 0)
+      (place CaM203 147632 120132 front 0)
+      (place CaM301 121613 120132 front 0)
+      (place CaM302 95594 120132 front 0)
+      (place CaM303 69575 120132 front 0)
+      (place CaM401 43556 120132 front 0)
+      (place CaM402 17537 120132 front 0)
+      (place CaM403 149605 112792 front 0)
+      (place CbeM101 130442 46643 front 0)
+      (place CbeM102 123080 46643 front 0)
+      (place CbeM103 115718 46643 front 0)
+      (place CbeM201 108356 46643 front 0)
+      (place CbeM202 100994 46643 front 0)
+      (place CbeM203 93632 46643 front 0)
+      (place CbeM301 86270 46643 front 0)
+      (place CbeM302 78908 46643 front 0)
+      (place CbeM303 71546 46643 front 0)
+      (place CbeM401 64185 46643 front 0)
+      (place CbeM402 56823 46643 front 0)
+      (place CbeM403 49461 46643 front 0)
+      (place CbstB1 79851 132741 front 0)
+      (place CbstB2 74013 132741 front 0)
+      (place CbstB3 68175 132741 front 0)
+      (place CdM101 108604 126332 front 0)
+      (place CdM102 82585 126332 front 0)
+      (place CdM103 56565 126332 front 0)
+      (place CdM201 30546 126332 front 0)
+      (place CdM202 4527 126332 front 0)
+      (place CdM203 134623 120132 front 0)
+      (place CdM301 108604 120132 front 0)
+      (place CdM302 82585 120132 front 0)
+      (place CdM303 56565 120132 front 0)
+      (place CdM401 30546 120132 front 0)
+      (place CdM402 4527 120132 front 0)
+      (place CdM403 136595 112792 front 0)
+      (place CinB1 83307 138541 front 0)
+      (place CinB2 78374 138541 front 0)
+      (place CinB3 73441 138541 front 0)
+      )
+    (component "C_0603_1608Metric|"
+      (place Cadc1 123573 132471 front 0)
+      (place Cadc2 118354 132471 front 0)
+      (place Cadc3 113135 132471 front 0)
+      (place Cadc4 107916 132471 front 0)
+      )
+    (component "C_0805_2012Metric|"
+      (place CbM101 115108 125812 front 0)
+      (place CbM102 89089 125812 front 0)
+      (place CbM103 63070 125812 front 0)
+      (place CbM201 37051 125812 front 0)
+      (place CbM202 11032 125812 front 0)
+      (place CbM203 141127 119612 front 0)
+      (place CbM301 115108 119612 front 0)
+      (place CbM302 89089 119612 front 0)
+      (place CbM303 63070 119612 front 0)
+      (place CbM401 37051 119612 front 0)
+      (place CbM402 11032 119612 front 0)
+      (place CbM403 143100 112272 front 0)
+      (place Cldo_i 91546 132298 front 90)
+      (place Cldo_o 85808 132221 front 0)
+      )
+    (component "C_1206_3216Metric|"
+      (place Chf1 15842 60054 front 90)
+      (place Chf2 10043 60054 front 90)
+      (place Chf3 4243 60054 front 90)
+      (place Chf4 -1557 60054 front 90)
+      (place CvM101 55351 132051 front 0)
+      (place CvM102 48989 132051 front 0)
+      (place CvM103 42627 132051 front 0)
+      (place CvM201 36265 132051 front 0)
+      (place CvM202 29904 132051 front 0)
+      (place CvM203 23542 132051 front 0)
+      (place CvM301 17180 132051 front 0)
+      (place CvM302 10818 132051 front 0)
+      (place CvM303 4456 132051 front 0)
+      (place CvM401 -1906 132051 front 0)
+      (place CvM402 147556 125642 front 0)
+      (place CvM403 141194 125642 front 0)
+      )
+    (component "C_1210_3225Metric|"
+      (place CoB1a 129865 112253 front 90)
+      (place CoB1b 123165 112253 front 90)
+      (place CoB2a 116465 112253 front 90)
+      (place CoB2b 109765 112253 front 90)
+      (place CoB3a 103065 112253 front 90)
+      (place CoB3b 96365 112253 front 90)
+      (place Cout_12V1 48913 103752 front 0)
+      (place Cout_12V2 40456 103752 front 0)
+      (place Cout_3V31 31999 103752 front 0)
+      (place Cout_3V32 23542 103752 front 0)
+      (place Cout_3V3_A1 6453 95852 front 0)
+      (place Cout_5V1 29447 111652 front 0)
+      (place Cout_5V2 21943 111652 front 0)
+      )
+    (component "D_SMB|"
+      (place D1 74016 103134 front 90)
+      (place D2 65816 103134 front 90)
+      (place D3 57616 103134 front 90)
+      )
+    (component "D_SOD-123|"
+      (place DbM101 128118 125492 front 0)
+      (place DbM102 102099 125492 front 0)
+      (place DbM103 76080 125492 front 0)
+      (place DbM201 50061 125492 front 0)
+      (place DbM202 24042 125492 front 0)
+      (place DbM203 -1977 125492 front 0)
+      (place DbM301 128118 119292 front 0)
+      (place DbM302 102099 119292 front 0)
+      (place DbM303 76080 119292 front 0)
+      (place DbM401 50061 119292 front 0)
+      (place DbM402 24042 119292 front 0)
+      (place DbM403 -1977 119292 front 0)
+      (place Dz1 61912 132284 front 90)
+      )
+    (component "Fuse_1206_3216Metric|"
+      (place F1 36383 16272 front 0)
+      )
+    (component "LED_0805_2012Metric|"
+      (place D_LED 102493 132345 front 90)
+      )
+    (component "LGA-14_3x2.5mm_P0.5mm_LayoutBorder3x4y|"
+      (place U_IMU 134693 125269 front 90)
+      )
+    (component "L_0805_2012Metric|"
+      (place FLDO 128869 132726 front 90)
+      )
+    (component "L_Bourns-SRN8040_8x8.15mm|"
+      (place LB1 88808 83484 front 90)
+      (place LB2 76247 83484 front 90)
+      (place LB3 63688 83484 front 90)
+      )
+    (component "MountingHole_3.2mm_M3|"
+      (place H1 134199 82902 front 0)
+      (place H2 123551 82902 front 0)
+      (place H3 112904 82902 front 0)
+      (place H4 102256 82902 front 0)
+      )
+    (component "R_0603_1608Metric|"
+      (place NT1 28855 138954 front 90)
+      (place RBOOT 96940 132471 front 0)
+      (place RBZ 18935 138907 front 90)
+      (place RCC1 13975 138407 front 90)
+      (place RCC2 9015 138407 front 90)
+      (place REN 58615 138907 front 90)
+      (place RSCL 48695 138503 front 90)
+      (place RSDA 53655 138479 front 90)
+      (place RT1 38775 138954 front 90)
+      (place RVB1 43735 138479 front 90)
+      (place RVB2 33815 138479 front 90)
+      (place Rb1M101 94489 40973 front 0)
+      (place Rb1M102 64661 40973 front 0)
+      (place Rb1M103 34832 40973 front 0)
+      (place Rb1M201 5004 40973 front 0)
+      (place Rb1M202 131775 36013 front 0)
+      (place Rb1M203 101946 36013 front 0)
+      (place Rb1M301 72118 36013 front 0)
+      (place Rb1M302 42289 36013 front 0)
+      (place Rb1M303 12461 36013 front 0)
+      (place Rb1M401 144761 28112 front 0)
+      (place Rb1M402 114932 28112 front 0)
+      (place Rb1M403 85104 28112 front 0)
+      (place Rb2M101 87032 40973 front 0)
+      (place Rb2M102 57204 40973 front 0)
+      (place Rb2M103 27375 40973 front 0)
+      (place Rb2M201 -2454 40973 front 0)
+      (place Rb2M202 124318 36013 front 0)
+      (place Rb2M203 94489 36013 front 0)
+      (place Rb2M301 64661 36013 front 0)
+      (place Rb2M302 34832 36013 front 0)
+      (place Rb2M303 5004 36013 front 0)
+      (place Rb2M401 137304 28112 front 0)
+      (place Rb2M402 107475 28112 front 0)
+      (place Rb2M403 77646 28112 front 0)
+      (place Rd1M101 109404 40973 front 0)
+      (place Rd1M102 79575 40973 front 0)
+      (place Rd1M103 49746 40973 front 0)
+      (place Rd1M201 19918 40973 front 0)
+      (place Rd1M202 146689 36013 front 0)
+      (place Rd1M203 116861 36013 front 0)
+      (place Rd1M301 87032 36013 front 0)
+      (place Rd1M302 57204 36013 front 0)
+      (place Rd1M303 27375 36013 front 0)
+      (place Rd1M401 -2454 36013 front 0)
+      (place Rd1M402 129846 28112 front 0)
+      (place Rd1M403 100018 28112 front 0)
+      (place Rd2M101 101946 40973 front 0)
+      (place Rd2M102 72118 40973 front 0)
+      (place Rd2M103 42289 40973 front 0)
+      (place Rd2M201 12461 40973 front 0)
+      (place Rd2M202 139232 36013 front 0)
+      (place Rd2M203 109404 36013 front 0)
+      (place Rd2M301 79575 36013 front 0)
+      (place Rd2M302 49746 36013 front 0)
+      (place Rd2M303 19918 36013 front 0)
+      (place Rd2M401 153534 26796 front 90)
+      (place Rd2M402 122389 28112 front 0)
+      (place Rd2M403 92561 28112 front 0)
+      (place Rf1B1 3813 138271 front 0)
+      (place Rf1B2 149292 132471 front 0)
+      (place Rf1B3 139140 132471 front 0)
+      (place Rf2B1 -1263 138271 front 0)
+      (place Rf2B2 144216 132471 front 0)
+      (place Rf2B3 134064 132471 front 0)
+      (place Rg1 68535 138954 front 90)
+      (place Rled 23895 138741 front 90)
+      (place RsdM101 56132 53687 front 0)
+      (place RsdM102 48818 53687 front 0)
+      (place RsdM103 41504 53687 front 0)
+      (place RsdM201 34189 53687 front 0)
+      (place RsdM202 26875 53687 front 0)
+      (place RsdM203 19561 53687 front 0)
+      (place RsdM301 12246 53687 front 0)
+      (place RsdM302 4932 53687 front 0)
+      (place RsdM303 -2382 53687 front 0)
+      (place RsdM401 153701 45128 front 90)
+      (place RsdM402 145142 46373 front 0)
+      (place RsdM403 137827 46373 front 0)
+      (place Rz1 63575 138954 front 90)
+      )
+    (component "R_0805_2012Metric|"
+      (place RgfM101 148504 53467 front 0)
+      (place RgfM102 141427 53467 front 0)
+      (place RgfM103 134351 53467 front 0)
+      (place RgfM201 127275 53467 front 0)
+      (place RgfM202 120199 53467 front 0)
+      (place RgfM203 113123 53467 front 0)
+      (place RgfM301 106046 53467 front 0)
+      (place RgfM302 98970 53467 front 0)
+      (place RgfM303 91894 53467 front 0)
+      (place RgfM401 84818 53467 front 0)
+      (place RgfM402 77742 53467 front 0)
+      (place RgfM403 70665 53467 front 0)
+      (place RgoM101 42027 46153 front 0)
+      (place RgoM102 34618 46153 front 0)
+      (place RgoM103 27208 46153 front 0)
+      (place RgoM201 19799 46153 front 0)
+      (place RgoM202 12389 46153 front 0)
+      (place RgoM203 4980 46153 front 0)
+      (place RgoM301 -2430 46153 front 0)
+      (place RgoM302 146523 40753 front 0)
+      (place RgoM303 139113 40753 front 0)
+      (place RgoM401 131704 40753 front 0)
+      (place RgoM402 124294 40753 front 0)
+      (place RgoM403 116885 40753 front 0)
+      )
+    (component "R_2512_6332Metric|"
+      (place RsM101 13485 111332 front 0)
+      (place RsM102 5345 111332 front 0)
+      (place RsM103 -2795 111332 front 0)
+      (place RsM201 147249 103432 front 0)
+      (place RsM202 139109 103432 front 0)
+      (place RsM203 130969 103432 front 0)
+      (place RsM301 122829 103432 front 0)
+      (place RsM302 114689 103432 front 0)
+      (place RsM303 106549 103432 front 0)
+      (place RsM401 98409 103432 front 0)
+      (place RsM402 90269 103432 front 0)
+      (place RsM403 82129 103432 front 0)
+      )
+    (component "SOIC-16_3.9x9.9mm_P1.27mm|"
+      (place U10 -5607 84134 front 90)
+      (place U11 148875 55722 front 0)
+      (place U8 22193 84134 front 90)
+      (place U9 8293 84134 front 90)
+      )
+    (component "SOIC-8_3.9x4.9mm_P1.27mm|"
+      (place QM101H -5763 -3107 front 0)
+      (place QM101L 8313 -3107 front 0)
+      (place QM102H 22389 -3107 front 0)
+      (place QM102L 36465 -3107 front 0)
+      (place QM103H 50542 -3107 front 0)
+      (place QM103L 64618 -3107 front 0)
+      (place QM201H 78694 -3107 front 0)
+      (place QM201L 92770 -3107 front 0)
+      (place QM202H 106846 -3107 front 0)
+      (place QM202L 120923 -3107 front 0)
+      (place QM203H 134999 -3107 front 0)
+      (place QM203L -5763 5792 front 0)
+      (place QM301H 8313 5792 front 0)
+      (place QM301L 22389 5792 front 0)
+      (place QM302H 36465 5792 front 0)
+      (place QM302L 50542 5792 front 0)
+      (place QM303H 64618 5792 front 0)
+      (place QM303L 78694 5792 front 0)
+      (place QM401H 92770 5792 front 0)
+      (place QM401L 106846 5792 front 0)
+      (place QM402H 120923 5792 front 0)
+      (place QM402L 134999 5792 front 0)
+      (place QM403H -5763 14692 front 0)
+      (place QM403L 8313 14692 front 0)
+      (place UM101 68092 26575 front 90)
+      (place UM102 59192 26575 front 90)
+      (place UM103 50293 26575 front 90)
+      (place UM201 41392 26575 front 90)
+      (place UM202 32492 26575 front 90)
+      (place UM203 23592 26575 front 90)
+      (place UM301 14692 26575 front 90)
+      (place UM302 5792 26575 front 90)
+      (place UM303 -3107 26575 front 90)
+      (place UM401 144914 15125 front 90)
+      (place UM402 136014 15125 front 90)
+      (place UM403 127114 15125 front 90)
+      (place UaM101 5792 103084 front 90)
+      (place UaM102 -3107 103084 front 90)
+      (place UaM103 144465 95184 front 90)
+      (place UaM201 135565 95184 front 90)
+      (place UaM202 126665 95184 front 90)
+      (place UaM203 117765 95184 front 90)
+      (place UaM301 108865 95184 front 90)
+      (place UaM302 99965 95184 front 90)
+      (place UaM303 91065 95184 front 90)
+      (place UaM401 82165 95184 front 90)
+      (place UaM402 73265 95184 front 90)
+      (place UaM403 64365 95184 front 90)
+      )
+    (component "SOT-23-6|"
+      (place U_ESD 14727 103152 front 0)
+      )
+    (component "SOT-23|"
+      (place Q_BZ 63621 52847 front 90)
+      )
+    (component "SW_Push_1P1T_NO_CK_KMR2|"
+      (place SW1 89115 111884 front 90)
+      (place SW2 82015 111884 front 90)
+      )
+    (component "TO-252-2_TabPin1|"
+      (place Q1 22597 13542 front 0)
+      )
+    (component "TestPoint_Pad_2.0x2.0mm|"
+      (place TP_12V 74262 111952 front 0)
+      (place TP_3V3 59347 111952 front 0)
+      (place TP_3V3A 51890 111952 front 0)
+      (place TP_5V 66805 111952 front 0)
+      (place TP_GND 44433 111952 front 0)
+      (place TP_UART_RX 36218 96152 front 0)
+      (place TP_UART_TX 45842 96152 front 0)
+      (place TP_WD 36976 111952 front 0)
+      )
+    (component "USB_C_Receptacle_GCT_USB4085|"
+      (place J2 40193 79584 front 90)
+      )
+    (component "|"
+      (place UB1 -3833 96704 front 0)
+      (place UB2 55239 96704 front 0)
+      (place UB3 145063 85654 front 0)
+      (place U_BARO 26554 97509 front 0)
+      (place U_LDO 16671 97659 front 0)
+      (place U_MCU 10000 49864 front 0)
+      )
+    )
+  (library
+    (image "AMASS_MR30PW-FB_1x03_P3.50mm_Horizontal|"
+      (pin R[] 1 5000 3000)
+      (pin R[1] 1 0 0)
+      (pin R[2] 1 0 -3500)
+      (pin R[3] 1 0 -7000)
+      )
+    (image "AMASS_XT60-F_1x02_P7.20mm_Vertical|"
+      (pin R[1] 1 0 0)
+      (pin R[2] 1 -7200 0)
+      )
+    (image "Buzzer_CUI_CPT-9019S-SMT|"
+      (pin R[1] 1 0 4000)
+      (pin R[2] 1 0 -4000)
+      )
+    (image "CP_Elec_8x10|"
+      (pin R[1] 1 0 3250)
+      (pin R[2] 1 0 -3250)
+      )
+    (image "C_0402_1005Metric|"
+      (pin R[1] 1 -480 0)
+      (pin R[2] 1 480 0)
+      )
+    (image "C_0603_1608Metric|"
+      (pin R[1] 1 -775 0)
+      (pin R[2] 1 775 0)
+      )
+    (image "C_0805_2012Metric|"
+      (pin R[1] 1 -950 0)
+      (pin R[2] 1 950 0)
+      )
+    (image "C_1206_3216Metric|"
+      (pin R[1] 1 -1475 0)
+      (pin R[2] 1 1475 0)
+      )
+    (image "C_1210_3225Metric|"
+      (pin R[1] 1 0 1475)
+      (pin R[2] 1 0 -1475)
+      )
+    (image "D_SMB|"
+      (pin R[1] 1 0 2150)
+      (pin R[2] 1 0 -2150)
+      )
+    (image "D_SOD-123|"
+      (pin R[1] 1 -1650 0)
+      (pin R[2] 1 1650 0)
+      )
+    (image "Fuse_1206_3216Metric|"
+      (pin R[1] 1 -1400 0)
+      (pin R[2] 1 1400 0)
+      )
+    (image "LED_0805_2012Metric|"
+      (pin R[1] 1 0 938)
+      (pin R[2] 1 0 -938)
+      )
+    (image "LGA-14_3x2.5mm_P0.5mm_LayoutBorder3x4y|"
+      (pin R[1] 1 -750 1162)
+      (pin R[10] 1 -250 -1162)
+      (pin R[11] 1 -750 -1162)
+      (pin R[12] 1 -912 -500)
+      (pin R[13] 1 -912 0)
+      (pin R[14] 1 -912 500)
+      (pin R[2] 1 -250 1162)
+      (pin R[3] 1 250 1162)
+      (pin R[4] 1 750 1162)
+      (pin R[5] 1 912 500)
+      (pin R[6] 1 912 0)
+      (pin R[7] 1 912 -500)
+      (pin R[8] 1 750 -1162)
+      (pin R[9] 1 250 -1162)
+      )
+    (image "L_0805_2012Metric|"
+      (pin R[1] 1 0 1062)
+      (pin R[2] 1 0 -1062)
+      )
+    (image "L_Bourns-SRN8040_8x8.15mm|"
+      (pin R[1] 1 0 2800)
+      (pin R[2] 1 0 -2800)
+      )
+    (image "MountingHole_3.2mm_M3|"
+      (pin R[1] 1 0 0)
+      )
+    (image "R_0603_1608Metric|"
+      (pin R[1] 1 -825 0)
+      (pin R[2] 1 825 0)
+      )
+    (image "R_0805_2012Metric|"
+      (pin R[1] 1 -912 0)
+      (pin R[2] 1 912 0)
+      )
+    (image "R_2512_6332Metric|"
+      (pin R[1] 1 -2962 0)
+      (pin R[2] 1 2962 0)
+      )
+    (image "SOIC-16_3.9x9.9mm_P1.27mm|"
+      (pin R[1] 1 -4445 2475)
+      (pin R[10] 1 3175 -2475)
+      (pin R[11] 1 1905 -2475)
+      (pin R[12] 1 635 -2475)
+      (pin R[13] 1 -635 -2475)
+      (pin R[14] 1 -1905 -2475)
+      (pin R[15] 1 -3175 -2475)
+      (pin R[16] 1 -4445 -2475)
+      (pin R[2] 1 -3175 2475)
+      (pin R[3] 1 -1905 2475)
+      (pin R[4] 1 -635 2475)
+      (pin R[5] 1 635 2475)
+      (pin R[6] 1 1905 2475)
+      (pin R[7] 1 3175 2475)
+      (pin R[8] 1 4445 2475)
+      (pin R[9] 1 4445 -2475)
+      )
+    (image "SOIC-8_3.9x4.9mm_P1.27mm|"
+      (pin R[1] 1 -1905 2475)
+      (pin R[2] 1 -635 2475)
+      (pin R[3] 1 635 2475)
+      (pin R[4] 1 1905 2475)
+      (pin R[5] 1 1905 -2475)
+      (pin R[6] 1 635 -2475)
+      (pin R[7] 1 -635 -2475)
+      (pin R[8] 1 -1905 -2475)
+      )
+    (image "SOT-23-6|"
+      (pin R[1] 1 -1100 -950)
+      (pin R[2] 1 -1100 0)
+      (pin R[3] 1 -1100 950)
+      (pin R[4] 1 1100 950)
+      (pin R[5] 1 1100 0)
+      (pin R[6] 1 1100 -950)
+      )
+    (image "SOT-23|"
+      (pin R[1] 1 -950 1000)
+      (pin R[2] 1 950 1000)
+      (pin R[3] 1 0 -1000)
+      )
+    (image "SW_Push_1P1T_NO_CK_KMR2|"
+      (pin R[1] 1 -800 2050)
+      (pin R[2] 1 800 2050)
+      )
+    (image "TO-252-2_TabPin1|"
+      (pin R[] 1 1050 -1800)
+      (pin R[1] 1 -4575 -2300)
+      (pin R[2] 1 -4575 2280)
+      )
+    (image "TestPoint_Pad_2.0x2.0mm|"
+      (pin R[1] 1 0 0)
+      )
+    (image "USB_C_Receptacle_GCT_USB4085|"
+      (pin R[A1] 1 0 0)
+      (pin R[A12] 1 0 -5950)
+      (pin R[A4] 1 0 -850)
+      (pin R[A5] 1 0 -1700)
+      (pin R[A6] 1 0 -2550)
+      (pin R[A7] 1 0 -3400)
+      (pin R[A8] 1 0 -4250)
+      (pin R[A9] 1 0 -5100)
+      (pin R[B1] 1 1350 -5950)
+      (pin R[B12] 1 1350 0)
+      (pin R[B4] 1 1350 -5100)
+      (pin R[B5] 1 1350 -4250)
+      (pin R[B6] 1 1350 -3400)
+      (pin R[B7] 1 1350 -2550)
+      (pin R[B8] 1 1350 -1700)
+      (pin R[B9] 1 1350 -850)
+      (pin R[S1] 1 980 1350)
+      )
+    (image "|"
+      (pin R[1] 1 -13250 12065)
+      (pin R[10] 1 -13250 635)
+      (pin R[11] 1 -13250 -635)
+      (pin R[12] 1 -13250 -1905)
+      (pin R[13] 1 -13250 -3175)
+      (pin R[14] 1 -13250 -4445)
+      (pin R[15] 1 -13250 -5715)
+      (pin R[16] 1 -13250 -6985)
+      (pin R[17] 1 -13250 -8255)
+      (pin R[18] 1 -13250 -9525)
+      (pin R[19] 1 -13250 -10795)
+      (pin R[2] 1 -13250 10795)
+      (pin R[20] 1 -13250 -12065)
+      (pin R[21] 1 13250 12065)
+      (pin R[22] 1 13250 10795)
+      (pin R[23] 1 13250 9525)
+      (pin R[24] 1 13250 8255)
+      (pin R[25] 1 13250 6985)
+      (pin R[26] 1 13250 5715)
+      (pin R[27] 1 13250 4445)
+      (pin R[28] 1 13250 3175)
+      (pin R[29] 1 13250 1905)
+      (pin R[3] 1 -13250 9525)
+      (pin R[30] 1 13250 635)
+      (pin R[31] 1 13250 -635)
+      (pin R[32] 1 13250 -1905)
+      (pin R[33] 1 13250 -3175)
+      (pin R[34] 1 13250 -4445)
+      (pin R[35] 1 13250 -5715)
+      (pin R[36] 1 13250 -6985)
+      (pin R[37] 1 13250 -8255)
+      (pin R[38] 1 13250 -9525)
+      (pin R[39] 1 13250 -10795)
+      (pin R[4] 1 -13250 8255)
+      (pin R[40] 1 13250 -12065)
+      (pin R[41] 1 0 0)
+      (pin R[5] 1 -13250 6985)
+      (pin R[6] 1 -13250 5715)
+      (pin R[7] 1 -13250 4445)
+      (pin R[8] 1 -13250 3175)
+      (pin R[9] 1 -13250 1905)
+      (pin R[BST] 1 -3000 1905)
+      (pin R[CSB] 1 325 1000)
+      (pin R[EN] 1 -3000 -635)
+      (pin R[EP] 1 0 0)
+      (pin R[FB] 1 -3000 -1905)
+      (pin R[GND] 1 3000 -635)
+      (pin R[GND2] 1 -325 -1000)
+      (pin R[IN] 1 -3000 635)
+      (pin R[NC] 1 1100 475)
+      (pin R[SCK] 1 975 -1000)
+      (pin R[SDI] 1 325 -1000)
+      (pin R[SDO] 1 975 1000)
+      (pin R[SS] 1 3000 -1905)
+      (pin R[SW] 1 3000 635)
+      (pin R[VCC] 1 3000 1905)
+      (pin R[VDD] 1 -975 1000)
+      (pin R[VDDIO] 1 -325 1000)
+      (pin R[VIN] 1 -1100 950)
+      (pin R[VOUT] 1 1100 -475)
+      )
+  )
+  (network
+    (net "12V"
+      (pins TP_12V-1 Cout_12V2-1 Cout_12V1-1 CinB2-1 UB2-EN UB2-IN Rf1B1-1 CoB1b-1 CoB1a-1 LB1-2 UB1-VCC DbM403-1 CvM403-1 UM403-1 DbM402-1 CvM402-1 UM402-1 DbM401-1 CvM401-1 UM401-1 DbM303-1 CvM303-1 UM303-1 DbM302-1 CvM302-1 UM302-1 DbM301-1 CvM301-1 UM301-1 DbM203-1 CvM203-1 UM203-1 DbM202-1 CvM202-1 UM202-1 DbM201-1 CvM201-1 UM201-1 DbM103-1 CvM103-1 UM103-1 DbM102-1 CvM102-1 UM102-1 DbM101-1 CvM101-1 UM101-1)
+      )
+    (net "3V3"
+      (pins U_BARO-VDD U_BARO-VDDIO U_BARO-CSB CIMU-1 U_IMU-8 U_IMU-5 TP_3V3-1 RBZ-2 D_LED-2 RT1-1 RSCL-1 RSDA-1 REN-1 RBOOT-1 U_MCU-2 Cadc4-1 U11-16 U11-15 Cadc3-1 U10-16 U10-15 Cadc2-1 U9-16 U9-15 Cadc1-1 U8-16 U8-15 Cldo_i-1 U_LDO-EN U_LDO-VIN Cout_3V32-1 Cout_3V31-1 Rf1B3-1 CoB3b-1 CoB3a-1 LB3-2 UB3-VCC RsdM403-2 Rd1M403-1 RsdM402-2 Rd1M402-1 RsdM401-2 Rd1M401-1 RsdM303-2 Rd1M303-1 RsdM302-2 Rd1M302-1 RsdM301-2 Rd1M301-1 RsdM203-2 Rd1M203-1 RsdM202-2 Rd1M202-1 RsdM201-2 Rd1M201-1 RsdM103-2 Rd1M103-1 RsdM102-2 Rd1M102-1 RsdM101-2 Rd1M101-1)
+      )
+    (net "3V3_A"
+      (pins TP_3V3A-1 FLDO-1 Cldo_o-1 U_LDO-VOUT Cout_3V3_A1-1 UaM403-6 UaM402-6 UaM401-6 UaM303-6 UaM302-6 UaM301-6 UaM203-6 UaM202-6 UaM201-6 UaM103-6 UaM102-6 UaM101-6)
+      )
+    (net "5V"
+      (pins D3-2 TP_5V-1 Cout_5V2-1 Cout_5V1-1 Rf1B2-1 CoB2b-1 CoB2a-1 LB2-2 UB2-VCC)
+      )
+    (net "5V_AUX"
+      (pins D3-1 D2-1 CinB3-1 UB3-EN UB3-IN)
+      )
+    (net "ADC_CS1"
+      (pins U_MCU-23 U8-10)
+      )
+    (net "ADC_CS2"
+      (pins U_MCU-15 U9-10)
+      )
+    (net "ADC_CS3"
+      (pins U_MCU-33 U10-10)
+      )
+    (net "ADC_CS4"
+      (pins U_MCU-34 U11-10)
+      )
+    (net "BOOT_N"
+      (pins RBOOT-2 SW1-1 SW1-1 U_MCU-27)
+      )
+    (net "BSTB1"
+      (pins CbstB1-1 UB1-BST)
+      )
+    (net "BSTB2"
+      (pins CbstB2-1 UB2-BST)
+      )
+    (net "BSTB3"
+      (pins CbstB3-1 UB3-BST)
+      )
+    (net "BUZZER"
+      (pins Q_BZ-1 BZ1-1 U_MCU-16)
+      )
+    (net "CC1"
+      (pins RCC1-1 J2-A5)
+      )
+    (net "CC2"
+      (pins RCC2-1 J2-B5)
+      )
+    (net "EN_MCU"
+      (pins CEN-1 REN-2 SW2-1 SW2-1 U_MCU-3)
+      )
+    (net "FBB1"
+      (pins Rf2B1-1 Rf1B1-2 UB1-FB)
+      )
+    (net "FBB2"
+      (pins Rf2B2-1 Rf1B2-2 UB2-FB)
+      )
+    (net "FBB3"
+      (pins Rf2B3-1 Rf1B3-2 UB3-FB)
+      )
+    (net "GHM101"
+      (pins QM101H-1 RgoM101-2)
+      )
+    (net "GHM102"
+      (pins QM102H-1 RgoM102-2)
+      )
+    (net "GHM103"
+      (pins QM103H-1 RgoM103-2)
+      )
+    (net "GHM201"
+      (pins QM201H-1 RgoM201-2)
+      )
+    (net "GHM202"
+      (pins QM202H-1 RgoM202-2)
+      )
+    (net "GHM203"
+      (pins QM203H-1 RgoM203-2)
+      )
+    (net "GHM301"
+      (pins QM301H-1 RgoM301-2)
+      )
+    (net "GHM302"
+      (pins QM302H-1 RgoM302-2)
+      )
+    (net "GHM303"
+      (pins QM303H-1 RgoM303-2)
+      )
+    (net "GHM401"
+      (pins QM401H-1 RgoM401-2)
+      )
+    (net "GHM402"
+      (pins QM402H-1 RgoM402-2)
+      )
+    (net "GHM403"
+      (pins QM403H-1 RgoM403-2)
+      )
+    (net "GLM101"
+      (pins QM101L-1 RgfM101-2)
+      )
+    (net "GLM102"
+      (pins QM102L-1 RgfM102-2)
+      )
+    (net "GLM103"
+      (pins QM103L-1 RgfM103-2)
+      )
+    (net "GLM201"
+      (pins QM201L-1 RgfM201-2)
+      )
+    (net "GLM202"
+      (pins QM202L-1 RgfM202-2)
+      )
+    (net "GLM203"
+      (pins QM203L-1 RgfM203-2)
+      )
+    (net "GLM301"
+      (pins QM301L-1 RgfM301-2)
+      )
+    (net "GLM302"
+      (pins QM302L-1 RgfM302-2)
+      )
+    (net "GLM303"
+      (pins QM303L-1 RgfM303-2)
+      )
+    (net "GLM401"
+      (pins QM401L-1 RgfM401-2)
+      )
+    (net "GLM402"
+      (pins QM402L-1 RgfM402-2)
+      )
+    (net "GLM403"
+      (pins QM403L-1 RgfM403-2)
+      )
+    (net "GND"
+      (pins U_BARO-SDO U_BARO-GND2 U_BARO-GND CIMU-2 U_IMU-11 U_IMU-10 U_IMU-9 U_IMU-7 U_IMU-6 U_IMU-3 U_IMU-2 RCC2-2 RCC1-2 U_ESD-2 J2-S1 J2-S1 J2-S1 J2-S1 J2-B1 J2-B12 J2-A12 J2-A1 TP_GND-1 Q_BZ-2 BZ1-2 Rled-2 NT1-2 CVB-2 RVB2-2 CEN-2 SW2-2 SW2-2 SW1-2 SW1-2 U_MCU-41 U_MCU-40 U_MCU-1 Cadc4-2 U11-14 U11-9 Cadc3-2 U10-14 U10-9 Cadc2-2 U9-14 U9-9 Cadc1-2 U8-14 U8-9 Cldo_o-2 Cldo_i-2 U_LDO-GND Cout_3V3_A1-2 Cout_3V32-2 Cout_3V31-2 Cout_5V2-2 Cout_5V1-2 Cout_12V2-2 Cout_12V1-2 CinB3-2 Rf2B3-2 CoB3b-2 CoB3a-2 UB3-GND CinB2-2 Rf2B2-2 CoB2b-2 CoB2a-2 UB2-GND CinB1-2 Rf2B1-2 CoB1b-2 CoB1a-2 UB1-GND Chf4-2 Chf3-2 Chf2-2 Chf1-2 Cblk6-2 Cblk5-2 Cblk4-2 Cblk3-2 Cblk2-2 Cblk1-2 Rg1-2 D1-2 J1-2 CbeM403-2 Rb2M403-2 CdM403-2 Rd2M403-2 UaM403-2 UaM403-1 CaM403-2 CvM403-2 UM403-4 RsM403-2 CbeM402-2 Rb2M402-2 CdM402-2 Rd2M402-2 UaM402-2 UaM402-1 CaM402-2 CvM402-2 UM402-4 RsM402-2 CbeM401-2 Rb2M401-2 CdM401-2 Rd2M401-2 UaM401-2 UaM401-1 CaM401-2 CvM401-2 UM401-4 RsM401-2 CbeM303-2 Rb2M303-2 CdM303-2 Rd2M303-2 UaM303-2 UaM303-1 CaM303-2 CvM303-2 UM303-4 RsM303-2 CbeM302-2 Rb2M302-2 CdM302-2 Rd2M302-2 UaM302-2 UaM302-1 CaM302-2 CvM302-2 UM302-4 RsM302-2 CbeM301-2 Rb2M301-2 CdM301-2 Rd2M301-2 UaM301-2 UaM301-1 CaM301-2 CvM301-2 UM301-4 RsM301-2 CbeM203-2 Rb2M203-2 CdM203-2 Rd2M203-2 UaM203-2 UaM203-1 CaM203-2 CvM203-2 UM203-4 RsM203-2 CbeM202-2 Rb2M202-2 CdM202-2 Rd2M202-2 UaM202-2 UaM202-1 CaM202-2 CvM202-2 UM202-4 RsM202-2 CbeM201-2 Rb2M201-2 CdM201-2 Rd2M201-2 UaM201-2 UaM201-1 CaM201-2 CvM201-2 UM201-4 RsM201-2 CbeM103-2 Rb2M103-2 CdM103-2 Rd2M103-2 UaM103-2 UaM103-1 CaM103-2 CvM103-2 UM103-4 RsM103-2 CbeM102-2 Rb2M102-2 CdM102-2 Rd2M102-2 UaM102-2 UaM102-1 CaM102-2 CvM102-2 UM102-4 RsM102-2 CbeM101-2 Rb2M101-2 CdM101-2 Rd2M101-2 UaM101-2 UaM101-1 CaM101-2 CvM101-2 UM101-4 RsM101-2)
+      )
+    (net "HOM101"
+      (pins RgoM101-1 UM101-7)
+      )
+    (net "HOM102"
+      (pins RgoM102-1 UM102-7)
+      )
+    (net "HOM103"
+      (pins RgoM103-1 UM103-7)
+      )
+    (net "HOM201"
+      (pins RgoM201-1 UM201-7)
+      )
+    (net "HOM202"
+      (pins RgoM202-1 UM202-7)
+      )
+    (net "HOM203"
+      (pins RgoM203-1 UM203-7)
+      )
+    (net "HOM301"
+      (pins RgoM301-1 UM301-7)
+      )
+    (net "HOM302"
+      (pins RgoM302-1 UM302-7)
+      )
+    (net "HOM303"
+      (pins RgoM303-1 UM303-7)
+      )
+    (net "HOM401"
+      (pins RgoM401-1 UM401-7)
+      )
+    (net "HOM402"
+      (pins RgoM402-1 UM402-7)
+      )
+    (net "HOM403"
+      (pins RgoM403-1 UM403-7)
+      )
+    (net "I2C_SCL"
+      (pins U_BARO-SCK RSCL-2 U_MCU-32)
+      )
+    (net "I2C_SDA"
+      (pins U_BARO-SDI RSDA-2 U_MCU-31)
+      )
+    (net "IMU_CS"
+      (pins U_IMU-12 U_MCU-35)
+      )
+    (net "IMU_INT"
+      (pins U_IMU-4 U_MCU-24)
+      )
+    (net "I_M101"
+      (pins U8-1 UaM101-5)
+      )
+    (net "I_M102"
+      (pins U8-2 UaM102-5)
+      )
+    (net "I_M103"
+      (pins U8-3 UaM103-5)
+      )
+    (net "I_M201"
+      (pins U9-1 UaM201-5)
+      )
+    (net "I_M202"
+      (pins U9-2 UaM202-5)
+      )
+    (net "I_M203"
+      (pins U9-3 UaM203-5)
+      )
+    (net "I_M301"
+      (pins U10-1 UaM301-5)
+      )
+    (net "I_M302"
+      (pins U10-2 UaM302-5)
+      )
+    (net "I_M303"
+      (pins U10-3 UaM303-5)
+      )
+    (net "I_M401"
+      (pins U11-1 UaM401-5)
+      )
+    (net "I_M402"
+      (pins U11-2 UaM402-5)
+      )
+    (net "I_M403"
+      (pins U11-3 UaM403-5)
+      )
+    (net "LED_K"
+      (pins Rled-1 D_LED-1 U_MCU-26)
+      )
+    (net "LOM101"
+      (pins RgfM101-1 UM101-5)
+      )
+    (net "LOM102"
+      (pins RgfM102-1 UM102-5)
+      )
+    (net "LOM103"
+      (pins RgfM103-1 UM103-5)
+      )
+    (net "LOM201"
+      (pins RgfM201-1 UM201-5)
+      )
+    (net "LOM202"
+      (pins RgfM202-1 UM202-5)
+      )
+    (net "LOM203"
+      (pins RgfM203-1 UM203-5)
+      )
+    (net "LOM301"
+      (pins RgfM301-1 UM301-5)
+      )
+    (net "LOM302"
+      (pins RgfM302-1 UM302-5)
+      )
+    (net "LOM303"
+      (pins RgfM303-1 UM303-5)
+      )
+    (net "LOM401"
+      (pins RgfM401-1 UM401-5)
+      )
+    (net "LOM402"
+      (pins RgfM402-1 UM402-5)
+      )
+    (net "LOM403"
+      (pins RgfM403-1 UM403-5)
+      )
+    (net "PGATE"
+      (pins Dz1-1 Rg1-1)
+      )
+    (net "PHM101"
+      (pins QM101H-3 QM101L-2 J_M1-1 Rb1M101-1 CbM101-2 UM101-6)
+      )
+    (net "PHM102"
+      (pins QM102H-3 QM102L-2 Rb1M102-1 CbM102-2 UM102-6 J_M1-2)
+      )
+    (net "PHM103"
+      (pins QM103H-3 QM103L-2 Rb1M103-1 CbM103-2 UM103-6 J_M1-3)
+      )
+    (net "PHM201"
+      (pins QM201H-3 QM201L-2 J_M2-1 Rb1M201-1 CbM201-2 UM201-6)
+      )
+    (net "PHM202"
+      (pins QM202H-3 QM202L-2 Rb1M202-1 CbM202-2 UM202-6 J_M2-2)
+      )
+    (net "PHM203"
+      (pins QM203H-3 QM203L-2 Rb1M203-1 CbM203-2 UM203-6 J_M2-3)
+      )
+    (net "PHM301"
+      (pins QM301H-3 QM301L-2 J_M3-1 Rb1M301-1 CbM301-2 UM301-6)
+      )
+    (net "PHM302"
+      (pins QM302H-3 QM302L-2 Rb1M302-1 CbM302-2 UM302-6 J_M3-2)
+      )
+    (net "PHM303"
+      (pins QM303H-3 QM303L-2 Rb1M303-1 CbM303-2 UM303-6 J_M3-3)
+      )
+    (net "PHM401"
+      (pins QM401H-3 QM401L-2 J_M4-1 Rb1M401-1 CbM401-2 UM401-6)
+      )
+    (net "PHM402"
+      (pins QM402H-3 QM402L-2 Rb1M402-1 CbM402-2 UM402-6 J_M4-2)
+      )
+    (net "PHM403"
+      (pins QM403H-3 QM403L-2 Rb1M403-1 CbM403-2 UM403-6 J_M4-3)
+      )
+    (net "PWM_M101"
+      (pins U_MCU-4 UM101-2)
+      )
+    (net "PWM_M102"
+      (pins U_MCU-5 UM102-2)
+      )
+    (net "PWM_M103"
+      (pins U_MCU-6 UM103-2)
+      )
+    (net "PWM_M201"
+      (pins U_MCU-7 UM201-2)
+      )
+    (net "PWM_M202"
+      (pins U_MCU-12 UM202-2)
+      )
+    (net "PWM_M203"
+      (pins U_MCU-17 UM203-2)
+      )
+    (net "PWM_M301"
+      (pins U_MCU-18 UM301-2)
+      )
+    (net "PWM_M302"
+      (pins U_MCU-19 UM302-2)
+      )
+    (net "PWM_M303"
+      (pins U_MCU-20 UM303-2)
+      )
+    (net "PWM_M401"
+      (pins U_MCU-21 UM401-2)
+      )
+    (net "PWM_M402"
+      (pins U_MCU-22 UM402-2)
+      )
+    (net "PWM_M403"
+      (pins U_MCU-8 UM403-2)
+      )
+    (net "RBM101"
+      (pins CbeM101-1 Rb2M101-1 Rb1M101-2)
+      )
+    (net "RBM102"
+      (pins CbeM102-1 Rb2M102-1 Rb1M102-2)
+      )
+    (net "RBM103"
+      (pins CbeM103-1 Rb2M103-1 Rb1M103-2)
+      )
+    (net "RBM201"
+      (pins CbeM201-1 Rb2M201-1 Rb1M201-2)
+      )
+    (net "RBM202"
+      (pins CbeM202-1 Rb2M202-1 Rb1M202-2)
+      )
+    (net "RBM203"
+      (pins CbeM203-1 Rb2M203-1 Rb1M203-2)
+      )
+    (net "RBM301"
+      (pins CbeM301-1 Rb2M301-1 Rb1M301-2)
+      )
+    (net "RBM302"
+      (pins CbeM302-1 Rb2M302-1 Rb1M302-2)
+      )
+    (net "RBM303"
+      (pins CbeM303-1 Rb2M303-1 Rb1M303-2)
+      )
+    (net "RBM401"
+      (pins CbeM401-1 Rb2M401-1 Rb1M401-2)
+      )
+    (net "RBM402"
+      (pins CbeM402-1 Rb2M402-1 Rb1M402-2)
+      )
+    (net "RBM403"
+      (pins CbeM403-1 Rb2M403-1 Rb1M403-2)
+      )
+    (net "SD_MCU"
+      (pins U_MCU-28 RsdM403-1 UM403-3 RsdM402-1 UM402-3 RsdM401-1 UM401-3 RsdM303-1 UM303-3 RsdM302-1 UM302-3 RsdM301-1 UM301-3 RsdM203-1 UM203-3 RsdM202-1 UM202-3 RsdM201-1 UM201-3 RsdM103-1 UM103-3 RsdM102-1 UM102-3 RsdM101-1 UM101-3)
+      )
+    (net "SNM101"
+      (pins QM101L-3 UaM101-8 RsM101-1)
+      )
+    (net "SNM102"
+      (pins QM102L-3 UaM102-8 RsM102-1)
+      )
+    (net "SNM103"
+      (pins QM103L-3 UaM103-8 RsM103-1)
+      )
+    (net "SNM201"
+      (pins QM201L-3 UaM201-8 RsM201-1)
+      )
+    (net "SNM202"
+      (pins QM202L-3 UaM202-8 RsM202-1)
+      )
+    (net "SNM203"
+      (pins QM203L-3 UaM203-8 RsM203-1)
+      )
+    (net "SNM301"
+      (pins QM301L-3 UaM301-8 RsM301-1)
+      )
+    (net "SNM302"
+      (pins QM302L-3 UaM302-8 RsM302-1)
+      )
+    (net "SNM303"
+      (pins QM303L-3 UaM303-8 RsM303-1)
+      )
+    (net "SNM401"
+      (pins QM401L-3 UaM401-8 RsM401-1)
+      )
+    (net "SNM402"
+      (pins QM402L-3 UaM402-8 RsM402-1)
+      )
+    (net "SNM403"
+      (pins QM403L-3 UaM403-8 RsM403-1)
+      )
+    (net "SPI_MISO"
+      (pins U_IMU-1 U_MCU-11 U11-12 U10-12 U9-12 U8-12)
+      )
+    (net "SPI_MOSI"
+      (pins U_IMU-14 U_MCU-9 U11-11 U10-11 U9-11 U8-11)
+      )
+    (net "SPI_SCK"
+      (pins U_IMU-13 U_MCU-10 U11-13 U10-13 U9-13 U8-13)
+      )
+    (net "SWB1"
+      (pins CbstB1-2 LB1-1 UB1-SW)
+      )
+    (net "SWB2"
+      (pins CbstB2-2 LB2-1 UB2-SW)
+      )
+    (net "SWB3"
+      (pins CbstB3-2 LB3-1 UB3-SW)
+      )
+    (net "TEMP_SENSE"
+      (pins NT1-1 RT1-2 U_MCU-38)
+      )
+    (net "UART_RX"
+      (pins TP_UART_RX-1 U_MCU-36)
+      )
+    (net "UART_TX"
+      (pins TP_UART_TX-1 U_MCU-37)
+      )
+    (net "USB_DM"
+      (pins U_ESD-6 U_ESD-1 J2-B7 J2-A7 U_MCU-13)
+      )
+    (net "USB_DP"
+      (pins U_ESD-4 U_ESD-3 J2-B6 J2-A6 U_MCU-14)
+      )
+    (net "VBAT"
+      (pins F1-1 J1-1)
+      )
+    (net "VBAT_F"
+      (pins F1-2 Dz1-2 Rz1-1 Q1-2)
+      )
+    (net "VBAT_PROT"
+      (pins QM101H-2 QM102H-2 QM103H-2 QM201H-2 QM202H-2 QM203H-2 QM301H-2 QM302H-2 QM303H-2 QM401H-2 QM402H-2 QM403H-2 RVB1-1 CinB1-1 UB1-EN UB1-IN Chf4-1 Chf3-1 Chf2-1 Chf1-1 Cblk6-1 Cblk5-1 Cblk4-1 Cblk3-1 Cblk2-1 Cblk1-1 Rz1-2 D1-1 Q1-1 Q1-1 CaM403-1 CaM402-1 CaM401-1 CaM303-1 CaM302-1 CaM301-1 CaM203-1 CaM202-1 CaM201-1 CaM103-1 CaM102-1 CaM101-1)
+      )
+    (net "VBAT_SENSE"
+      (pins CVB-1 RVB2-1 RVB1-2 U_MCU-39)
+      )
+    (net "VBM101"
+      (pins CbM101-1 DbM101-2 UM101-8)
+      )
+    (net "VBM102"
+      (pins CbM102-1 DbM102-2 UM102-8)
+      )
+    (net "VBM103"
+      (pins CbM103-1 DbM103-2 UM103-8)
+      )
+    (net "VBM201"
+      (pins CbM201-1 DbM201-2 UM201-8)
+      )
+    (net "VBM202"
+      (pins CbM202-1 DbM202-2 UM202-8)
+      )
+    (net "VBM203"
+      (pins CbM203-1 DbM203-2 UM203-8)
+      )
+    (net "VBM301"
+      (pins CbM301-1 DbM301-2 UM301-8)
+      )
+    (net "VBM302"
+      (pins CbM302-1 DbM302-2 UM302-8)
+      )
+    (net "VBM303"
+      (pins CbM303-1 DbM303-2 UM303-8)
+      )
+    (net "VBM401"
+      (pins CbM401-1 DbM401-2 UM401-8)
+      )
+    (net "VBM402"
+      (pins CbM402-1 DbM402-2 UM402-8)
+      )
+    (net "VBM403"
+      (pins CbM403-1 DbM403-2 UM403-8)
+      )
+    (net "VBUS_USB"
+      (pins D2-2 U_ESD-5 J2-B4 J2-B9 J2-A9 J2-A4)
+      )
+    (net "VBZ"
+      (pins RBZ-1 Q_BZ-3)
+      )
+    (net "VREFM101"
+      (pins CdM101-1 Rd2M101-1 Rd1M101-2 UaM101-7 UaM101-3)
+      )
+    (net "VREFM102"
+      (pins CdM102-1 Rd2M102-1 Rd1M102-2 UaM102-7 UaM102-3)
+      )
+    (net "VREFM103"
+      (pins CdM103-1 Rd2M103-1 Rd1M103-2 UaM103-7 UaM103-3)
+      )
+    (net "VREFM201"
+      (pins CdM201-1 Rd2M201-1 Rd1M201-2 UaM201-7 UaM201-3)
+      )
+    (net "VREFM202"
+      (pins CdM202-1 Rd2M202-1 Rd1M202-2 UaM202-7 UaM202-3)
+      )
+    (net "VREFM203"
+      (pins CdM203-1 Rd2M203-1 Rd1M203-2 UaM203-7 UaM203-3)
+      )
+    (net "VREFM301"
+      (pins CdM301-1 Rd2M301-1 Rd1M301-2 UaM301-7 UaM301-3)
+      )
+    (net "VREFM302"
+      (pins CdM302-1 Rd2M302-1 Rd1M302-2 UaM302-7 UaM302-3)
+      )
+    (net "VREFM303"
+      (pins CdM303-1 Rd2M303-1 Rd1M303-2 UaM303-7 UaM303-3)
+      )
+    (net "VREFM401"
+      (pins CdM401-1 Rd2M401-1 Rd1M401-2 UaM401-7 UaM401-3)
+      )
+    (net "VREFM402"
+      (pins CdM402-1 Rd2M402-1 Rd1M402-2 UaM402-7 UaM402-3)
+      )
+    (net "VREFM403"
+      (pins CdM403-1 Rd2M403-1 Rd1M403-2 UaM403-7 UaM403-3)
+      )
+    (net "WD_FEED"
+      (pins TP_WD-1 U_MCU-25)
+      )
+  )
+  (class
+    (class w0_2 "12V" "5V_AUX" "ADC_CS1" "ADC_CS2" "ADC_CS3" "ADC_CS4" "BOOT_N" "BSTB1" "BSTB2" "BSTB3" "BUZZER" "CC1" "CC2" "EN_MCU" "FBB1" "FBB2" "FBB3" "GHM101" "GHM102" "GHM103" "GHM201" "GHM202" "GHM203" "GHM301" "GHM302" "GHM303" "GHM401" "GHM402" "GHM403" "GLM101" "GLM102" "GLM103" "GLM201" "GLM202" "GLM203" "GLM301" "GLM302" "GLM303" "GLM401" "GLM402" "GLM403" "GND" "HOM101" "HOM102" "HOM103" "HOM201" "HOM202" "HOM203" "HOM301" "HOM302" "HOM303" "HOM401" "HOM402" "HOM403" "I2C_SCL" "I2C_SDA" "IMU_CS" "IMU_INT" "I_M101" "I_M102" "I_M103" "I_M201" "I_M202" "I_M203" "I_M301" "I_M302" "I_M303" "I_M401" "I_M402" "I_M403" "LED_K" "LOM101" "LOM102" "LOM103" "LOM201" "LOM202" "LOM203" "LOM301" "LOM302" "LOM303" "LOM401" "LOM402" "LOM403" "PGATE" "PHM101" "PHM102" "PHM103" "PHM201" "PHM202" "PHM203" "PHM301" "PHM302" "PHM303" "PHM401" "PHM402" "PHM403" "PWM_M101" "PWM_M102" "PWM_M103" "PWM_M201" "PWM_M202" "PWM_M203" "PWM_M301" "PWM_M302" "PWM_M303" "PWM_M401" "PWM_M402" "PWM_M403" "RBM101" "RBM102" "RBM103" "RBM201" "RBM202" "RBM203" "RBM301" "RBM302" "RBM303" "RBM401" "RBM402" "RBM403" "SD_MCU" "SNM101" "SNM102" "SNM103" "SNM201" "SNM202" "SNM203" "SNM301" "SNM302" "SNM303" "SNM401" "SNM402" "SNM403" "SPI_MISO" "SPI_MOSI" "SPI_SCK" "SWB1" "SWB2" "SWB3" "TEMP_SENSE" "UART_RX" "UART_TX" "USB_DM" "USB_DP" "VBAT" "VBAT_PROT" "VBAT_SENSE" "VBUS_USB" "VBZ" "VREFM101" "VREFM102" "VREFM103" "VREFM201" "VREFM202" "VREFM203" "VREFM301" "VREFM302" "VREFM303" "VREFM401" "VREFM402" "VREFM403" "WD_FEED"  )
+      (circuit 0)
+      (width 200)
+      (clearance 150)
+      (via_dia 600)
+      (via_drill 300)
+      )
+    (class w0_263 "3V3" "3V3_A"  )
+      (circuit 0)
+      (width 263)
+      (clearance 150)
+      (via_dia 600)
+      (via_drill 300)
+      )
+    (class w0_391 "5V"  )
+      (circuit 0)
+      (width 391)
+      (clearance 150)
+      (via_dia 600)
+      (via_drill 300)
+      )
+    (class w2_42 "VBAT_F"  )
+      (circuit 0)
+      (width 2420)
+      (clearance 150)
+      (via_dia 600)
+      (via_drill 300)
+      )
+    (class w6_29 "VBM101" "VBM102" "VBM103" "VBM201" "VBM202" "VBM203" "VBM301" "VBM302" "VBM303" "VBM401" "VBM402" "VBM403"  )
+      (circuit 0)
+      (width 6290)
+      (clearance 150)
+      (via_dia 600)
+      (via_drill 300)
+      )
+  )
+  )

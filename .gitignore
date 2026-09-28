@@ -3,3 +3,10 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# Binarios de terceiros baixados: nao vao para o repo, a origem e o SHA256
+# estao documentados em fase3_pcb/freerouting/README.md
+*.jar
+
+# Log solto do FreeRouting na raiz (o log do projeto vive em fase3_pcb/freerouting/)
+/logs/

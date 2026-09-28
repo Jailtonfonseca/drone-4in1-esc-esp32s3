@@ -70,35 +70,40 @@ trilhas de F.Cu a dividirem referência com o plano de VBAT, e tira do projeto
 o plano de VBAT dedicado que a decisão D-02 pede. Fica registrado como
 [EST], com o número: 545 de 605 trilhas (90,1 %) estão em F.Cu.
 
-## 3. Tabela de espessuras (soma = 1.6000 mm)
+## 3. Tabela de espessuras (soma = 1.6000 mm) -- F.Cu/B.Cu em 2 oz (70 um)
+
+> **REVISAO 2026-09-28:** F.Cu e B.Cu foram de 1 oz (35 um) para **2 oz (70 um)**,
+> porque todo o calculo de potencia de `calc_trilhas_vias_saida.txt` (fase do
+> motor = 6,29 mm) foi feito para 2 oz. O dielrico 5 caiu de 0,2894 para
+> 0,2194 mm para fechar a soma em 1,6000 mm.
 
     $ /usr/bin/python3.9 -c "
-    cam=[('F_Cu',35.0),('prepreg',203.2),('In1_Cu',35.0),('core',355.6),
+    cam=[('F_Cu',70.0),('prepreg',203.2),('In1_Cu',35.0),('core',355.6),
     ('In2_Cu',18.0),('core',355.6),('In3_Cu',35.0),('prepreg',203.2),
-    ('In4_Cu',35.0),('core',289.4),('B_Cu',35.0)]
+    ('In4_Cu',35.0),('core',219.4),('B_Cu',70.0)]
     t=0
     for n,v in cam: t+=v; print('%-9s %7.1f um  acum=%7.1f um'%(n,v,t))
     print('TOTAL: %.1f um = %.4f mm'%(t,t/1000))"
-    F_Cu         35.0 um  acum=   35.0 um
-    prepreg     203.2 um  acum=  238.2 um
-    In1_Cu       35.0 um  acum=  273.2 um
-    core        355.6 um  acum=  628.8 um
-    In2_Cu       18.0 um  acum=  646.8 um
-    core        355.6 um  acum= 1002.4 um
-    In3_Cu       35.0 um  acum= 1037.4 um
-    prepreg     203.2 um  acum= 1240.6 um
-    In4_Cu       35.0 um  acum= 1275.6 um
-    core        289.4 um  acum= 1565.0 um
-    B_Cu         35.0 um  acum= 1600.0 um
+    F_Cu         70.0 um  acum=   70.0 um
+    prepreg     203.2 um  acum=  273.2 um
+    In1_Cu       35.0 um  acum=  308.2 um
+    core        355.6 um  acum=  663.8 um
+    In2_Cu       18.0 um  acum=  681.8 um
+    core        355.6 um  acum= 1037.4 um
+    In3_Cu       35.0 um  acum= 1072.4 um
+    prepreg     203.2 um  acum= 1275.6 um
+    In4_Cu       35.0 um  acum= 1310.6 um
+    core        219.4 um  acum= 1530.0 um
+    B_Cu         70.0 um  acum= 1600.0 um
     TOTAL: 1600.0 um = 1.6000 mm
 
-Cobre total **193.0 um** (1 oz nas 4 camadas externas e nos 2 planos, 0,5 oz em
-In2), dielétrico total **1407.0 um**. A espessura final casa exatamente com o
+Cobre total **263.0 um** (**2 oz em F.Cu e B.Cu**, 1 oz nos 3 planos internos,
+0,5 oz em In2), dielétrico total **1337.0 um**. A espessura final casa exatamente com o
 `(general (thickness 1.6))` que a v7 já declara.
 
 | # | Camada | Tipo | Espessura (mm) | Função |
 |---|---|---|---|---|
-| 1 | F.Cu | copper | 0.0350 | sinal principal (545 trilhas) + componentes |
+| 1 | F.Cu | copper | 0.0700 | sinal principal (545 trilhas) + componentes |
 | 2 | prepreg | dielectric | 0.2032 | [EST] 8 mil |
 | 3 | In1.Cu | copper | 0.0350 | **plano de GND** |
 | 4 | core | dielectric | 0.3556 | [EST] 14 mil |
@@ -107,8 +112,8 @@ In2), dielétrico total **1407.0 um**. A espessura final casa exatamente com o
 | 7 | In3.Cu | copper | 0.0350 | **plano de GND** |
 | 8 | prepreg | dielectric | 0.2032 | [EST] 8 mil |
 | 9 | In4.Cu | copper | 0.0350 | **plano de VBAT** |
-| 10 | core | dielectric | 0.2894 | [EST] |
-| 11 | B.Cu | copper | 0.0350 | retorno de sinal + GND (60 trilhas) |
+| 10 | core | dielectric | 0.2194 | [EST] |
+| 11 | B.Cu | copper | 0.0700 | retorno de sinal + GND (60 trilhas) |
 
 In2 a 18 um (0,5 oz) [EST] porque é a única camada que não é plano nem trilha
 de potência: a redução de 35 para 18 um devolve 17 um de espessura para o
@@ -223,7 +228,7 @@ também declarar as 6 camadas em `(layers ...)` no lugar das 4 atuais.
 
 ```lisp
     (stackup
-      (layer F.Cu (type "copper") (thickness 0.0350))
+      (layer F.Cu (type "copper") (thickness 0.0700))
       (layer "dielectric 1" (type "prepreg") (thickness 0.2032) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
       (layer In1.Cu (type "copper") (thickness 0.0350))
       (layer "dielectric 2" (type "core") (thickness 0.3556) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
@@ -232,10 +237,10 @@ também declarar as 6 camadas em `(layers ...)` no lugar das 4 atuais.
       (layer In3.Cu (type "copper") (thickness 0.0350))
       (layer "dielectric 4" (type "prepreg") (thickness 0.2032) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
       (layer In4.Cu (type "copper") (thickness 0.0350))
-      (layer "dielectric 5" (type "core") (thickness 0.2894) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
-      (layer B.Cu (type "copper") (thickness 0.0350))
-      (copper_thickness 0.0350)
-      (dielectric_thickness 1.4070)
+      (layer "dielectric 5" (type "core") (thickness 0.2194) (material "FR4 high-Tg") (epsilon_r 4.3) (loss_tangent 0.02))
+      (layer B.Cu (type "copper") (thickness 0.0700))
+      (copper_thickness 0.0700)
+      (dielectric_thickness 1.3370)
       (edge_connector bevelled)
       (impedance 50)
     )
@@ -274,8 +279,8 @@ Verificação do gate que o bloco acima faz passar:
     >   printf '%-16s %s\n' "$k" "$(grep -c $k <arquivo v8>)"
     > done
     stackup         1     <- o bloco (stackup ...) acima
-    dielectric      5     <- as 5 camadas "dielectric N", + (dielectric_thickness 1.4070)
-    copper_thickness 1    <- (copper_thickness 0.0350)
+    dielectric      5     <- as 5 camadas "dielectric N", + (dielectric_thickness 1.3370)
+    copper_thickness 1    <- (copper_thickness 0.0700)
     impedance       1     <- (impedance 50)
 
 Os quatro passam de 0 para um valor ≥ 1. A soma das 11 entradas de `(layer ...)`

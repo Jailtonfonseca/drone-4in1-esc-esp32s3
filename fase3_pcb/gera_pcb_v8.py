@@ -518,6 +518,34 @@ for k in range(i, len(txt)):
             break
 bloco = txt[i:k + 1]
 
+# ---- TAREFA 0 (2026-09-28): cobre de 2 oz em F.Cu e B.Cu --------------------
+# O bloco (stackup ...) acima foi escrito com 1 oz (0,0350 mm) nas camadas
+# externas, mas TODO o calculo de potencia de calc_trilhas_vias_saida.txt
+# (fase do motor 15 A = 6,29 mm, VBAT 7,5 A = 2,42 mm) foi feito para 2 oz.
+# Com 1 oz a largura necessaria seria 1,41x maior e nenhuma das 14 nets de
+# potencia fecharia. Aqui F.Cu e B.Cu vao para 0,0700 mm (2 oz) e o dieletrico
+# 5 (nucleo final) cai de 0,2894 para 0,2194 mm para a soma fechar em 1,6000 mm,
+# casando com o (general (thickness 1.6)) que o board ja declara.
+ESP_FB = 0.0700          # mm, 2 oz -- F.Cu e B.Cu
+_n_oz = 0
+for _l in ("F.Cu", "B.Cu"):
+    _a = '(layer %s (type "copper") (thickness 0.0350))' % _l
+    _b = '(layer %s (type "copper") (thickness %.4f))' % (_l, ESP_FB)
+    if _a in bloco:
+        bloco = bloco.replace(_a, _b); _n_oz += 1
+bloco = bloco.replace('(layer "dielectric 5" (type "core") (thickness 0.2894)',
+                      '(layer "dielectric 5" (type "core") (thickness 0.2194)')
+bloco = bloco.replace("(copper_thickness 0.0350)", "(copper_thickness 0.0700)")
+bloco = bloco.replace("(dielectric_thickness 1.4070)", "(dielectric_thickness 1.3370)")
+# conferencia real da soma das 11 entradas (layer ...)
+import re as _re
+_vals = [float(v) for v in _re.findall(r"\(layer\b.*?\(thickness ([0-9.]+)\)", bloco)]
+print("  TAREFA 0: F.Cu/B.Cu -> %.4f mm (2 oz) em %d camadas; soma do stackup "
+      "= %.4f mm em %d entradas" % (ESP_FB, _n_oz, sum(_vals), len(_vals)))
+assert _n_oz == 2, "nao achei F.Cu e B.Cu a 0,0350 no stackup"
+assert abs(sum(_vals) - 1.6000) < 5e-4, "soma do stackup != 1,6000 mm"
+
+
 PATH = OUT + "/v8_drone.kicad_pcb"
 src = open(PATH, encoding="utf-8").read()
 

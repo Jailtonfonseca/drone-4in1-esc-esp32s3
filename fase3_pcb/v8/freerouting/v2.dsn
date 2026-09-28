@@ -1,0 +1,21 @@
+(pcb mini
+  (parser (string_quote ")") (units mil) (resolution 1000) (height 62))
+  (structure
+    (layer F.Cu (type signal) (property (index 0)))
+    (layer In1.Cu (type signal) (property (index 1)))
+    (layer In2.Cu (type signal) (property (index 2)))
+    (layer In3.Cu (type signal) (property (index 3)))
+    (layer In4.Cu (type signal) (property (index 4)))
+    (layer B.Cu (type signal) (property (index 5)))
+    (boundary (path pcb (xy 0 0) (xy 2000 0) (xy 2000 1500) (xy 0 1500) (xy 0 0)))
+  (placement
+    (component Test (footprint MOD) (refdes U1) (description "t"))
+    (place U1 500 500 front 0 0))
+  (library
+    (image MOD (outline (path pcb 10 (xy -50 -50) (xy 50 -50) (xy 50 50) (xy -50 50) (xy -50 -50))))
+    (pin PAD1 x 0 0 40 0 (rect pcb (xy -20 -20) (xy 20 20)))
+    (pin PAD2 x 0 0 40 0 (rect pcb (xy 480 -20) (xy 520 20))))
+  (network N1 (pins PAD1 PAD2))
+  (class class1 N1 (circuit 0) (width 10) (clearance 6) (via_dia 24) (via_drill 12))
+  (rule (clearance 6))
+  )

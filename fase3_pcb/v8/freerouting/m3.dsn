@@ -1,0 +1,29 @@
+(pcb mini3
+  (parser (string_quote ")") (space_in_quoted_tokens on) (host_cad "KiCad's Pcbnew") (host_version "(5.1.9)"))
+  (resolution um 10)
+  (unit um)
+  (structure
+    (layer F.Cu (type signal) (property (index 0)))
+    (layer In1.Cu (type signal) (property (index 1)))
+    (layer In2.Cu (type signal) (property (index 2)))
+    (layer In3.Cu (type signal) (property (index 3)))
+    (layer In4.Cu (type signal) (property (index 4)))
+    (layer B.Cu (type signal) (property (index 5)))
+    (boundary (path pcb 0  0 0  50000 0  50000 30000  0 30000  0 0))
+    (rule (width 200) (clearance 150))
+  )
+  (placement
+    (component MOD:TEST (place U1 10000 10000 front 0 (PN X)))
+  )
+  (library
+    (image MOD:TEST
+      (outline (path signal 100  -1000 -1000  1000 -1000  1000 1000  -1000 1000  -1000 -1000))
+      (pin Rect[A]Pad_800x800_um 1 -500 0)
+      (pin Rect[A]Pad_800x800_um 2 500 0)
+    )
+  )
+  (network
+    (net N1 (pins U1-1 U1-2))
+  )
+  (class kicad_default "" N1)
+)
