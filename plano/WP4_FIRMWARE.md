@@ -23,7 +23,8 @@ Cada número tem etiqueta de origem, no mesmo estilo do resto do projeto
 | **[N/D offline]** | dado que precisa de um documento que **não está no disco** (o TRM da Espressif) |
 
 Nenhum caminho citado neste documento está inventado: todos foram conferidos com `test -e`
-(o comando está na §9.3, o resultado linha a linha na §10 — **42 testados, 42 existem**).
+(o critério de extração e o comando estão na §9.3, o resultado linha a linha na §10 —
+**44 testados, 44 existem, 0 inexistente**).
 
 ---
 
@@ -582,29 +583,82 @@ sem o firmware de bancada sobram 160 h de desenvolvimento de voo
 
 ### 9.3 Conferência de todos os caminhos citados neste documento
 
-Comando executado nesta máquina, que varre o próprio documento e testa cada caminho contra a
-raiz do projeto:
+**Critério de extração, declarado para que a conferência não seja auto-referente.** Neste
+documento um caminho só conta como *citado* se cumprir as três regras abaixo, e o comando de
+conferência aplica as três:
+
+1. está **entre crases** (`caminho`) — é a convenção de citação de arquivo do §0;
+2. está no **texto corrido**: o comando remove antes tudo o que está dentro de bloco cercado por
+   cercas (os exemplos de shell e as saídas de console), de modo que o bloco onde o próprio
+   comando mora **não pode se citar**;
+3. é um caminho **relativo à raiz do projeto** (`/opt/jupyter/work/drone`), nunca absoluto.
+
+Com esse critério, o comando abaixo foi executado nesta máquina e testou cada caminho extraído
+contra a raiz do projeto:
 
 ```console
 $ cd /opt/jupyter/work/drone
-$ for p in $(grep -oE '`[A-Za-z0-9_./-]+\.(md|txt|csv|png|v|log|vcd|py|cir|pdf|kicad_pcb|json|ini)`' \
-      plano/WP4_FIRMWARE.md | tr -d '`' | sort -u); do
+$ awk '/^```/{f=!f; next} !f' plano/WP4_FIRMWARE.md \
+    | grep -oE '`[A-Za-z0-9_./-]+\.(md|txt|csv|png|v|log|vcd|py|cir|pdf|kicad_pcb|json|ini)`' \
+    | tr -d '`' | sort -u > /tmp/wp4_caminhos.txt
+$ for p in $(cat /tmp/wp4_caminhos.txt); do
 >   test -e "/opt/jupyter/work/drone/$p" && echo "OK   $p" || echo "FALTA $p"
-> done > /tmp/val2.txt
-$ echo "OK: $(grep -c '^OK' /tmp/val2.txt)  FALTA: $(grep -c '^FALTA' /tmp/val2.txt)  TOTAL: $(wc -l < /tmp/val2.txt)"
-OK: 42  FALTA: 0  TOTAL: 42
+> done > /tmp/wp4_val.txt
+$ echo "OK: $(grep -c '^OK' /tmp/wp4_val.txt)  FALTA: $(grep -c '^FALTA' /tmp/wp4_val.txt)  TOTAL: $(wc -l < /tmp/wp4_val.txt)"
+OK: 44  FALTA: 0  TOTAL: 44
 ```
 
-**Resultado apurado: 42 caminhos testados, 42 existem, 0 inexistente.** A lista completa, com o
-resultado do `test -e` de cada um, está na §10 deste arquivo. O total subiu de 41 para 42 em
-2026-09-28 porque a correção do RF-05 passou a citar `datasheets/ir2104_infineon_datasheet.pdf`.
+**Resultado apurado: 44 caminhos testados, 44 existem, 0 inexistente.** A lista completa, com o
+resultado do `test -e` de cada um, está na §10 deste arquivo — 44 linhas, uma por caminho, na
+mesma ordem que o comando acima produz. O total subiu de 42 para 44 em 2026-09-28 porque dois
+caminhos que **já eram citados** no texto passaram a ser escritos entre crases, em vez do truque
+de escrevê-los sem crase para não alterar a contagem (ver §12.5, C1).
+
+**Por que uma varredura sem exigir as crases dá 8 falsos positivos.** Um `grep` que casa a
+extensão sem exigir as crases pega também o **texto do próprio exemplo de comando**: nomes de
+arquivo de um projeto ESP-IDF hipotético e arquivos temporatórios do `/tmp`, que nunca foram
+caminhos do projeto. Medido nesta máquina **sobre a versão anterior deste arquivo** (commit
+`35c1177`, o estado que o verificador mediu) — a varredura frouxa roda sobre o arquivo
+extraído com `git show` (o /tmp/wp4_antes.md do exemplo), e não sobre este arquivo, porque
+aplicá-la aqui faria ela varrer esta própria demonstração, que é justamente o defeito:
+
+```console
+$ git show 35c1177:plano/WP4_FIRMWARE.md > /tmp/wp4_antes.md
+$ for p in $(grep -oE '[A-Za-z0-9_./-]+\.(md|txt|csv|png|v|log|vcd|py|cir|pdf|kicad_pcb|json|ini)' /tmp/wp4_antes.md | tr -d '` ' | sort -u); do test -e "/opt/jupyter/work/drone/$p" && echo "OK   $p" || echo "FALTA $p"; done > /tmp/wp4_frouxo.txt
+$ echo "OK: $(grep -c '^OK' /tmp/wp4_frouxo.txt)  FALTA: $(grep -c '^FALTA' /tmp/wp4_frouxo.txt)  TOTAL: $(wc -l < /tmp/wp4_frouxo.txt)"
+OK: 44  FALTA: 8  TOTAL: 52
+$ grep '^FALTA' /tmp/wp4_frouxo.txt
+FALTA CMakeLists.txt
+FALTA h.v
+FALTA idf.py
+FALTA platformio.ini
+FALTA /tmp/ir.txt
+FALTA /tmp/mcp3208.txt
+FALTA /tmp/s3.txt
+FALTA /tmp/val2.txt
+$ sort /tmp/wp4_caminhos.txt > /tmp/wp4_estrito.txt
+$ grep '^OK' /tmp/wp4_frouxo.txt | sed 's/^OK   //' | sort > /tmp/wp4_frouxo_ok.txt
+$ echo "caminhos reais que a frouxa perdeu: $(comm -23 /tmp/wp4_estrito.txt /tmp/wp4_frouxo_ok.txt | wc -l)"
+caminhos reais que a frouxa perdeu: 0
+$ echo "OK da frouxa fora do estrito: $(comm -13 /tmp/wp4_estrito.txt /tmp/wp4_frouxo_ok.txt | wc -l)"
+OK da frouxa fora do estrito: 0
+```
+
+Os 8 são artefato do comando, não citações: CMakeLists.txt, h.v, idf.py e platformio.ini estão
+dentro de `-o -name '...'` no `find` da §9.1 que prova que **não há** firmware nenhum no projeto
+— são extensões do que a busca procurava; e ir.txt, mcp3208.txt, s3.txt e val2.txt são arquivos
+temporários de `pdftotext` e da própria conferência, fora da árvore do projeto. O essencial está nas duas últimas linhas
+de `comm`: os 44 `OK` da varredura frouxa são **exatamente** os 44 caminhos que o comando da
+§9.3 lista hoje — a frouxa erra ao **incluir** 8 artefatos, e não ao excluir nenhum caminho real.
 
 ---
 
 ## 10. ÍNDICE DE CAMINHOS CITADOS NESTE DOCUMENTO
 
-Gerado a partir do próprio texto: **cada caminho acima é o mesmo que aparece entre crases no
-documento, e cada um foi testado com `test -e` na raiz do projeto.**
+Gerado pelo **mesmo comando da §9.3**, sem critério próprio: são **44 linhas, uma por caminho
+extraído** — caminho entre crases, no texto corrido (fora de bloco cercado por cercas), relativo à
+raiz do projeto. A tabela abaixo está na ordem exata que o `sort -u` produziu, e o ✅ é o
+`test -e` real contra `/opt/jupyter/work/drone/<caminho>`.
 
 | Caminho | `test -e` |
 |---|---|
@@ -649,6 +703,8 @@ documento, e cada um foi testado com `test -e` na raiz do projeto.**
 | `orcamento/ORCAMENTO.md` | ✅ |
 | `orcamento/orcamento.py` | ✅ |
 | `orcamento/orcamento_detalhado.csv` | ✅ |
+| `plano/mede_v7_wp1.py` | ✅ |
+| `plano/WP1_ROTEAMENTO.md` | ✅ |
 | `plano/WP4_FIRMWARE.md` | ✅ |
 ---
 
@@ -720,22 +776,27 @@ o segundo CI também precisa entrar.
 
 ### 12.3 Efeito colateral honesto na contagem de caminhos
 
-Citar o datasheet (§12.1) acrescentou **1 caminho** ao documento. A conferência da §9.3 foi
-**re-executada**, não editada à mão:
+Citar o datasheet (§12.1) acrescentou **1 caminho** ao documento. A conferência da §9.3 é
+**re-executada**, nunca editada à mão — o comando abaixo é o da §9.3 e a saída é a de hoje
+(quando a §12.5 foi escrita o total era 42):
 
 ```console
 $ cd /opt/jupyter/work/drone
-$ for p in $(grep -oE '`[A-Za-z0-9_./-]+\.(md|txt|csv|png|v|log|vcd|py|cir|pdf|kicad_pcb|json|ini)`'       plano/WP4_FIRMWARE.md | tr -d '`' | sort -u); do
+$ awk '/^```/{f=!f; next} !f' plano/WP4_FIRMWARE.md \
+    | grep -oE '`[A-Za-z0-9_./-]+\.(md|txt|csv|png|v|log|vcd|py|cir|pdf|kicad_pcb|json|ini)`' \
+    | tr -d '`' | sort -u > /tmp/wp4_caminhos.txt
+$ for p in $(cat /tmp/wp4_caminhos.txt); do
 >   test -e "/opt/jupyter/work/drone/$p" && echo "OK   $p" || echo "FALTA $p"
-> done > /tmp/val2.txt
-$ echo "OK: $(grep -c '^OK' /tmp/val2.txt)  FALTA: $(grep -c '^FALTA' /tmp/val2.txt)  TOTAL: $(wc -l < /tmp/val2.txt)"
-OK: 42  FALTA: 0  TOTAL: 42
+> done > /tmp/wp4_val.txt
+$ echo "OK: $(grep -c '^OK' /tmp/wp4_val.txt)  FALTA: $(grep -c '^FALTA' /tmp/wp4_val.txt)  TOTAL: $(wc -l < /tmp/wp4_val.txt)"
+OK: 44  FALTA: 0  TOTAL: 44
 ```
 
-A propriedade que importa — **todo caminho citado existe** — continua valendo; o total foi de 41
-para 42, e a §0, a §9.3 e a §10 foram atualizadas para 42. Nenhum outro número do documento foi
-tocado: 41 → 42 caminhos, 13 → 14 riscos (um rebaixado, um criado), e os 12 canais, os 518,750 ns,
-os 20 kHz e as 320 h intactos.
+A propriedade que importa — **todo caminho citado existe** — continua valendo, e agora é verificável
+por um critério declarado, não por um número escrito à mão; o total foi de 41 para 42 com a
+correção do RF-05 e depois para 44 com a §12.5. A §0, a §9.3 e a §10 foram atualizadas junto.
+Nenhum outro número do documento foi tocado: 13 → 14 riscos (um rebaixado, um criado), e os 12
+canais, os 518,750 ns, os 20 kHz e as 320 h intactos.
 
 ### 12.4 Correções round 2 (2026-09-28)
 
@@ -850,10 +911,11 @@ $ python3 -c "import datetime; a=datetime.datetime(2026,9,27,23,50,19); b=dateti
 delta = 27 min
 ```
 
-O `commit` é o mesmo que adicionou os arquivos do WP1 — plano/WP1_ROTEAMENTO.md e
-plano/mede_v7_wp1.py, escritos aqui **sem crases** de propósito, para não alterar a contagem de 42
-caminhos da §10. O WP4 entrou no mesmo commit do WP1, o que também explica por que o assunto do
-commit fala em WP1.
+O `commit` é o mesmo que adicionou os arquivos do WP1 — `plano/WP1_ROTEAMENTO.md` e
+`plano/mede_v7_wp1.py`, ambos existentes (`test -e` na §10). O WP4 entrou no mesmo commit do WP1, o
+que também explica por que o assunto do commit fala em WP1. Até 2026-09-28 esses dois nomes eram
+escritos aqui **sem crases**, com a intenção declarada de não mexer na contagem da §10. O truque
+não funcionava — ver §12.5, C1.
 
 **O que mudou.** A precisão falsa saiu; o que os dados sustentam ficou, com o comando ao lado:
 
@@ -866,3 +928,89 @@ A **conclusão** da §12.1 não muda: o RF-05 estava errado ao classificar o dea
 premissa, porque o datasheet **estava** no disco antes do documento. Só a precisão sem evidência
 saiu. Os comandos de `stat` e `git log` foram acrescentados à §9.1 para que a afirmação daqui
 tenha lastro no documento.
+
+### 12.5 Correções round 3 (2026-09-28)
+
+Uma correção só, mas de fundo: a validação da §9.3 era **auto-referente**, e por isso o número que
+o documento afirmava — `FALTA: 0` — não era o que o comando produzia. Nada mais do documento foi
+tocado: 12 canais, 518,750 ns, 20 kHz, 320 h, RF-01 a RF-14, a C1 (p. 8), a C2 (janelas do M2/M3) e a
+C3 (27 min) seguem como estavam.
+
+#### C1 — a conferência de caminhos se citava sozinha
+
+**O que estava errado.** A §9.3 extraía caminhos com um `grep` que exigia crases, mas **não
+excluía os blocos de exemplo**. Um verificador independente que varre a versão anterior do arquivo
+sem exigir as crases (commit `35c1177`) encontra 8 nomes a mais — todos vindos do texto dos
+próprios exemplos de comando — e diverge da tabela da §10 em 2 linhas, para o lado oposto:
+
+```console
+$ git show 35c1177:plano/WP4_FIRMWARE.md > /tmp/wp4_antes.md
+$ for p in $(grep -oE '[A-Za-z0-9_./-]+\.(md|txt|csv|png|v|log|vcd|py|cir|pdf|kicad_pcb|json|ini)' /tmp/wp4_antes.md | tr -d '` ' | sort -u); do test -e "/opt/jupyter/work/drone/$p" && echo "OK   $p" || echo "FALTA $p"; done > /tmp/wp4_frouxo.txt
+$ echo "OK: $(grep -c '^OK' /tmp/wp4_frouxo.txt)  FALTA: $(grep -c '^FALTA' /tmp/wp4_frouxo.txt)  TOTAL: $(wc -l < /tmp/wp4_frouxo.txt)"
+OK: 44  FALTA: 8  TOTAL: 52
+$ grep '^FALTA' /tmp/wp4_frouxo.txt
+FALTA CMakeLists.txt
+FALTA h.v
+FALTA idf.py
+FALTA platformio.ini
+FALTA /tmp/ir.txt
+FALTA /tmp/mcp3208.txt
+FALTA /tmp/s3.txt
+FALTA /tmp/val2.txt
+$ awk '/^```/{f=!f; next} !f' plano/WP4_FIRMWARE.md \
+    | grep -oE '`[A-Za-z0-9_./-]+\.(md|txt|csv|png|v|log|vcd|py|cir|pdf|kicad_pcb|json|ini)`' \
+    | tr -d '`' | sort -u > /tmp/wp4_caminhos.txt
+$ for p in $(cat /tmp/wp4_caminhos.txt); do test -e "/opt/jupyter/work/drone/$p" && echo "OK   $p" || echo "FALTA $p"; done > /tmp/wp4_val.txt
+$ echo "OK: $(grep -c '^OK' /tmp/wp4_val.txt)  FALTA: $(grep -c '^FALTA' /tmp/wp4_val.txt)  TOTAL: $(wc -l < /tmp/wp4_val.txt)"
+OK: 44  FALTA: 0  TOTAL: 44
+$ wc -l < /tmp/wp4_caminhos.txt
+44
+```
+
+Duas coisas diferentes estavam erradas, e as duas precisam ser ditas:
+
+1. **Os 8 "FALTA" são artefato do comando, não caminhos do projeto.** CMakeLists.txt, h.v, idf.py
+   e platformio.ini aparecem dentro de `-o -name '...'` no `find` da §9.1 que prova que **não há**
+   firmware na árvore; ir.txt, mcp3208.txt, s3.txt e val2.txt são temporários de `pdftotext` e da
+   própria conferência. Nenhum deles é uma citação de caminho — e nenhum é o que a §10 promete
+   indexar.
+2. **O truque de "escrever sem crases" não funcionava.** A §12.4 (C3) escrevia
+   `plano/WP1_ROTEAMENTO.md` e `plano/mede_v7_wp1.py` sem crases, declarando que era para não
+   alterar a contagem. Não alterava: o `tr -d '`'` do verificador só remove crases **depois** do
+   casamento do padrão, e um verificador que casa a extensão sem exigir crase pega esses dois
+   nomes do mesmo jeito. Resultado: os 2 estavam no disco, existiam, e mesmo assim a tabela da §10
+   não os declarava — a tabela subdeclarava por 2, para um total real de 44.
+
+**O que mudou.** Adotada a **abordagem (a)**: a §9.3 agora **declara o critério de extração** em
+três regras (entre crases, no texto corrido, relativo à raiz do projeto) e o comando passa a
+**descartar os blocos cercados por cercas antes do `grep`**, com um `awk` que alterna um booleano a
+cada cerca. Efeito: o comando não consegue mais casar o próprio bloco onde mora, e o resultado
+**real** é `OK: 44  FALTA: 0  TOTAL: 44` — 44 caminhos, todos existentes, verificados por
+`test -e` contra a raiz do projeto, na ordem que o `sort -u` produz.
+
+Os dois caminhos que estavam sem crases passaram a ser citados **como deve ser**, entre crases, e
+entraram na §10 (que agora tem 44 linhas, uma por caminho extraído, e é gerada pelo mesmo
+comando — sem critério próprio). A divergência de 2 linhas entre tabela e comando **não existe
+mais**: as duas contagens saem do mesmo `sort -u`, o que se confirma comparando a tabela com a
+saída do `test -e`, linha a linha:
+
+```console
+$ awk '/^```/{f=!f; next} !f' plano/WP4_FIRMWARE.md \
+    | grep -oE '`[A-Za-z0-9_./-]+\.(md|txt|csv|png|v|log|vcd|py|cir|pdf|kicad_pcb|json|ini)`' \
+    | tr -d '`' | sort -u > /tmp/wp4_caminhos.txt
+$ sed -n '/^## 10\./,/^## 11\./p' plano/WP4_FIRMWARE.md \
+    | grep -oE '^\| `[A-Za-z0-9_./-]+\.(md|txt|csv|png|v|log|vcd|py|cir|pdf|kicad_pcb|json|ini)`' \
+    | sed 's/^| `//; s/`$//' | sort -u > /tmp/wp4_tabela.txt
+$ echo "tabela: $(wc -l < /tmp/wp4_tabela.txt) linhas  |  comando: $(wc -l < /tmp/wp4_caminhos.txt) caminhos"
+tabela: 44 linhas  |  comando: 44 caminhos
+$ diff /tmp/wp4_caminhos.txt /tmp/wp4_tabela.txt && echo "IDENTICAS: nenhuma divergencia entre a §10 e o comando"
+IDENTICAS: nenhuma divergencia entre a §10 e o comando
+$ while read -r p; do test -e "/opt/jupyter/work/drone/$p" || echo "FALTA $p"; done < /tmp/wp4_tabela.txt; echo "falhas: $(while read -r p; do test -e "/opt/jupyter/work/drone/$p" || echo FALTA; done < /tmp/wp4_tabela.txt | wc -l)"
+falhas: 0
+```
+
+**Números corrigidos.** Todas as afirmações de contagem do documento foram para o número verdadeiro
+— `OK: 42  FALTA: 0  TOTAL: 42` e as quatro frases em volta (a §0, a §9.3, a §12.3 e a C3 da
+§12.4) agora dizem **44 caminhos testados, 44 existem, 0 inexistente**, e a passagem "41 → 42
+caminhos" virou "41 → 42 → 44". A contagem dos riscos continua **13 → 14**, e o resto dos números
+conferidos (12 canais, 518,750 ns, 20 kHz, 320 h, RF-01 a RF-14) não foi tocado.
