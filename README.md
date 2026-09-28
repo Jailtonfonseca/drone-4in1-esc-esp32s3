@@ -29,6 +29,10 @@ Yosys 0.9, gerbv 2.7.0 e matplotlib.
 (ver `fase3_pcb/v6/verificacao_v6.txt`) e o roteador `fase3_pcb/rota_v7.py` não fechou.
 Os Gerbers presentes são **versões intermediárias de desenvolvimento**.
 
+Para a ordem de execução completa do projeto, do estado atual até o primeiro voo —
+o que falta para fabricar, o que falta para voar, a sequência de etapas, os gates e as
+decisões pendentes — ver **[`PLANO_FINAL.md`](PLANO_FINAL.md)**.
+
 ### Avisos importantes
 
 - **Nada foi validado em bancada.** Os limites de corrente contínua e o comportamento
