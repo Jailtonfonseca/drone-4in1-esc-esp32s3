@@ -23,7 +23,7 @@ Cada número tem etiqueta de origem, no mesmo estilo do resto do projeto
 | **[N/D offline]** | dado que precisa de um documento que **não está no disco** (o TRM da Espressif) |
 
 Nenhum caminho citado neste documento está inventado: todos foram conferidos com `test -e`
-(o comando está na §9.3, o resultado linha a linha na §10 — **41 testados, 41 existem**).
+(o comando está na §9.3, o resultado linha a linha na §10 — **42 testados, 42 existem**).
 
 ---
 
@@ -321,7 +321,7 @@ Três arquivos novos, nada editado, e nenhum deles é firmware:
 | **RF-02** | **O MCP3208 multiplexa: não há amostragem simultânea** | MUX interno de 8 canais; *"The MCP3208 is programmable to provide four pseudo-differential input pairs or eight single-ended inputs"* | `datasheets/mcp3208_microchip_ds21298e.pdf` (descrição) | A Fase 0 §4.2 vendeu como *bônus* do ADC externo que *"permite **amostragem simultânea** das 3 fases"*. Com 4× MCP3208 por motor isso **não se materializa**: as 3 fases são lidas em 3 instantes diferentes. FOC e detecção de pico de corrente ficam com erro. | 🔴 **Crítica** |
 | **RF-03** | **O *shutdown* dos 12 drivers está preso em 3V3 — não há corte de gate por software** | `Rsd%s` vai de `SD%s` a `3V3`; a rede `SD%s` só aparece nessas 2 linhas e **não chega a nenhum GPIO do MCU** | `fase3_pcb/gera_pcb_v7.py` linhas 238–239 e 401–412 (`MCU_NETS`, sem nenhuma entrada `SDx`) | Não existe instrução de firmware capaz de desligar os 12 IR2104. O corte depende de zerar o duty — e a semântica de repouso do RTL (`duty=0` → `lo` ligado, `fase2_simulacao/verilog/RELATORIO_VERILOG.md` §2) **não é** a do IR2104 com `IN=0`. Firmware escrito contra o RTL pode deixar dois low-sides ligados. | 🔴 **Crítica** |
 | **RF-04** | **Não há watchdog externo no layout** | `WD_FEED` aparece em exatamente 2 lugares: pad 25 do MCU e o test point `TP_WD`. Nenhum CI de watchdog no layout: buscar por `U_WD`, `MAX706`, `TPS3813` ou `watchdog` no gerador devolve **0** | `fase3_pcb/gera_pcb_v7.py` linhas 406 e 444; mitigação declarada em `fase4_entrega/RISCOS.md` R-08 | A mitigação que a Fase 4 declarou para R-08 não está na placa. Se o firmware travar, os motores ficam no **último duty** até o fim de bateria. A única defesa é o TWDT interno, que morre junto com o firmware. | 🔴 **Crítica** |
-| **RF-05** | **Só 2 dos 4 motores têm dead-time em hardware** | MCPWM: 2 unidades × 3 operadores = 6 saídas; LEDC: até 8 canais, **sem** dead-time em HW | `datasheets/esp32-s3_datasheet_en.pdf` §1 e §4.2.1.10 **[DATASHEET]**; `fase0_especificacao/FASE0_ESPECIFICACAO.md` §4.1 | Os motores 3 e 4 dependem **inteiramente** do dead-time interno do IR2104 (~520 ns `[PREMISSA]`, sem datasheet no disco para confirmar). O firmware não pode completar a proteção por software nesses 6 pinos. | 🟡 Alta |
+| **RF-05** | **Só 2 dos 4 motores têm dead-time em hardware** | MCPWM: 2 unidades × 3 operadores = 6 saídas; LEDC: até 8 canais, **sem** dead-time em HW | `datasheets/esp32-s3_datasheet_en.pdf` §1 e §4.2.1.10 **[DATASHEET]**; `fase0_especificacao/FASE0_ESPECIFICACAO.md` §4.1; dead-time do driver em `datasheets/ir2104_infineon_datasheet.pdf` p. 1 (*"Internally set deadtime — Deadtime (typ.) 520 ns"*) e p. 3, *Dynamic Electrical Characteristics*, símbolo `DT` = **400 / 520 / 650 ns** **[DATASHEET]** | Nos motores 3 e 4 o dead-time **existe, é interno ao IR2104 e é typ. 520 ns** — o firmware não o programa, mas também não o elimina. A afirmação anterior — que tratava isto como premissa pelo argumento *"sem datasheet no disco"* — estava **errada**: `datasheets/ir2104_infineon_datasheet.pdf` tem 142 488 bytes no disco. A proteção contra condução cruzada existe nos 4 motores; o que o firmware não consegue é *aumentá-la* além do que o driver entrega. O risco residual é o piso de 400 ns, agora isolado na RF-14. | 🟢 Média |
 | **RF-06** | **O MCP3208 é alimentado a 3,3 V — condição não especificada no datasheet** | A placa liga `VDD` e `VREF` em `3V3`; o datasheet só especifica throughput a **2,7 V (50 ksps)** e **5 V (100 ksps)** | `fase3_pcb/gera_pcb_v7.py` linhas 389–390; `datasheets/mcp3208_microchip_ds21298e.pdf` | O throughput real a 3,3 V é **desconhecido**. O projeto já tem um precedente: o próprio script registra que a escolha ficou *"abaixo dos 200 ksps desejados: registrado como limitacao"* (linha 18). O firmware não pode dimensionar taxa em cima de um número que ninguém mediu. | 🟡 Alta |
 | **RF-07** | **O mapa de pinos do firmware não existe ainda — e o da Fase 0 não bate com o layout** | Fase 0 §8: motor 1 = GPIO4,5,6 · motor 2 = GPIO7,8,9 · motor 3 = GPIO10,11,12 · motor 4 = GPIO13,14,15. Layout v7: motor 1 = pads 4,5,6 · motor 2 = pads 7,12,17 · motor 3 = pads 18,19,20 · motor 4 = pads **8**,21,22 | `fase0_especificacao/FASE0_ESPECIFICACAO.md` §8 (e o desenho em `fase1_esquema/esq7_mcu.png`) vs. `fase3_pcb/gera_pcb_v7.py` linhas 400–411, que é o gerador do arquivo `fase3_pcb/v7/v7_drone.kicad_pcb` **[MEDIDO]** | Divergem os motores 2, 3 e 4 inteiro, e o pad 8 (que a Fase 0 dava ao motor 2) está no layout como `PWM_M403`. A Fase 0 também previa **1 CS + IRQ/DRDY** para o ADC; o v7 tem **4 CS** (`ADC_CS1..4`, pads 23, 15, 33, 34). Escrever firmware contra a §8 agora produz um binário que não funciona na placa. | 🟡 Alta |
 | **RF-08** | **O duty de repouso e a comutação de 6 passos podem fechar caminho no motor** | O RTL implementa *chopping* sincronizado (3 fases com o mesmo duty, sem defasagem de 120° entre elas) e nenhuma comutação | `fase2_simulacao/verilog/RELATORIO_VERILOG.md` §7.10 e §2 | O M8 (6 passos) é o que decide o sentido; se ele definir fase alta e fase baixa com erro, o aterramento fecha a fase. `fase4_entrega/RISCOS.md` R-05 já avisa: *"Correção: trocar duas fases, nunca inverter no firmware (inverte o BEMF junto)"*. | 🟡 Alta |
@@ -330,6 +330,7 @@ Três arquivos novos, nada editado, e nenhum deles é firmware:
 | **RF-11** | **A fase 0 e o layout não concordam sobre a arquitetura do ADC** | Fase 0 §4.2: *"ADC externo por SPI (16 canais, ou 2×8)"*; orçamento: 1× ADS7953 16 canais 1 Msps. Layout v7: 4× MCP3208 de 8 canais | `fase0_especificacao/FASE0_ESPECIFICACAO.md` §4.2; `orcamento/ORCAMENTO.md` §6; `fase3_pcb/gera_pcb_v7.py` linhas 377–394 | A escolha de 4× MCP3208 foi feita por custo (`fase3_pcb/gera_pcb_v7.py` linhas 15–18) e é a que **falha em RF-01 e RF-02**. Trocar de ADC é decisão de hardware, não de firmware. | 🔴 Crítica |
 | **RF-12** | **O gargalo do projeto é a aquisição, não o PID** | PID a 4 kHz × 6 eixos × 25 FLOP = 600 000 FLOP/s ≈ **0,4 %** de um núcleo a 160 MHz. Em paralelo, 12 leituras de corrente a 2,4 µs consomem **28,8 µs dos 50 µs** do período (57,6 %) | **[CALC §9.1]**; 160 MHz de `fase2_simulacao/verilog/pwm_deadtime.v` cabeçalho; 240 MHz e 5,54 CoreMark/MHz de `datasheets/esp32-s3_datasheet_en.pdf` | Se alguém otimizar o PID achando que ele é o problema, perde tempo. O que tem de ser otimizado é o disparo do ADC, o *buffering* por DMA e a prioridade das tarefas. | 🟢 Média (o risco é de *alocação de esforço*) |
 | **RF-13** | **Brownout do MCU passa por dentro do firmware** | Pico de TX WiFi 0,50 A sobre um buck de 3,3 V dimensionado para 1,50 A (folga 2,9×) | `fase0_especificacao/FASE0_ESPECIFICACAO.md` §7; `fase4_entrega/RISCOS.md` R-09 | O firmware tem de **registrar o motivo do reset** para distinguir brownout de watchdog — já é uma das 10 ações de `fase4_entrega/ANALISE_WIFI_CONTROLE.md` §6 item 8. Sem isso, um brownout em voo é indistinguível de um travamento. | 🟡 Alta |
+| **RF-14** | **O dead-time dos motores 3 e 4 tem piso de 400 ns — 118,75 ns abaixo do RTL** | `DT` = **mín 400 / typ 520 / máx 650 ns**, especificado a `VBIAS` (VCC, VBS) = 15 V, `CL` = 1000 pF, `TA` = 25 °C. O layout alimenta o `VCC` dos 12 drivers em **12 V** (pin 1 = `12V`), **abaixo** do ponto de caracterização, e as Figuras 11A/11B mostram o dead-time variando com temperatura e com tensão | `datasheets/ir2104_infineon_datasheet.pdf` p. 3 (tabela *Dynamic Electrical Characteristics*) e p. 14 (Figuras 11A e 11B) **[DATASHEET]**; 12 V em `fase3_pcb/gera_pcb_v7.py` linha 239 **[MEDIDO]**; 518,750 ns em `fase2_simulacao/verilog/RELATORIO_VERILOG.md` §2 **[MEDIDO]** | Pelo próprio RF-05, esse é o **único** dead-time dos motores 3 e 4. O piso garantido de **400 ns é 118,75 ns (22,89 %) menor** que os **518,750 ns** do RTL — então o firmware **não pode** derivar o orçamento de dead-time dos 6 pinos de LEDC do valor do RTL: no pior caso ele **sobrestima** a proteção. Nenhum ajuste de software fecha isso. **Mitigação** (nenhuma delas é de firmware): (a) **medir o dead-time real de um motor em bancada** e usar o valor medido, não o de projeto, antes de qualquer voo; (b) usar as resistências de gate `Rgo`/`Rgf` já presentes no layout (`fase3_pcb/gera_pcb_v7.py` linha 236) para limitar a corrente e o `dI/dt` de comutação, que é o mecanismo que converte dead-time curto em condução cruzada; (c) se a medição ficar abaixo do aceitável, mover os motores 3 e 4 para MCPWM e reduzir a contagem de motores por placa. | 🟡 Alta |
 
 ### 7.2 RF-01 em detalhe: a conta que fecha
 
@@ -383,9 +384,11 @@ Três consequências que precisam virar decisão de hardware antes do firmware:
 1. **Não existe "corta tudo" por software.** O firmware pode zerar o duty, mas não pode desligar
    os drivers. Num quadricóptero, com dois low-sides do mesmo motor ligados, a fase está em curto
    sobre o barramento de 19,8–25,2 V.
-2. **O firmware tem de ser escrito contra o datasheet do IR2104, não contra o RTL.** A semântica
-   de repouso do modelo e a do driver divergem, e o modelo é o que foi verificado — então a
-   divergência é o risco.
+2. **O firmware tem de ser escrito contra o datasheet do IR2104, não contra o RTL.** O datasheet
+   **está no disco** (`datasheets/ir2104_infineon_datasheet.pdf`, p. 1 *features* e p. 3 *Dynamic
+   Electrical Characteristics*), então a instrução é acionável e não uma recomendação vaga
+   **[DATASHEET]**. A semântica de repouso do modelo e a do driver divergem, e o modelo é o que
+   foi verificado — então a divergência é o risco.
 3. **A proteção de R-01 (shoot-through) deixa de ter a camada de software.** A mitigação que
    `fase4_entrega/RISCOS.md` R-01 creditou ao RTL — *"garantia estrutural no RTL"* — **não
    existe no produto final**, porque o RTL não está no produto final.
@@ -424,7 +427,7 @@ Nenhuma delas é técnica; todas mudam o escopo. As três primeiras estão **blo
 
 | # | Decisão | Por que bloqueia | O que a resposta muda |
 |---:|---|---|---|
-| 1 | **Trocar o ADC externo?** (RF-01, RF-02, RF-11) | 4× MCP3208 não sustentam a amostragem sincronizada que a Fase 0 §4.5 exige, e não têm amostragem simultânea | Trocar por 2× ADS7953 (16 ch, 1 Msps) fecha RF-01 e RF-02 e devolve comutação sem sensor; custa +US$ 8,00 e **é uma respin** (`fase4_entrega/RISCOS.md` R-11 já avisa que a v7 ainda tem nets em aberto) |
+| 1 | **Trocar o ADC externo?** (RF-01, RF-02, RF-11) | 4× MCP3208 não sustentam a amostragem sincronizada que a Fase 0 §4.5 exige, e não têm amostragem simultânea | Trocar por 2× ADS7953 (16 ch cada, 1 Msps) fecha RF-01 e RF-02 e devolve comutação sem sensor; custa **+US$ 5,60**, e não +US$ 8,00 — a conta é 2 × US$ 8,00 = **US$ 16,00** contra 4 × US$ 2,60 = **US$ 10,40** dos 4× MCP3208 que estão no layout, com os preços unitários vindos de `orcamento/ORCAMENTO.md` linhas 68–69 e 134 (que compara 1× ADS7953 contra 2× MCP3208 = 8,00 − 5,20 = +2,80) **[EST]**, a extrapolação para 2× e 4× sendo minha. O BOM só tem 1 ADS7953, então o segundo CI também precisa entrar. E **é uma respin** (`fase4_entrega/RISCOS.md` R-11 já avisa que a v7 ainda tem nets em aberto) |
 | 2 | **Rotar o `SD` dos 12 drivers para um GPIO** (RF-03) | Sem isso não existe corte de gate por software | Acrescenta 1 pino e 1 net ao layout; é a correção mais barata e a mais séria |
 | 3 | **Fazer o watchdog externo que o R-08 já dá como mitigação** (RF-04) | Sem ele, um travamento do firmware deixa os motores no último duty | Acrescenta 1 CI supervisor + 1 pino; fecha a mitigação que a Fase 4 declarou |
 | 4 | **O firmware entra no escopo? (§6.3)** | Define se a entrega é placa ou drone | A = 0 h · B = 160 h · C = 320 h |
@@ -526,6 +529,24 @@ $ pdftotext -layout datasheets/esp32-s3_datasheet_en.pdf /tmp/s3.txt
   "Clock speed: up to 240 MHz"
   "ESP32-S3 integrates two MCPWMs ... Each MCPWM peripheral has one clock divider
    (prescaler), three PWM timers, three PWM operators, and a capture module."
+$ pdftotext -layout datasheets/ir2104_infineon_datasheet.pdf /tmp/ir.txt
+$ grep -n -i 'deadtime' /tmp/ir.txt
+17:  Internally set deadtime         Deadtime (typ.)    520 ns                    <- p.1, features
+113: DT  Deadtime, LS turn-off to HS turn-on &   400     520    650             <- p.3, Dynamic Elec. Char.
+255: Figure 4. Deadtime Waveform Definitions
+456: Deadtime (ns)
+458: Deadtime (ns)
+478: Figure 11A. Deadtime vs Temperature   Figure 11B. Deadtime vs Voltage       <- p.14
+$ pdfinfo datasheets/ir2104_infineon_datasheet.pdf | grep -i pages
+Pages:          14
+$ stat -c '%n %s bytes' datasheets/ir2104_infineon_datasheet.pdf
+datasheets/ir2104_infineon_datasheet.pdf 142488 bytes
+$ grep -n '"1": "12V"' fase3_pcb/gera_pcb_v7.py
+239:        setnets("U%s" % t, {"1": "12V", "2": "PWM_%s" % t, "3": "SD%s" % t, "4": "GND",
+$ python3 -c "print('delta min vs RTL = %.2f ns (%.2f %%)' % (518.75-400,(518.75-400)/518.75*100));
+           print('2x ADS7953 = %.2f ; 4x MCP3208 = %.2f ; delta = +%.2f' % (2*8.00, 4*2.60, 2*8.00-4*2.60))"
+delta min vs RTL = 118.75 ns (22.89 %)
+2x ADS7953 = 16.00 ; 4x MCP3208 = 10.40 ; delta = +5.60
 ```
 
 ### 9.2 Soma dos efforts
@@ -550,11 +571,12 @@ $ for p in $(grep -oE '`[A-Za-z0-9_./-]+\.(md|txt|csv|png|v|log|vcd|py|cir|pdf|k
 >   test -e "/opt/jupyter/work/drone/$p" && echo "OK   $p" || echo "FALTA $p"
 > done > /tmp/val2.txt
 $ echo "OK: $(grep -c '^OK' /tmp/val2.txt)  FALTA: $(grep -c '^FALTA' /tmp/val2.txt)  TOTAL: $(wc -l < /tmp/val2.txt)"
-OK: 41  FALTA: 0  TOTAL: 41
+OK: 42  FALTA: 0  TOTAL: 42
 ```
 
-**Resultado apurado: 41 caminhos testados, 41 existem, 0 inexistente.** A lista completa, com o
-resultado do `test -e` de cada um, está na §10 deste arquivo.
+**Resultado apurado: 42 caminhos testados, 42 existem, 0 inexistente.** A lista completa, com o
+resultado do `test -e` de cada um, está na §10 deste arquivo. O total subiu de 41 para 42 em
+2026-09-28 porque a correção do RF-05 passou a citar `datasheets/ir2104_infineon_datasheet.pdf`.
 
 ---
 
@@ -568,6 +590,7 @@ documento, e cada um foi testado com `test -e` na raiz do projeto.**
 | `PROMPT_AGENTE_DRONE.md` | ✅ |
 | `README.md` | ✅ |
 | `datasheets/esp32-s3_datasheet_en.pdf` | ✅ |
+| `datasheets/ir2104_infineon_datasheet.pdf` | ✅ |
 | `datasheets/mcp3208_microchip_ds21298e.pdf` | ✅ |
 | `fase0_especificacao/FASE0_ESPECIFICACAO.md` | ✅ |
 | `fase0_especificacao/diagrama_blocos_fase0_v3.png` | ✅ |
@@ -617,7 +640,75 @@ documento, e cada um foi testado com `test -e` na raiz do projeto.**
    observado ocorrer. Zero bancada, zero voo, zero termopar."*
 3. **Não mexe em nenhum arquivo existente**, inclusive no `LICENSE` nem no `README.md`. Este arquivo é o único criado. O `README.md` não
    foi alterado (§6.4 item 2 registra a pendência em vez de executá-la).
-4. **Não fecha o `fase4_entrega/RISCOS.md`.** Acrescentei RF-01 a RF-13, que são de firmware; os riscos
+4. **Não fecha o `fase4_entrega/RISCOS.md`.** Acrescentei RF-01 a RF-14, que são de firmware; os riscos
    R-01 a R-22 de `fase4_entrega/RISCOS.md` continuam abertos e não editados.
 5. **Não substitui o TRM.** Três números continuam `[N/D offline]`: throughput do MCP3208 a 3,3 V
    (RF-06), a exclusão ADC2×WiFi e a contagem de pinos por *GPIO matrix* (§7.5 item 3).
+
+---
+
+## 12. CORREÇÕES APÓS VERIFICAÇÃO ADVERSARIAL (2026-09-28)
+
+Duas falhas reais foram encontradas neste documento depois de escrito. As duas estão corrigidas
+aqui; o resto do texto não foi reescrito.
+
+### 12.1 RF-05 classificava o dead-time do IR2104 como premissa, com um datasheet no disco
+
+**O que estava errado.** O RF-05 dizia: *"Os motores 3 e 4 dependem **inteiramente** do dead-time
+interno do IR2104 (~520 ns, rotulado como premissa, sem datasheet no disco para confirmar)."*
+
+**Por que estava errado.** `datasheets/ir2104_infineon_datasheet.pdf` tem **142 488 bytes** no disco
+e foi modificado às `2026-09-27 23:50:19`, **11 minutos antes** deste arquivo ser escrito. O valor
+não era premissa: é dado de catálogo.
+
+**O que mudou.**
+
+1. A etiqueta `[PREMISSA]` → **`[DATASHEET]`**, com arquivo e página: p. 1, *features*, *"Internally set
+   deadtime — Deadtime (typ.) 520 ns"*; p. 3, *Dynamic Electrical Characteristics*, símbolo `DT` =
+   **400 / 520 / 650 ns**. Comandos e saídas na §9.1.
+2. **O mínimo de 400 ns virou risco próprio (RF-14).** Pelo próprio RF-05 esse é o **único**
+   dead-time dos motores 3 e 4, e 400 ns é **menor** que os 518,750 ns do RTL: **−118,75 ns,
+   −22,89 %**. Isso **rebaixa** o RF-05, que foi de 🟡 Alta para **🟢 Média** — a proteção contra
+   condução cruzada existe nos 4 motores, ela simplesmente não é programável pelo firmware — e
+   **eleva o resíduo**, que agora é um risco nomeado com mitigação: medir o dead-time real em
+   bancada, usar as resistências de gate `Rgo`/`Rgf` já no layout para limitar `dI/dt`, ou mover
+   os motores 3 e 4 para MCPWM. A RF-14 registra também que os drivers rodam a **12 V**
+   (`fase3_pcb/gera_pcb_v7.py` linha 239), **abaixo** dos 15 V de caracterização do datasheet, cujas
+   Figuras 11A/11B mostram o dead-time variando com tensão e temperatura.
+3. **Contradição do §7.3 resolvida.** O item 2 mandava escrever o firmware *"contra o datasheet do
+   IR2104"* enquanto o §7.1 afirmava que esse datasheet não existia. Agora o item 2 cita o caminho e
+   a página, então a instrução ficou acionável em vez de genérica.
+4. A §11 item 4 passou de *"RF-01 a RF-13"* para *"RF-01 a RF-14"*.
+
+### 12.2 §8 tinha um custo de ADC sem fonte
+
+**O que estava errado.** A decisão nº 1 da §8 dizia que trocar por 2× ADS7953 *"custa +US$ 8,00"*.
+Esse número não corresponde a nenhuma leitura possível de `orcamento/ORCAMENTO.md`, que traz
+US$ 8,00 como preço **unitário de 1** ADS7953 (linha 68) e enquadra o delta contra a alternativa
+como `8,00 − 5,20 = +2,80` (linha 134, sobre 2× MCP3208).
+
+**O que mudou.** A conta foi refeita na escala correta, que é a do layout (4× MCP3208 = 32 canais
+contra 2× ADS7953 = 32 canais): `2 × 8,00 = 16,00` contra `4 × 2,60 = 10,40`, delta
+**+US$ 5,60**. Marcado como **`[EST]`**, porque a extrapolação de 1→2 e de 2→4 CIs é minha — os
+preços unitários vêm de `orcamento/ORCAMENTO.md` linhas 68–69 e 134. O texto registra também que o
++US$ 2,80 do orçamento é a comparação de 16 canais, não a de 32, e que o BOM tem só 1 ADS7953, então
+o segundo CI também precisa entrar.
+
+### 12.3 Efeito colateral honesto na contagem de caminhos
+
+Citar o datasheet (§12.1) acrescentou **1 caminho** ao documento. A conferência da §9.3 foi
+**re-executada**, não editada à mão:
+
+```console
+$ cd /opt/jupyter/work/drone
+$ for p in $(grep -oE '`[A-Za-z0-9_./-]+\.(md|txt|csv|png|v|log|vcd|py|cir|pdf|kicad_pcb|json|ini)`'       plano/WP4_FIRMWARE.md | tr -d '`' | sort -u); do
+>   test -e "/opt/jupyter/work/drone/$p" && echo "OK   $p" || echo "FALTA $p"
+> done > /tmp/val2.txt
+$ echo "OK: $(grep -c '^OK' /tmp/val2.txt)  FALTA: $(grep -c '^FALTA' /tmp/val2.txt)  TOTAL: $(wc -l < /tmp/val2.txt)"
+OK: 42  FALTA: 0  TOTAL: 42
+```
+
+A propriedade que importa — **todo caminho citado existe** — continua valendo; o total foi de 41
+para 42, e a §0, a §9.3 e a §10 foram atualizadas para 42. Nenhum outro número do documento foi
+tocado: 41 → 42 caminhos, 13 → 14 riscos (um rebaixado, um criado), e os 12 canais, os 518,750 ns,
+os 20 kHz e as 320 h intactos.
