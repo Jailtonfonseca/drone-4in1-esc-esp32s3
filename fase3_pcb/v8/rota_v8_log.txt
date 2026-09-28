@@ -1,0 +1,117 @@
+==============================================================================
+FASE 3 -- ROTEAMENTO DO BOARD v8 (6 camadas)   [ROTA v8]
+==============================================================================
+t0                         : 0.0 s
+origem                     : /opt/jupyter/work/drone/fase3_pcb/v8/v8_drone.kicad_pcb
+orçamento de roteamento    : 165 s
+grade                      : 168.00 x 152.00 mm -> 672 x 608 celulas
+pitch / clearance alvo     : 0.25 / 0.15 mm
+camadas roteadas           : 3 -> F.Cu, In2.Cu, B.Cu
+camadas de PLANO (nao roteadas): In1.Cu=GND, In3.Cu=GND, In4.Cu=VBAT
+max nodes por A* / seguranca por net: 45000 / 6.0 s
+restaurado do backup       : /tmp/v8_drone_pre_rota.kicad_pcb -> /opt/jupyter/work/drone/fase3_pcb/v8/v8_drone.kicad_pcb
+pcbnew                     : 5.1.9+dfsg1-1+deb11u1
+objetos carregados         : 1273 (1093 pads, 180 trilhas/vias)
+vias+stubs de PLANO criados: 54  (em 1.2 s)  -- gate A4
+rasterizacao               : 0.6 s | celulas 1225728 (livre 1119837, bloqueada 37854, de net 57209)
+densidade de bloqueio     : 3.1 % do grid
+nets a rotear              : 176 de 176  (2 pontos: 89 | 3+ pontos: 87)
+mascara de via (VOK)       : 0.1 s | 353323 celulas com via possivel (86.5 %)
+[progresso] t=   6.1 s | filas=  1/176 | rotas=  0 | falhas=  1 | trilhas=   54 | restam 158.9 s
+[progresso] t=   9.4 s | filas=  2/176 | rotas=  0 | falhas=  2 | trilhas=   54 | restam 155.6 s
+[progresso] t=  12.4 s | filas=  3/176 | rotas=  0 | falhas=  3 | trilhas=   54 | restam 152.6 s
+[progresso] t=  15.7 s | filas=  4/176 | rotas=  0 | falhas=  4 | trilhas=   54 | restam 149.3 s
+[progresso] t=  18.9 s | filas=  5/176 | rotas=  0 | falhas=  5 | trilhas=   54 | restam 146.1 s
+[progresso] t=  21.9 s | filas=  6/176 | rotas=  0 | falhas=  6 | trilhas=   54 | restam 143.1 s
+[progresso] t=  25.2 s | filas=  7/176 | rotas=  0 | falhas=  7 | trilhas=   54 | restam 139.8 s
+[orcamento] TEMPO esgotado no A* da net VBZ (fila 66/176)
+[progresso] t= 165.4 s | filas= 66/176 | rotas=  3 | falhas= 63 | trilhas=   60 | restam  -0.4 s
+------------------------------------------------------------------------------
+roteamento terminou em 165.4 s | rotas emitidas: 3 | falhas: 63
+  2 pontos : 3/66 rotas
+  3+ pontos: 0/0 rotas
+  falhas em nets de CORRENTE (VBM*/VBAT_F/VBAT_SENSE): 0
+   FALHA: PWM_M303       UM303.2            LIMITE DE NOS
+   FALHA: PGATE          Rg1.1              LIMITE DE NOS
+   FALHA: PWM_M302       UM302.2            LIMITE DE NOS
+   FALHA: I_M101         UaM101.5           LIMITE DE NOS
+   FALHA: PWM_M301       UM301.2            LIMITE DE NOS
+   FALHA: ADC_CS1        U8.10              LIMITE DE NOS
+   FALHA: I_M102         UaM102.5           LIMITE DE NOS
+   FALHA: HOM203         UM203.7            LIMITE DE NOS
+   FALHA: PWM_M203       UM203.2            LIMITE DE NOS
+   FALHA: HOM403         UM403.7            LIMITE DE NOS
+   FALHA: HOM202         UM202.7            LIMITE DE NOS
+   FALHA: HOM402         UM402.7            LIMITE DE NOS
+   FALHA: HOM201         UM201.7            LIMITE DE NOS
+   FALHA: HOM401         UM401.7            LIMITE DE NOS
+   FALHA: HOM103         UM103.7            LIMITE DE NOS
+   FALHA: HOM102         UM102.7            LIMITE DE NOS
+   FALHA: HOM101         UM101.7            LIMITE DE NOS
+   FALHA: GHM402         RgoM402.2          LIMITE DE NOS
+   FALHA: PWM_M202       UM202.2            LIMITE DE NOS
+   FALHA: BSTB2          UB2.BST            LIMITE DE NOS
+   FALHA: ADC_CS2        U9.10              LIMITE DE NOS
+   FALHA: GHM301         RgoM301.2          LIMITE DE NOS
+   FALHA: ADC_CS3        U10.10             LIMITE DE NOS
+   FALHA: PWM_M201       UM201.2            LIMITE DE NOS
+   FALHA: GLM303         RgfM303.2          LIMITE DE NOS
+   FALHA: GLM401         RgfM401.2          LIMITE DE NOS
+   FALHA: GHM102         RgoM102.2          SEM ROTA
+   FALHA: UART_RX        U_MCU.36           LIMITE DE NOS
+   FALHA: GHM103         RgoM103.2          SEM ROTA
+   FALHA: GHM401         RgoM401.2          LIMITE DE NOS
+   FALHA: WD_FEED        U_MCU.25           LIMITE DE NOS
+   FALHA: GLM202         RgfM202.2          SEM ROTA
+   FALHA: UART_TX        U_MCU.37           LIMITE DE NOS
+   FALHA: PWM_M103       UM103.2            LIMITE DE NOS
+   FALHA: CC1            J2.A5              LIMITE DE NOS
+   FALHA: PWM_M102       UM102.2            LIMITE DE NOS
+   FALHA: GLM201         RgfM201.2          SEM ROTA
+   FALHA: CC2            J2.B5              LIMITE DE NOS
+   FALHA: GLM302         RgfM302.2          LIMITE DE NOS
+   FALHA: LOM403         UM403.5            LIMITE DE NOS
+   FALHA: GHM101         RgoM101.2          SEM ROTA
+   FALHA: GLM402         RgfM402.2          LIMITE DE NOS
+   FALHA: LOM402         UM402.5            LIMITE DE NOS
+   FALHA: I_M401         UaM401.5           LIMITE DE NOS
+   FALHA: LOM401         UM401.5            LIMITE DE NOS
+   FALHA: GHM201         RgoM201.2          SEM ROTA
+   FALHA: GLM403         RgfM403.2          LIMITE DE NOS
+   FALHA: I_M402         UaM402.5           LIMITE DE NOS
+   FALHA: LOM101         UM101.5            LIMITE DE NOS
+   FALHA: LOM102         UM102.5            LIMITE DE NOS
+   FALHA: GHM303         RgoM303.2          LIMITE DE NOS
+   FALHA: LOM103         UM103.5            LIMITE DE NOS
+   FALHA: BSTB3          UB3.BST            LIMITE DE NOS
+   FALHA: LOM201         UM201.5            LIMITE DE NOS
+   FALHA: I_M403         UaM403.5           LIMITE DE NOS
+   FALHA: LOM203         UM203.5            LIMITE DE NOS
+   FALHA: BSTB1          UB1.BST            LIMITE DE NOS
+   FALHA: LOM301         UM301.5            LIMITE DE NOS
+   FALHA: GLM103         RgfM103.2          SEM ROTA
+   FALHA: LOM302         UM302.5            LIMITE DE NOS
+checkpoint gravado         : /opt/jupyter/work/drone/fase3_pcb/v8/v8_drone.kicad_pcb
+zonas + save               : 0.2 s -> /opt/jupyter/work/drone/fase3_pcb/v8/v8_drone.kicad_pcb
+gerbers/excellon exportados: 7 arquivos em /opt/jupyter/work/drone/fase3_pcb/v8
+
+  menor dist pad de PLANO -> via     : 0.818 mm (limite 1,60)
+  pads de GND/VBAT_PROT no board     : 249
+  copper_thickness / impedance       : ver v8_drone_stackup.txt
+  conference com netlist             : netlist de producao v7_drone.net: 202 nets | board: 191 | so no board: 191 | so na netlist: 202
+  nets so no board: ['12V', '3V3', '3V3_A', '3V3_A_F', '5V', '5V_AUX', 'ADC_CS1', 'ADC_CS2', 'ADC_CS3', 'ADC_CS4', 'BOOT_N', 'BSTB1', 'BSTB2', 'BSTB3', 'BUZZER', 'CC1', 'CC2', 'EN_MCU', 'FBB1', 'FBB2']
+  nets so na netlist (nao declaradas no board): ['1', '10', '100', '101', '102', '103', '104', '105', '106', '107', '108', '109', '11', '110', '111', '112', '113', '114', '115', '116', '117', '118', '119', '12', '120', '121', '122', '123', '124', '125']
+
+==============================================================================
+VEREDITO POR CRITERIO (nao maquiado)
+==============================================================================
+  [FALHA] A4  pads GND/VBAT_PROT sem via < 1,6 mm        60   (criterio: 0)
+  [FALHA] A3  trilhas x pads < 0,15 mm                  192   (criterio: 0)
+  [FALHA] A2  todas as nets roteadas                   3/176
+  [OK  ] camadas de cobre                              6   (criterio: 6)
+  [OK  ] footprints preservados                        319   (criterio: 319)
+
+  VEREDITO: HA CRITERIOS EM FALHA (ver acima)
+==============================================================================
+relatorio: /opt/jupyter/work/drone/fase3_pcb/v8/verificacao_v8.txt
+log      : /opt/jupyter/work/drone/fase3_pcb/v8/rota_v8_log.txt

@@ -1,57 +1,195 @@
 ==============================================================================
-FASE 3 -- VERIFICACAO DA v8   [VERIF]
+FASE 3 -- VERIFICACAO DA v8 APOS ROTEAMENTO   [VERIF]
 ==============================================================================
-arquivo            : /opt/jupyter/work/drone/fase3_pcb/v8/v8_drone.kicad_pcb
-pcbnew             : 5.1.9+dfsg1-1+deb11u1
+gerado por                : fase3_pcb/rota_v8.py (nao maquiado)
+board                      : /opt/jupyter/work/drone/fase3_pcb/v8/v8_drone.kicad_pcb
+pcbnew                     : 5.1.9+dfsg1-1+deb11u1
+rota_v8 (tempo total)      : 167.7 s
+orçamento de roteamento    : 165 s
+grade / pitch / clearance  : 672x608 cel / 0.25 mm / 0.15 mm
+camadas roteadas           : 3 (F.Cu, In2.Cu, B.Cu)
+camadas de PLANO          : In1.Cu=GND, In3.Cu=GND, In4.Cu=VBAT
 
-netlist
-  nets declaradas no board (GetNetCount()-1) : 191
-  nets com pelo menos 1 pad                 : 191
-  nets com pelo menos 1 trilha ou via      : 2
+nets de sinal com 2+ pads: 176 | conectadas: 3 | NAO roteadas: 173
+  NAO ROTEADA: 3V3            pads=61 grupos=58 ex=['U_BARO.VDD', 'U_BARO.VDDIO', 'U_BARO.CSB', 'CIMU.1']
+  NAO ROTEADA: 12V            pads=47 grupos=47 ex=['TP_12V.1', 'Cout_12V2.1', 'Cout_12V1.1', 'CinB2.1']
+  NAO ROTEADA: SD_MCU         pads=25 grupos=25 ex=['U_MCU.28', 'RsdM403.1', 'UM403.3', 'RsdM402.1']
+  NAO ROTEADA: 3V3_A          pads=17 grupos=17 ex=['TP_3V3A.1', 'FLDO.1', 'Cldo_o.1', 'U_LDO.VOUT']
+  NAO ROTEADA: 5V             pads=9 grupos=9 ex=['D3.2', 'TP_5V.1', 'Cout_5V2.1', 'Cout_5V1.1']
+  NAO ROTEADA: PHM101         pads=6 grupos=6 ex=['QM101H.3', 'QM101L.2', 'J_M1.1', 'Rb1M101.1']
+  NAO ROTEADA: PHM102         pads=6 grupos=6 ex=['QM102H.3', 'QM102L.2', 'Rb1M102.1', 'CbM102.2']
+  NAO ROTEADA: PHM103         pads=6 grupos=6 ex=['QM103H.3', 'QM103L.2', 'Rb1M103.1', 'CbM103.2']
+  NAO ROTEADA: PHM201         pads=6 grupos=6 ex=['QM201H.3', 'QM201L.2', 'J_M2.1', 'Rb1M201.1']
+  NAO ROTEADA: PHM202         pads=6 grupos=6 ex=['QM202H.3', 'QM202L.2', 'Rb1M202.1', 'CbM202.2']
+  NAO ROTEADA: PHM203         pads=6 grupos=6 ex=['QM203H.3', 'QM203L.2', 'Rb1M203.1', 'CbM203.2']
+  NAO ROTEADA: PHM301         pads=6 grupos=6 ex=['QM301H.3', 'QM301L.2', 'J_M3.1', 'Rb1M301.1']
+  NAO ROTEADA: PHM302         pads=6 grupos=6 ex=['QM302H.3', 'QM302L.2', 'Rb1M302.1', 'CbM302.2']
+  NAO ROTEADA: PHM303         pads=6 grupos=6 ex=['QM303H.3', 'QM303L.2', 'Rb1M303.1', 'CbM303.2']
+  NAO ROTEADA: PHM401         pads=6 grupos=6 ex=['QM401H.3', 'QM401L.2', 'J_M4.1', 'Rb1M401.1']
+  NAO ROTEADA: PHM402         pads=6 grupos=6 ex=['QM402H.3', 'QM402L.2', 'Rb1M402.1', 'CbM402.2']
+  NAO ROTEADA: PHM403         pads=6 grupos=6 ex=['QM403H.3', 'QM403L.2', 'Rb1M403.1', 'CbM403.2']
+  NAO ROTEADA: SPI_MISO       pads=6 grupos=6 ex=['U_IMU.1', 'U_MCU.11', 'U11.12', 'U10.12']
+  NAO ROTEADA: SPI_MOSI       pads=6 grupos=6 ex=['U_IMU.14', 'U_MCU.9', 'U11.11', 'U10.11']
+  NAO ROTEADA: SPI_SCK        pads=6 grupos=6 ex=['U_IMU.13', 'U_MCU.10', 'U11.13', 'U10.13']
+  NAO ROTEADA: VBUS_USB       pads=6 grupos=6 ex=['D2.2', 'U_ESD.5', 'J2.B4', 'J2.B9']
+  NAO ROTEADA: 5V_AUX         pads=5 grupos=5 ex=['D3.1', 'D2.1', 'CinB3.1', 'UB3.EN']
+  NAO ROTEADA: EN_MCU         pads=5 grupos=5 ex=['CEN.1', 'REN.2', 'SW2.1', 'SW2.1']
+  NAO ROTEADA: USB_DM         pads=5 grupos=5 ex=['U_ESD.6', 'U_ESD.1', 'J2.B7', 'J2.A7']
+  NAO ROTEADA: USB_DP         pads=5 grupos=5 ex=['U_ESD.4', 'U_ESD.3', 'J2.B6', 'J2.A6']
+  NAO ROTEADA: VREFM101       pads=5 grupos=5 ex=['CdM101.1', 'Rd2M101.1', 'Rd1M101.2', 'UaM101.7']
+  NAO ROTEADA: VREFM102       pads=5 grupos=5 ex=['CdM102.1', 'Rd2M102.1', 'Rd1M102.2', 'UaM102.7']
+  NAO ROTEADA: VREFM103       pads=5 grupos=5 ex=['CdM103.1', 'Rd2M103.1', 'Rd1M103.2', 'UaM103.7']
+  NAO ROTEADA: VREFM201       pads=5 grupos=5 ex=['CdM201.1', 'Rd2M201.1', 'Rd1M201.2', 'UaM201.7']
+  NAO ROTEADA: VREFM202       pads=5 grupos=5 ex=['CdM202.1', 'Rd2M202.1', 'Rd1M202.2', 'UaM202.7']
+  NAO ROTEADA: VREFM203       pads=5 grupos=5 ex=['CdM203.1', 'Rd2M203.1', 'Rd1M203.2', 'UaM203.7']
+  NAO ROTEADA: VREFM301       pads=5 grupos=5 ex=['CdM301.1', 'Rd2M301.1', 'Rd1M301.2', 'UaM301.7']
+  NAO ROTEADA: VREFM302       pads=5 grupos=5 ex=['CdM302.1', 'Rd2M302.1', 'Rd1M302.2', 'UaM302.7']
+  NAO ROTEADA: VREFM303       pads=5 grupos=5 ex=['CdM303.1', 'Rd2M303.1', 'Rd1M303.2', 'UaM303.7']
+  NAO ROTEADA: VREFM401       pads=5 grupos=5 ex=['CdM401.1', 'Rd2M401.1', 'Rd1M401.2', 'UaM401.7']
+  NAO ROTEADA: VREFM402       pads=5 grupos=5 ex=['CdM402.1', 'Rd2M402.1', 'Rd1M402.2', 'UaM402.7']
+  NAO ROTEADA: VREFM403       pads=5 grupos=5 ex=['CdM403.1', 'Rd2M403.1', 'Rd1M403.2', 'UaM403.7']
+  NAO ROTEADA: BOOT_N         pads=4 grupos=4 ex=['RBOOT.2', 'SW1.1', 'SW1.1', 'U_MCU.27']
+  NAO ROTEADA: VBAT_F         pads=4 grupos=4 ex=['F1.2', 'Dz1.2', 'Rz1.1', 'Q1.2']
+  NAO ROTEADA: VBAT_SENSE     pads=4 grupos=4 ex=['CVB.1', 'RVB2.1', 'RVB1.2', 'U_MCU.39']
+  NAO ROTEADA: BUZZER         pads=3 grupos=3 ex=['Q_BZ.1', 'BZ1.1', 'U_MCU.16']
+  NAO ROTEADA: FBB1           pads=3 grupos=3 ex=['Rf2B1.1', 'Rf1B1.2', 'UB1.FB']
+  NAO ROTEADA: FBB2           pads=3 grupos=3 ex=['Rf2B2.1', 'Rf1B2.2', 'UB2.FB']
+  NAO ROTEADA: FBB3           pads=3 grupos=3 ex=['Rf2B3.1', 'Rf1B3.2', 'UB3.FB']
+  NAO ROTEADA: I2C_SCL        pads=3 grupos=3 ex=['U_BARO.SCK', 'RSCL.2', 'U_MCU.32']
+  NAO ROTEADA: I2C_SDA        pads=3 grupos=3 ex=['U_BARO.SDI', 'RSDA.2', 'U_MCU.31']
+  NAO ROTEADA: LED_K          pads=3 grupos=3 ex=['Rled.1', 'D_LED.1', 'U_MCU.26']
+  NAO ROTEADA: RBM101         pads=3 grupos=3 ex=['CbeM101.1', 'Rb2M101.1', 'Rb1M101.2']
+  NAO ROTEADA: RBM102         pads=3 grupos=3 ex=['CbeM102.1', 'Rb2M102.1', 'Rb1M102.2']
+  NAO ROTEADA: RBM103         pads=3 grupos=3 ex=['CbeM103.1', 'Rb2M103.1', 'Rb1M103.2']
+  NAO ROTEADA: RBM201         pads=3 grupos=3 ex=['CbeM201.1', 'Rb2M201.1', 'Rb1M201.2']
+  NAO ROTEADA: RBM202         pads=3 grupos=3 ex=['CbeM202.1', 'Rb2M202.1', 'Rb1M202.2']
+  NAO ROTEADA: RBM203         pads=3 grupos=3 ex=['CbeM203.1', 'Rb2M203.1', 'Rb1M203.2']
+  NAO ROTEADA: RBM301         pads=3 grupos=3 ex=['CbeM301.1', 'Rb2M301.1', 'Rb1M301.2']
+  NAO ROTEADA: RBM302         pads=3 grupos=3 ex=['CbeM302.1', 'Rb2M302.1', 'Rb1M302.2']
+  NAO ROTEADA: RBM303         pads=3 grupos=3 ex=['CbeM303.1', 'Rb2M303.1', 'Rb1M303.2']
+  NAO ROTEADA: RBM401         pads=3 grupos=3 ex=['CbeM401.1', 'Rb2M401.1', 'Rb1M401.2']
+  NAO ROTEADA: RBM402         pads=3 grupos=3 ex=['CbeM402.1', 'Rb2M402.1', 'Rb1M402.2']
+  NAO ROTEADA: RBM403         pads=3 grupos=3 ex=['CbeM403.1', 'Rb2M403.1', 'Rb1M403.2']
+  NAO ROTEADA: SNM101         pads=3 grupos=3 ex=['QM101L.3', 'UaM101.8', 'RsM101.1']
+  NAO ROTEADA: SNM102         pads=3 grupos=3 ex=['QM102L.3', 'UaM102.8', 'RsM102.1']
+  NAO ROTEADA: SNM103         pads=3 grupos=3 ex=['QM103L.3', 'UaM103.8', 'RsM103.1']
+  NAO ROTEADA: SNM201         pads=3 grupos=3 ex=['QM201L.3', 'UaM201.8', 'RsM201.1']
+  NAO ROTEADA: SNM202         pads=3 grupos=3 ex=['QM202L.3', 'UaM202.8', 'RsM202.1']
+  NAO ROTEADA: SNM203         pads=3 grupos=3 ex=['QM203L.3', 'UaM203.8', 'RsM203.1']
+  NAO ROTEADA: SNM301         pads=3 grupos=3 ex=['QM301L.3', 'UaM301.8', 'RsM301.1']
+  NAO ROTEADA: SNM302         pads=3 grupos=3 ex=['QM302L.3', 'UaM302.8', 'RsM302.1']
+  NAO ROTEADA: SNM303         pads=3 grupos=3 ex=['QM303L.3', 'UaM303.8', 'RsM303.1']
+  NAO ROTEADA: SNM401         pads=3 grupos=3 ex=['QM401L.3', 'UaM401.8', 'RsM401.1']
+  NAO ROTEADA: SNM402         pads=3 grupos=3 ex=['QM402L.3', 'UaM402.8', 'RsM402.1']
+  NAO ROTEADA: SNM403         pads=3 grupos=3 ex=['QM403L.3', 'UaM403.8', 'RsM403.1']
+  NAO ROTEADA: SWB1           pads=3 grupos=3 ex=['CbstB1.2', 'LB1.1', 'UB1.SW']
+  NAO ROTEADA: SWB2           pads=3 grupos=3 ex=['CbstB2.2', 'LB2.1', 'UB2.SW']
+  NAO ROTEADA: SWB3           pads=3 grupos=3 ex=['CbstB3.2', 'LB3.1', 'UB3.SW']
+  NAO ROTEADA: TEMP_SENSE     pads=3 grupos=3 ex=['NT1.1', 'RT1.2', 'U_MCU.38']
+  NAO ROTEADA: VBM101         pads=3 grupos=3 ex=['CbM101.1', 'DbM101.2', 'UM101.8']
+  NAO ROTEADA: VBM102         pads=3 grupos=3 ex=['CbM102.1', 'DbM102.2', 'UM102.8']
+  NAO ROTEADA: VBM103         pads=3 grupos=3 ex=['CbM103.1', 'DbM103.2', 'UM103.8']
+  NAO ROTEADA: VBM201         pads=3 grupos=3 ex=['CbM201.1', 'DbM201.2', 'UM201.8']
+  NAO ROTEADA: VBM202         pads=3 grupos=3 ex=['CbM202.1', 'DbM202.2', 'UM202.8']
+nets de PLANO (GND/VBAT_PROT) com 2+ pads: 2 | sem via propria em algum pad: 2
+  PLANO sem via em todo pad: GND pads=207 com_via=165
+  PLANO sem via em todo pad: VBAT_PROT pads=42 com_via=24
+pares de cobre de nets DIFERENTES com folga < 0,15 mm: 192
+menor folga encontrada entre nets diferentes: 0.0000 mm
+  CURTO?: SPI_MOSI(U_IMU.14) x SPI_SCK(U_IMU.13)  folga=0.0759 mm
+  CURTO?: SPI_SCK(U_IMU.13) x IMU_CS(U_IMU.12)  folga=0.0759 mm
+  CURTO?: GND(U_IMU.9) x 3V3(U_IMU.8)  folga=0.0759 mm
+  CURTO?: GND(U_IMU.6) x 3V3(U_IMU.5)  folga=0.0759 mm
+  CURTO?: IMU_INT(U_IMU.4) x GND(U_IMU.3)  folga=0.0759 mm
+  CURTO?: GND(U_IMU.2) x SPI_MISO(U_IMU.1)  folga=0.0759 mm
+  CURTO?: GND(U_MCU.41) x HOM202(RgoM202.1)  folga=0.0115 mm
+  CURTO?: GND(U_MCU.41) x GHM202(RgoM202.2)  folga=0.0115 mm
+  CURTO?: PWM_M301(U_MCU.18) x RBM201(Rb2M201.1)  folga=0.0000 mm
+  CURTO?: PWM_M203(U_MCU.17) x RBM201(Rb2M201.1)  folga=0.0000 mm
+  CURTO?: ADC_CS2(U_MCU.15) x HOM301(trk)  folga=0.0141 mm
+  CURTO?: USB_DP(U_MCU.14) x HOM301(RgoM301.1)  folga=0.0000 mm
+  CURTO?: USB_DP(U_MCU.14) x HOM301(trk)  folga=0.0000 mm
+  CURTO?: USB_DM(U_MCU.13) x HOM301(RgoM301.1)  folga=0.0000 mm
+  CURTO?: USB_DM(U_MCU.13) x HOM301(trk)  folga=0.0000 mm
+  CURTO?: PWM_M403(U_MCU.8) x SD_MCU(RsdM303.1)  folga=0.0000 mm
+  CURTO?: PWM_M201(U_MCU.7) x SD_MCU(RsdM303.1)  folga=0.0000 mm
+  CURTO?: PWM_M101(U_MCU.4) x GND(Chf4.2)  folga=0.1175 mm
+  CURTO?: EN_MCU(U_MCU.3) x GND(Chf4.2)  folga=0.1175 mm
+  CURTO?: 3V3(U_MCU.2) x VBAT_PROT(Chf4.1)  folga=0.1175 mm
+  CURTO?: GND(U_MCU.1) x VBAT_PROT(Chf4.1)  folga=0.1175 mm
+  CURTO?: I_M403(U11.3) x LOM101(RgfM101.1)  folga=0.0000 mm
+  CURTO?: I_M402(U11.2) x LOM101(RgfM101.1)  folga=0.0000 mm
+  CURTO?: 3V3(U10.15) x GND(U10.14)  folga=0.0000 mm
+  CURTO?: GND(U10.14) x SPI_SCK(U10.13)  folga=0.0000 mm
+  CURTO?: SPI_SCK(U10.13) x SPI_MISO(U10.12)  folga=0.0000 mm
+  CURTO?: SPI_MISO(U10.12) x SPI_MOSI(U10.11)  folga=0.0000 mm
+  CURTO?: SPI_MOSI(U10.11) x ADC_CS3(U10.10)  folga=0.0000 mm
+  CURTO?: ADC_CS3(U10.10) x GND(U10.9)  folga=0.0000 mm
+  CURTO?: ADC_CS3(U10.10) x GND(trk)  folga=0.1450 mm
+  CURTO?: RB_M303(U10.6) x RB_M302(U10.5)  folga=0.0000 mm
+  CURTO?: RB_M302(U10.5) x RB_M301(U10.4)  folga=0.0000 mm
+  CURTO?: RB_M301(U10.4) x I_M303(U10.3)  folga=0.0000 mm
+  CURTO?: I_M303(U10.3) x I_M302(U10.2)  folga=0.0000 mm
+  CURTO?: I_M302(U10.2) x I_M301(U10.1)  folga=0.0000 mm
+  CURTO?: 3V3(U9.15) x GND(U9.14)  folga=0.0000 mm
+  CURTO?: GND(U9.14) x SPI_SCK(U9.13)  folga=0.0000 mm
+  CURTO?: SPI_SCK(U9.13) x SPI_MISO(U9.12)  folga=0.0000 mm
+  CURTO?: SPI_MISO(U9.12) x SPI_MOSI(U9.11)  folga=0.0000 mm
+  CURTO?: SPI_MOSI(U9.11) x ADC_CS2(U9.10)  folga=0.0000 mm
+  CURTO?: ADC_CS2(U9.10) x GND(U9.9)  folga=0.0000 mm
+  CURTO?: RB_M203(U9.6) x RB_M202(U9.5)  folga=0.0000 mm
+  CURTO?: RB_M202(U9.5) x RB_M201(U9.4)  folga=0.0000 mm
+  CURTO?: RB_M201(U9.4) x I_M203(U9.3)  folga=0.0000 mm
+  CURTO?: I_M203(U9.3) x I_M202(U9.2)  folga=0.0000 mm
+  CURTO?: I_M202(U9.2) x I_M201(U9.1)  folga=0.0000 mm
+  CURTO?: 3V3(U8.15) x GND(U8.14)  folga=0.0000 mm
+  CURTO?: GND(U8.14) x SPI_SCK(U8.13)  folga=0.0000 mm
+  CURTO?: SPI_SCK(U8.13) x SPI_MISO(U8.12)  folga=0.0000 mm
+  CURTO?: SPI_MISO(U8.12) x SPI_MOSI(U8.11)  folga=0.0000 mm
+  CURTO?: SPI_MOSI(U8.11) x ADC_CS1(U8.10)  folga=0.0000 mm
+  CURTO?: ADC_CS1(U8.10) x GND(U8.9)  folga=0.0000 mm
+  CURTO?: RB_M103(U8.6) x RB_M102(U8.5)  folga=0.0000 mm
+  CURTO?: RB_M102(U8.5) x RB_M101(U8.4)  folga=0.0000 mm
+  CURTO?: RB_M101(U8.4) x I_M103(U8.3)  folga=0.0000 mm
+  CURTO?: I_M103(U8.3) x I_M102(U8.2)  folga=0.0000 mm
+  CURTO?: I_M102(U8.2) x I_M101(U8.1)  folga=0.0000 mm
+  CURTO?: 3V3(LB3.2) x SWB3(LB3.1)  folga=0.0000 mm
+  CURTO?: 5V(LB2.2) x SWB2(LB2.1)  folga=0.0000 mm
+  CURTO?: 12V(LB1.2) x SWB1(LB1.1)  folga=0.0000 mm
+pads de GND/VBAT_PROT: 249 | sem via a menos de 1,6 mm: 60 | menor dist: 0.818 mm
 
-geometria
-  footprints                                : 319
-  pads                                      : 1093
-  tracks                                    : 0
-  vias                                      : 180
-  zones                                     : 3
-  bbox                                      : 162.10 x 145.02 mm
-
-------------------------------------------------------------------------------
+==============================================================================
 LINHAS QUE OS GATES LEEM
-------------------------------------------------------------------------------
-nets NAO roteadas : 189
-pares trilha x pad (net diferente) proximos: 0
-pads de GND/VBAT_PROT sem via a menos de 1.6 mm: 68
+==============================================================================
+nets NAO roteadas : 173
+pares trilha x pad (net diferente) proximos: 192
+pads de GND/VBAT_PROT sem via a menos de 1.6 mm: 60
 rule_area (keepouts): 3
-  (o token literal 'rule_area' no .kicad_pcb = 0, no campo (title): o
-   formato do KiCad 5.1.9 nao possui (rule_area ..) nem (name ..) em zone --
-   injetar os dois torna o board ILEGIVEL (OSError do pcbnew.LoadBoard).
-   As 3 rule areas acima sao reais: 3 tokens (keepout no arquivo.
-   criterio do gate A8 sobre 'rule_area': ver NOTA_E3.md secao 4.)
 camadas de cobre: 6
 dimensoes: 162.10 x 145.02 mm
-footprints / pads / tracks / vias: 319 / 1093 / 0 / 180
+footprints / pads / tracks / vias: 319 / 1093 / 60 / 234
 
 apoio a medicao
-  menor distancia pad GND/VBAT_PROT -> via : 0.818 mm (limite 1.60)
-  pads de GND/VBAT_PROT no board            : 249
-  token (keepout no arquivo)                : 3
-  stackup no arquivo                        : 0
-  copper_thickness / dielectric / impedance : 0 / 0 / 0
-  camadas de cobre presentes                : F.Cu, In1.Cu, In2.Cu, In3.Cu, In4.Cu, B.Cu
+  nets declaradas no board          : 191
+  nets de sinal com 2+ pads         : 176
+  trilhas / vias                     : 60 / 234
+  trilhas por net (media)            : 0.3
+  menor folga entre nets diferentes  : 0.0000 mm
+  menor dist pad de PLANO -> via     : 0.818 mm (limite 1,60)
+  pads de GND/VBAT_PROT no board     : 249
+  copper_thickness / impedance       : ver v8_drone_stackup.txt
+  conference com netlist             : netlist de producao v7_drone.net: 202 nets | board: 191 | so no board: 191 | so na netlist: 202
+  nets so no board: ['12V', '3V3', '3V3_A', '3V3_A_F', '5V', '5V_AUX', 'ADC_CS1', 'ADC_CS2', 'ADC_CS3', 'ADC_CS4', 'BOOT_N', 'BSTB1', 'BSTB2', 'BSTB3', 'BUZZER', 'CC1', 'CC2', 'EN_MCU', 'FBB1', 'FBB2']
+  nets so na netlist (nao declaradas no board): ['1', '10', '100', '101', '102', '103', '104', '105', '106', '107', '108', '109', '11', '110', '111', '112', '113', '114', '115', '116', '117', '118', '119', '12', '120', '121', '122', '123', '124', '125']
 
-------------------------------------------------------------------------------
+==============================================================================
 VEREDITO POR CRITERIO (nao maquiado)
-------------------------------------------------------------------------------
-  [FALHA] A4  pads GND/VBAT_PROT sem via < 1,6 mm        68   (criterio: 0)
-  [FALHA] A8  rule_area no arquivo                       0   (criterio: > 0)
-  [OK  ] camadas de cobre                               6   (criterio: 6)
-  [OK  ] trilha x pad (net diferente) < 0,15 mm         0   (criterio: 0)
-  [FALHA] contorno 150 x 110 mm                          162.1 x 145.0   (criterio: ~150 x 110)
-  [OK  ] footprints preservados                         319   (criterio: 319)
-  [FALHA] nets preservadas (>= 202)                      191   (criterio: >= 202)
-  [OK  ] vias de stitch no board                        180   (criterio: > 0)
+==============================================================================
+  [FALHA] A4  pads GND/VBAT_PROT sem via < 1,6 mm        60   (criterio: 0)
+  [FALHA] A3  trilhas x pads < 0,15 mm                  192   (criterio: 0)
+  [FALHA] A2  todas as nets roteadas                   3/176
+  [OK  ] camadas de cobre                              6   (criterio: 6)
+  [OK  ] footprints preservados                        319   (criterio: 319)
 
   VEREDITO: HA CRITERIOS EM FALHA (ver acima)
 ==============================================================================
