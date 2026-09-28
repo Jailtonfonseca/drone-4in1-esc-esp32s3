@@ -1,0 +1,51 @@
+# ===========================================================================
+# firmware/sdkconfig.defaults — configuracao padrao do sdkconfig
+#
+# ESQUELETO NAO VERIFICADO. ESTE ARQUIVO NAO FOI CONSUMIDO POR NENHUMA
+# FERRAMENTA NESTA MAQUINA. Por que: o ESP-IDF nao esta instalado, entao nao
+# existe idf.py nem o Kconfig que valida estas chaves. Uma chave escrita errado
+# aqui so aparece como erro no primeiro `idf.py build` — e este arquivo nao foi
+# nem aberto por essa ferramenta. Ver ../fase4_entrega/FIRMWARE_BUILD.md.
+#
+# As chaves vem da ESP-IDF v5. Os valores sao os que a §5 e os modulos exigem:
+#   - clock de 240 MHz, o clock nominal do ESP32-S3, com PMU ligada para o
+#     RF-12 calcular FLOP/s contra 160 MHz;
+#   - 20 kHz de PWM e SPI a 0,60 MHz sao configurados em codigo (m2/m3/m4), nao
+#     aqui, porque sao parametros de modulo e nao de build;
+#   - brownout detector ligado, por causa do RF-13: um brownout em voo precisa
+#     ficar registrado como tal e nao como watchdog, e o registro do motivo do
+#     reset e tarefa do M11, que nao existe ainda.
+#
+# RF-12 mede a conta de FLOP do PID contra 160 MHz; o 240 MHz aqui e o clock
+# real do chip, entao o calculo de folga do RF-12 fica ainda mais folgado.
+# ========================================================================
+
+CONFIG_IDF_TARGET="esp32s3"
+
+# --- Clock ------------------------------------------------------------------
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+CONFIG_PM_ENABLE=y
+
+# --- Flash e particionamento -------------------------------------------------
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+# --- Particao padrao de aplicacao -------------------------------------------
+CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE=y
+
+# --- Seguranca e brownout ---------------------------------------------------
+# Brownout detection para o RF-13: o motivo do reset precisa ser legivel.
+CONFIG_ESP_BROWNOUT_DET=y
+CONFIG_ESP_BROWNOUT_DET_LVL_SEL_7=y
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+
+# --- Pilha do sistema --------------------------------------------------------
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=4096
+CONFIG_ESP_SYSTEM_EVENT_TASK_STACK_SIZE=4096
+
+# --- UART0 para log de boot -------------------------------------------------
+# O M0 da §5 exige ler o log de boot pela UART0. USB nativo (USB-SERIAL-JTAG)
+# fica fora: o layout traz USB_DM/USB_DP nos pads 13 e 14 para boot, e o
+# primeiro bring-up tem que ser pela UART0 para nao depender dessa via.
+CONFIG_ESP_CONSOLE_UART_BAUDRATE=115200

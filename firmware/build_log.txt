@@ -1,0 +1,152 @@
+================================================================================
+LOG DE COMPILACAO — O QUE FOI REALMENTE COMPILADO NESTA MAQUINA
+================================================================================
+
+DATA    : 2026-09-28
+MAQUINA : Orange Pi 3B — Linux 5.10.160-rockchip-rk356x, aarch64, Debian 11
+TOOLCHAIN: xtensa-esp-elf-gcc 14.2.0 (crosstool-NG esp-14.2.0_20241119)
+ORIGEM  : https://github.com/espressif/crosstool-NG/releases/download/
+          esp-14.2.0_20241119/xtensa-esp-elf-14.2.0_20241119-aarch64-linux-gnu.tar.xz
+
+--------------------------------------------------------------------------------
+ATENCAO — ESTE LOG NAO E O BUILD DO FIRMWARE DESTE REPOSITORIO
+--------------------------------------------------------------------------------
+
+O que foi compilado aqui e um TESTE DE FUMACA DO COMPILADOR: um .c de 5 linhas,
+sem ESP-IDF, sem startup do ESP32-S3, sem o linker script da Espressif e sem
+rotulo de bootloader. Ele prova UMA coisa: que existe nesta maquina um
+compilador C que aceita a arquitetura Xtensa e produz um ELF de 32 bits para o
+ESP32-S3.
+
+O firmware deste repositorio (firmware/main/*.c) NAO FOI COMPILADO. Nao ha
+ESP-IDF instalado, portanto nao ha idf.py, nao ha esp32s3.project.ld e nao ha
+as bibliotecas do framework. Ver fase4_entrega/FIRMWARE_BUILD.md.
+
+O .bin gerado abaixo NAO E GRAVAVEL num ESP32-S3: o link foi feito com -nostdlib
+e -Ttext=0x400d0000 (endereco provisorio) e o proprio ld avisou que nao achou
+o simbolo de entrada _start. Gravar isso num chip nao faz o chip bootar.
+
+O codigo-fonte do teste esta reproduzido no fim deste arquivo.
+
+--------------------------------------------------------------------------------
+SAIDA REAL, VERBATIM, DO SCRIPT /tmp/run_smoke.sh
+--------------------------------------------------------------------------------
+$ xtensa-esp32s3-elf-gcc --version
+xtensa-esp-elf-gcc (crosstool-NG esp-14.2.0_20241119) 14.2.0
+Copyright (C) 2024 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+$ xtensa-esp32s3-elf-gcc -dumpmachine
+xtensa-esp-elf
+$ xtensa-esp32s3-elf-gcc -print-multi-lib
+.;
+esp32;@mdynconfig=xtensa_esp32.so
+esp32s2;@mdynconfig=xtensa_esp32s2.so
+esp32s3;@mdynconfig=xtensa_esp32s3.so
+esp32/psram;@mdynconfig=xtensa_esp32.so@mfix-esp32-psram-cache-issue
+esp32/no-rtti;@mdynconfig=xtensa_esp32.so@fno-rtti
+esp32/psram/no-rtti;@mdynconfig=xtensa_esp32.so@mfix-esp32-psram-cache-issue@fno-rtti
+esp32s2/no-rtti;@mdynconfig=xtensa_esp32s2.so@fno-rtti
+esp32s3/no-rtti;@mdynconfig=xtensa_esp32s3.so@fno-rtti
+
+$ xtensa-esp32s3-elf-gcc -c -O2 -Wall -Wextra -std=gnu17 hello_world.c -o hello_world.o
+exit=0  -rw-r--r-- 1 root root 1316 Sep 28 08:07 hello_world.o
+$ xtensa-esp32s3-elf-objdump -f hello_world.o
+
+hello_world.o:     file format elf32-xtensa-le
+architecture: xtensa, flags 0x00000011:
+HAS_RELOC, HAS_SYMS
+start address 0x00000000
+
+$ xtensa-esp32s3-elf-gcc -nostdlib -nostartfiles -Wl,-Ttext=0x400d0000 -Wl,--build-id=none hello_world.o -o hello_world.elf
+/root/esp/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/bin/ld: warning: cannot find entry symbol _start; defaulting to 400d0000
+exit=0  -rwxr-xr-x 1 root root 5040 Sep 28 08:07 hello_world.elf
+$ xtensa-esp32s3-elf-readelf -h hello_world.elf
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           Tensilica Xtensa Processor
+  Version:                           0x1
+  Entry point address:               0x400d0000
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          4640 (bytes into file)
+  Flags:                             0x300
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         2
+  Size of section headers:           40 (bytes)
+  Number of section headers:         10
+  Section header string table index: 9
+$ xtensa-esp32s3-elf-size hello_world.elf
+   text	   data	    bss	    dec	    hex	filename
+     25	      0	      4	     29	     1d	hello_world.elf
+$ xtensa-esp32s3-elf-objcopy -O binary hello_world.elf hello_world.bin
+exit=0  -rwxr-xr-x 1 root root 25 Sep 28 08:07 hello_world.bin
+$ xtensa-esp32s3-elf-objdump -h hello_world.o
+
+hello_world.o:     file format elf32-xtensa-le
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .literal      00000004  00000000  00000000  00000034  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .text         00000015  00000000  00000000  00000038  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  2 .data         00000000  00000000  00000000  0000004d  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  3 .bss          00000004  00000000  00000000  00000050  2**2
+                  ALLOC
+  4 .comment      00000030  00000000  00000000  00000050  2**0
+                  CONTENTS, READONLY
+  5 .xtensa.info  00000038  00000000  00000000  00000080  2**0
+                  CONTENTS, READONLY
+  6 .xt.lit       00000008  00000000  00000000  000000b8  2**0
+                  CONTENTS, RELOC, READONLY
+  7 .xt.prop      00000030  00000000  00000000  000000c0  2**0
+                  CONTENTS, RELOC, READONLY
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+CODIGO-FONTE DO TESTE DE FUMACA (hello_world.c)
+--------------------------------------------------------------------------------
+#include <stdint.h>
+
+volatile uint32_t g_contador;
+
+void app_main(void)
+{
+    for (;;) {
+        g_contador++;
+    }
+}
+
+--------------------------------------------------------------------------------
+RESUMO: ESPERADO x MEDIDO x ERRO
+--------------------------------------------------------------------------------
+                     ESPERADO            MEDIDO              ERRO
+download do tar.xz   176 920 772 B       176 920 772 B       0 B
+sha256 do download   ac2b311d...955f     ac2b311d...955f    identico
+formato do .o        elf32-xtensa-le     elf32-xtensa-le     -
+Machine do .elf      Tensilica Xtensa    Tensilica Xtensa    -
+exit code gcc -c     0                   0                   -
+exit code link       0                   0                   -
+exit code objcopy    0                   0                   -
+
+--------------------------------------------------------------------------------
+O QUE AINDA NAO EXISTE NESTA MAQUINA
+--------------------------------------------------------------------------------
+  - ESP-IDF. Sem ele nao ha idf.py, nem esp32s3.project.ld, nem startup, nem
+    as libs do driver, nem o gerador de linker. Por isso nenhum arquivo de
+    firmware/main/ foi compilado.
+  - esptool.py / espflash. Nada foi gravado em hardware e nao ha placa
+    conectada a esta maquina.
+  - Qualquer build do firmware do drone.
+
+Procedimento oficial de instalacao do que falta: fase4_entrega/FIRMWARE_BUILD.md
+================================================================================
