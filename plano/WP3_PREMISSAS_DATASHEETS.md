@@ -72,15 +72,86 @@ Abaixo estão as duas coisas, separadas.
 | IN+ | 2 | 8 | Lado da alimentação do resistor de shunt |
 | NC | 1 | 4 | Reservado. Conectar ao GND ou deixar flutuante |
 | OUT | 8 | 5 | Tensão de saída |
-| REF1 | 7 | — | Referência 1. Conectar a 0 V…V<sub>S</sub> |
-| REF2 | 6 | 5 | Referência 2 |
-| V<sub>S</sub> | 5 | 5 | Alimentação positiva |
+| REF1 | 7 | 7 | Referência 1. Conectar de 0 V a V<sub>S</sub> |
+| REF2 | 6 | 3 | Referência 2. Conectar de 0 V a V<sub>S</sub> |
+| V<sub>S</sub> | 5 | 6 | Alimentação positiva, 2,7 V a 5,5 V |
 
-> **Atenção ao footprint:** a coluna "Pin SOIC (D)" do TEXTO EXTRAÍDO tem as colunas deslocadas
-> (REF2 aparece como 3 e V<sub>S</sub> como 5, enquanto a coluna TSSOP traz REF2 = 6 / V<sub>S</sub> = 5).
-> Isso é artefato do `pdftotext -layout` em tabela de duas colunas lado a lado. **Antes de gerar o footprint,
-> confirme a numeração de 8 pinos do SOIC contra a Figura 6-2 na página 3** — ou extraia com
-> `pdftotext -f 3 -l 3 -layout` e confira a grade, ou abra a página como imagem.
+**🔴 ESTA TABELA FOI CORRIGIDA EM 2026-09-28 — usar esta versão, não a anterior.**
+A versão que constava deste documento até 2026-09-27 trazia **3 de 8 pinos SOIC errados**
+(REF1 = "—", REF2 = 5, V<sub>S</sub> = 5) e era **fisicamente impossível**: colocava `OUT` e
+`V<sub>S</sub>` no mesmo pino 5 de um encapsulamento de 8 pinos. Um footprint SOIC gerado a partir
+da tabela errada sairia com trilhas de saída e de alimentação coincidindo. Ver §8, Defeito 1.
+
+Comando de extração usado (sem `-layout`, que embaralha as duas colunas lado a lado):
+
+```
+cd /opt/jupyter/work/drone/datasheets
+pdftotext -f 3 -l 3 ina240_ti_sbos662.pdf - | sed -n '/Table 6-1/,/6 Pin/p'
+```
+
+Saída real (p.3, Table 6-1 "Pin Functions"; a coluna PIN/NOME aparece no fim do bloco porque o
+extrator emite o texto das células antes dos rótulos da linha):
+
+```
+Table 6-1. Pin Functions
+PIN
+I/O
+DESCRIPTION
+PW
+(TSSOP)
+D
+(SOIC)
+GND
+4
+2
+IN–
+3
+1
+Analog input Connect to load side of shunt resistor
+IN+
+2
+8
+Analog input Connect to supply side of shunt resistor
+NC
+1
+4
+—
+OUT
+8
+5
+Analog
+output
+REF1
+7
+7
+Analog input
+Reference 1 voltage. Connect to 0 V to VS; see the Adjusting the Output Midpoint With
+the Reference Pins section for connection options
+REF2
+6
+3
+Analog input
+Reference 2 voltage. Connect to 0 V to VS; see the Adjusting the Output Midpoint With
+the Reference Pins section for connection options
+VS
+5
+6
+—
+NAME
+Analog
+Ground
+Reserved. Connect to ground or leave floating
+Output voltage
+Power supply, 2.7 V to 5.5 V
+```
+
+Leitura correta do bloco: a sequência de números logo abaixo de `PW (TSSOP)` / `D (SOIC)` é
+`4 2`, `3 1`, `2 8`, `1 4`, `8 5`, `7 7`, `6 3`, `5 6` — nesta ordem de linhas — e os nomes
+correspondentes vêm no bloco final (`GND, IN–, IN+, NC, OUT, REF1, REF2, VS`). A coluna SOIC
+real é `2, 1, 8, 4, 5, 7, 3, 6`.
+
+> **Antes de gerar o footprint SOIC (D), confira a Figura 6-2 na p.3** como conferência cruzada.
+> A Tabela 6-1 acima é a fonte primária e já está conferida; a Figura 6-2 é só o segundo olho.
 
 **IR2104** — `datasheets/ir2104_infineon_datasheet.pdf` (Infineon PD60046-S), **p.4, "Lead Definitions" e
 "Lead Assignments"**:
@@ -137,8 +208,51 @@ deve ser tratado como **não verificado**.
 ## 3. Aquisição dos datasheets — resultado real
 
 Ferramentas usadas: `file`, `ls -la`, `md5sum`, `sha256sum`, `pdfinfo`, `pdftotext -layout`.
-Datas dos arquivos (`ls -la`): **2026-09-28** para os 6 PDFs novos, **2026-09-11** para os pré-existentes.
 Data desta verificação: **2026-09-28**.
+
+**Datas (`ls -la`): são 7 PDFs novos, não 6** — 4 deles são de **2026-09-27** (23:44 a 23:50) e
+3 são de **2026-09-28** (00:06). Os arquivos de **2026-09-11** são pré-existentes e não foram
+obtidos por esta WP. Evidência:
+
+```
+$ cd /opt/jupyter/work/drone/datasheets && ls -la *.pdf
+-rw-r--r-- 1 root root 1098115 Sep 27 23:44 esp32-s3_datasheet_en.pdf            <- 27/09
+-rw-r--r-- 1 root root  898045 Sep 11 22:17 esp32-s3-wroom-1_datasheet_en.pdf    <- preexistente
+-rw-r--r-- 1 root root  496716 Sep 11 22:21 EV_ICM-42688-P.pdf                   <- preexistente
+-rw-r--r-- 1 root root    539 Sep 11 22:21 icm-42688-p.pdf                       <- preexistente (INVALIDO, §3.1)
+-rw-r--r-- 1 root root 1807872 Sep 28 00:06 icm-42688-p_v2_tdk_ds-000347-v1.2.pdf <- 28/09
+-rw-r--r-- 1 root root 1807872 Sep 28 00:06 icm-42688-p_v2_tdk_ds-000347-v1.6.pdf <- 28/09
+-rw-r--r-- 1 root root 1935924 Sep 27 23:44 ina240_ti_sbos662.pdf                <- 27/09
+-rw-r--r-- 1 root root  977679 Sep 28 00:06 ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf <- 28/09
+-rw-r--r-- 1 root root  142488 Sep 27 23:50 ir2104_infineon_datasheet.pdf         <- 27/09
+-rw-r--r-- 1 root root  739611 Sep 27 23:44 mcp3208_microchip_ds21298e.pdf       <- 27/09
+
+$ ls -la --time-style=full-iso esp32-s3_datasheet_en.pdf ina240_ti_sbos662.pdf \
+    mcp3208_microchip_ds21298e.pdf ir2104_infineon_datasheet.pdf \
+    icm-42688-p_v2_tdk_ds-000347-v1.2.pdf icm-42688-p_v2_tdk_ds-000347-v1.6.pdf \
+    ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf
+-rw-r--r-- 1 root root 1098115 2026-09-27 23:44:51.256908909 -0300 esp32-s3_datasheet_en.pdf
+-rw-r--r-- 1 root root 1807872 2026-09-28 00:06:26.451337113 -0300 icm-42688-p_v2_tdk_ds-000347-v1.2.pdf
+-rw-r--r-- 1 root root 1807872 2026-09-28 00:06:26.468003706 -0300 icm-42688-p_v2_tdk_ds-000347-v1.6.pdf
+-rw-r--r-- 1 root root 1935924 2026-09-27 23:44:45.556933053 -0300 ina240_ti_sbos662.pdf
+-rw-r--r-- 1 root root  977679 2026-09-28 00:06:28.771326906 -0300 ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf
+-rw-r--r-- 1 root root  142488 2026-09-27 23:50:19.315519303 -0300 ir2104_infineon_datasheet.pdf
+-rw-r--r-- 1 root root  739611 2026-09-27 23:44:48.960251970 -0300 mcp3208_microchip_ds21298e.pdf
+```
+
+Ordenação por horário real: INA240 23:44:45 → MCP3208 23:44:48 → ESP32-S3 23:44:51 → IR2104 23:50:19
+(roda da noite de 27/09) e, ~16 min depois, ICM v1.2 00:06:26 → ICM v1.6 00:06:26 → IPB017N10N5 00:06:28
+(rodada de 28/09). Os dois downloads do ICM levam 13 ms de diferença um do outro, o que confirma a §3.2.
+
+| PDF | Data real |
+|---|---|
+| `esp32-s3_datasheet_en.pdf` | **2026-09-27 23:44** |
+| `mcp3208_microchip_ds21298e.pdf` | **2026-09-27 23:44** |
+| `ina240_ti_sbos662.pdf` | **2026-09-27 23:44** |
+| `ir2104_infineon_datasheet.pdf` | **2026-09-27 23:50** |
+| `icm-42688-p_v2_tdk_ds-000347-v1.2.pdf` | 2026-09-28 00:06 |
+| `icm-42688-p_v2_tdk_ds-000347-v1.6.pdf` | 2026-09-28 00:06 |
+| `ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf` | 2026-09-28 00:06 |
 
 | # | Arquivo | Bytes | `file` | Págs. | Texto extraído | Resultado |
 |---|---|---|---|---|---|---|
@@ -151,11 +265,55 @@ Data desta verificação: **2026-09-28**.
 | 7 | `datasheets/ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf` | 977.679 | `PDF document, version 1.7` | 11 | 30.390 B, OK | ✅ **OBTIDO (referência, não é a peça escolhida)** |
 | 8 | `datasheets/icm-42688-p.pdf` | **539** | **`HTML document, ASCII text`** | — | — | ❌ **INVÁLIDO — ver §3.1** |
 
-**Nota sobre o #4 (ESP32-S3):** `file` reporta "password protected", mas `pdftotext -layout` extrai
-273.511 bytes normalmente, sem senha. O aviso do `file` refere-se a permissões de(owner)/restrições de
-cópia do PDF, não a criptografia que impeça leitura. A extração de texto funcionou. Os avisos do
-`pdftotext` foram de cmap: `Syntax Error: Missing language pack for 'Adobe-GB1' mapping` — afeta
-apenas caracteres CJK, irrelevante para as tabelas em inglês usadas neste documento.
+**Nota sobre o #4 (ESP32-S3) — CORRIGIDA em 2026-09-28:** `file` reporta
+`PDF document, version 1.5 (password protected)`, mas **o arquivo NÃO está criptografado**.
+`pdfinfo` responde `Encrypted: no` e a busca por dicionário de permissões não acha nada:
+
+```
+$ file esp32-s3_datasheet_en.pdf
+esp32-s3_datasheet_en.pdf: PDF document, version 1.5 (password protected)
+
+$ grep -c -a -e '/Encrypt' -e '/Perms' esp32-s3_datasheet_en.pdf
+0                                  <- nenhum /Encrypt, nenhum /Perms no arquivo
+
+$ pdfinfo esp32-s3_datasheet_en.pdf | grep -E 'Encrypted|Pages|Producer|Creator'
+Producer:        xdvipdfmx (20240407)
+Creator:         LaTeX with hyperref
+Pages:           87
+Encrypted:       no
+```
+
+**Mecanismo real:** "(password protected)" aqui é **falso positivo do `file`**. O `file` classifica
+assim PDFs que ele não consegue decidir; com `Encrypted: no`, `pdfinfo` e a ausência de `/Encrypt`,
+o arquivo **não tem dicionário de criptografia nenhum** e **não impõe restrição de permissão
+alguma**. A versão anterior deste documento atribuía o aviso a "permissões de owner/restrições de
+cópia" — **essa explicação estava errada e foi removida**, porque não há `/Encrypt` nem `/Perms` no
+arquivo para sustentá-la. **O gatilho exato dentro do `file` não foi determinado** e não é
+necessário para nenhuma decisão deste projeto: o que está verificado é que o arquivo abre e extrai
+texto sem senha. `pdftotext` extrai 273.511 bytes. Os avisos do `pdftotext` foram de cmap
+(`Syntax Error: Missing language pack for 'Adobe-GB1' mapping`) — afetam apenas caracteres CJK,
+irrelevantes para as tabelas em inglês usadas neste documento.
+
+**Nota nova sobre o #3 (MCP3208) — este sim É criptografado.** O documento anterior não registrava
+este caso. `pdfinfo` revela uma *encryption dictionary* real:
+
+```
+$ pdfinfo mcp3208_microchip_ds21298e.pdf | grep Encrypted
+Encrypted:      yes (print:yes copy:yes change:no addNotes:yes algorithm:RC4)
+
+$ pdftotext -f 1 -l 1 mcp3208_microchip_ds21298e.pdf - | head -3 ; echo "EXIT=$?"
+MCP3204/3208
+2.7V 4-Channel/8-Channel 12-Bit A/D Converters
+with SPI Serial Interface
+EXIT=0
+```
+
+Leitura correta: é a **criptografia padrão de permissões (RC4, senha de usuário vazia)** que a Microchip
+aplica a DS21298E. As flags mostram **`change:no`** — é a *edição/modificação* que está negada, **não a
+cópia** (`copy:yes`). O texto extrai normalmente e sem senha (comando acima, `EXIT=0`, 40 páginas).
+Nenhum valor deste documento depende de contornar essa restrição, porque a extração de texto não é
+bloqueada. Registrado aqui para que ninguém mais atribua a este arquivo a mesma explicação errada que
+foi atribuída ao ESP32-S3.
 
 ### 3.1 O arquivo inválido de 539 bytes — `datasheets/icm-42688-p.pdf`
 
@@ -182,15 +340,37 @@ https://errors.edgesuite.net/18.85d71302.1789176065.154ce671
 requisição automatizada e devolveu a página de erro **com HTTP 200 e Content-Type text/html**.
 O cliente de download salvou o corpo do erro com extensão `.pdf`. A URL bloqueada é a da **revisão v1.6**.
 
-**Decisão — o arquivo foi MANTIDO, não apagado.** A regra "NÃO apague nem edite arquivo existente" é
-inegociável nesta missão, e o conteúdo do erro é em si evidência do modo de falha. O índice fica
-coerente por este documento: **`datasheets/icm-42688-p.pdf` está declarado INVÁLIDO e substituído por
-`datasheets/icm-42688-p_v2_tdk_ds-000347-v1.2.pdf`.**
+**Decisão — o arquivo NÃO foi apagado e NÃO foi renomeado; a ação ficou pendente para o
+responsável. Correção de 2026-09-28.** O critério de aceitação exigia que o arquivo inválido fosse
+**substituído ou removido**; até 2026-09-27 nenhum dos dois tinha ocorrido, e a justificativa
+("não apagar, é evidência") era legítima mas **não atendia ao critério**. Este reparo tentou a via
+segura — **renomear**, que preserva os 539 bytes e elimina o perigo do glob — mas a operação foi
+**bloqueada pela política de execução desta máquina** (comandos `mv` são interceptados). Portanto:
 
-**Regra de leitura para quem pegar esse arquivo depois:** qualquer script que faça `glob("datasheets/*.pdf")`
-e abra os resultados vai ler HTML como se fosse PDF. Sempre validar com `file` antes.
-Para remover o ruído, é preciso `rm datasheets/icm-42688-p.pdf` — **ação deliberada, fora do escopo desta
-WP, aguardando decisão do responsável.**
+- **Não apaguei** o arquivo (regra da missão).
+- **Não renomeei** o arquivo (operação bloqueada; não contornada).
+- **Fica uma única ação manual, de baixo risco, para o responsável executar:**
+
+```
+cd /opt/jupyter/work/drone
+git mv datasheets/icm-42688-p.pdf datasheets/icm-42688-p.pdf.INVALIDO_HTML
+```
+
+Por que renomear e não apagar: o conteúdo do erro (a página "Access Denied" da Akamai, §3.1) é a
+única evidência do modo de falha e **vale 539 bytes**; apagar destrói a prova e não devolve nada.
+Renomear tira o HTML do alcance de `glob("datasheets/*.pdf")` sem tocar um byte do conteúdo, e é
+reversível com o comando inverso (`git mv …INVALIDO_HTML …pdf`). O arquivo é **rastreado pelo git**
+(`git ls-files` lista `datasheets/icm-42688-p.pdf`), então o blob também sobrevive no histórico
+mesmo que o arquivo seja removido da árvore.
+
+> ⚠️ **Até essa renomeação ser feita, o risco abaixo está ATIVO.** Qualquer script que faça
+> `glob("datasheets/*.pdf")` e abra os resultados **vai ler HTML como se fosse PDF** — e a §4 já
+> contém uma cópia idêntica do mesmo HTML dentro de `.ipynb_checkpoints/` (§3.4), que um glob
+> recursivo também pegaria. Sempre validar com `file` antes de abrir.
+
+**Regra de leitura para quem pegar esse arquivo depois:** enquanto ele se chamar
+`icm-42688-p.pdf`, ele **não é** o datasheet do ICM-42688-P. O documento válido é
+`datasheets/icm-42688-p_v2_tdk_ds-000347-v1.2.pdf` (§3.2 — confirme a revisão antes de citar).
 
 ### 3.2 Os dois arquivos ICM-42688-P são O MESMO ARQUIVO
 
@@ -232,36 +412,106 @@ cite o arquivo pelo nome neutro e não afirme "v1.2" nem "v1.6" em documento de 
 > `esp32-wroom-1.txt` merece atenção: a extensão `.txt` sugere texto, `file` revela binário ESP. Se algum
 > script do projeto fizer `open("datasheets/*.txt")`, ele vai ler lixo binário.
 
+### 3.4 🔴 `datasheets/.ipynb_checkpoints/` — NÃO era "ignorado": continha um segundo HTML mascarado de .pdf
+
+A versão anterior deste documento listava `datasheets/.ipynb_checkpoints/` na §4 como diretório
+"ignorado", **sem auditar seu conteúdo**. Isso era um erro: "ignorado" pelo git não significa
+"inspecionado". O diretório é ignorado pela regra `.gitignore:2`, mas existe em disco e **contém
+outro arquivo HTML de 539 bytes com extensão `.pdf`** — cópia byte a byte do inválido da §3.1.
+Achado em 2026-09-28; verificado e **não destruído**.
+
+```
+$ cd /opt/jupyter/work/drone/datasheets
+$ file .ipynb_checkpoints/*
+.ipynb_checkpoints/esp32-s3-wroom-1_datasheet_en-checkpoint.pdf: PDF document, version 1.5
+.ipynb_checkpoints/ev-checkpoint.txt:                            UTF-8 Unicode text
+.ipynb_checkpoints/icm-42688-p-checkpoint.pdf:                   HTML document, ASCII text   <-- !
+
+$ md5sum icm-42688-p.pdf .ipynb_checkpoints/icm-42688-p-checkpoint.pdf
+a8d8007143fbbdb07b14ceafc0c5504c  icm-42688-p.pdf
+a8d8007143fbbdb07b14ceafc0c5504c  .ipynb_checkpoints/icm-42688-p-checkpoint.pdf
+
+$ md5sum esp32-s3-wroom-1_datasheet_en.pdf .ipynb_checkpoints/esp32-s3-wroom-1_datasheet_en-checkpoint.pdf
+d430849458e585c9b3ffa5433a895e6c  esp32-s3-wroom-1_datasheet_en.pdf
+d430849458e585c9b3ffa5433a895e6c  .ipynb_checkpoints/esp32-s3-wroom-1_datasheet_en-checkpoint.pdf
+
+$ cd /opt/jupyter/work/drone && git check-ignore -v datasheets/.ipynb_checkpoints/icm-42688-p-checkpoint.pdf
+.gitignore:2:.ipynb_checkpoints/	datasheets/.ipynb_checkpoints/icm-42688-p-checkpoint.pdf
+```
+
+**Leitura:**
+
+| Arquivo no checkpoint | Bytes | `file` | Igual ao original? |
+|---|---|---|---|
+| `icm-42688-p-checkpoint.pdf` | 539 | **HTML document, ASCII text** | **SIM** — md5 `a8d8007…` idêntico a `icm-42688-p.pdf` |
+| `esp32-s3-wroom-1_datasheet_en-checkpoint.pdf` | 898.045 | PDF 1.5 | SIM — md5 `d430849…` idêntico ao original |
+| `ev-checkpoint.txt` | 13.769 | UTF-8 text | SIM — cópia do `ev.txt` |
+
+**Consequência:** são **dois** arquivos HTML mascarados de `.pdf` no repositório, não um. Um glob
+**recursivo** (`glob("datasheets/**/*.pdf", recursive=True)`) pega os dois e falha duas vezes. Por isso
+a §4 não pode mais chamar este diretório de "ignorado": ele está **auditado e contém um inválido**.
+
+**Nada foi apagado ou renomeado aqui** — a regra da missão é não destruir arquivo, e o `.gitignore`
+já garante que o diretório não entre no repositório. Se o responsável quiser neutralizar o risco
+também no checkpoint, o comando é o mesmo da §3.1:
+
+```
+cd /opt/jupyter/work/drone
+mv datasheets/.ipynb_checkpoints/icm-42688-p-checkpoint.pdf \
+   datasheets/.ipynb_checkpoints/icm-42688-p-checkpoint.pdf.INVALIDO_HTML
+```
+
+(não executado por esta WP: operação `mv` bloqueada nesta máquina — ver §3.1)
+
+
 ---
 
 ## 4. Índice do diretório `datasheets/` (estado verificado em 2026-09-28)
 
-13 arquivos, sendo 10 `.pdf`. Saída literal de `ls -la` e `file`:
+**12 arquivos** de dados (10 `.pdf` + 2 `.txt`) **+ 1 subdiretório** — não "13 arquivos", como dizia a
+versão anterior deste documento. Evidência da contagem:
+
+```
+$ cd /opt/jupyter/work/drone/datasheets
+$ find . -maxdepth 1 -type f | wc -l
+12
+$ find . -maxdepth 1 -type f -name '*.pdf' | wc -l
+10
+$ find . -maxdepth 1 -type f -name '*.txt' | wc -l
+2
+$ find . -maxdepth 1 -type d | wc -l
+2                 # o próprio "." + .ipynb_checkpoints/
+```
+
+A versão anterior contava "13" ao somar os 10 `.pdf`, os 2 `.txt` **e** a linha do subdiretório na
+tabela como se fosse um arquivo. São 12 arquivos; a 13ª linha da tabela é um diretório.
 
 | Arquivo | Bytes | Tipo real (`file`) | Válido? |
 |---|---|---|---|
 | `esp32-s3-wroom-1_datasheet_en.pdf` | 898.045 | PDF 1.5 | ✅ |
-| `esp32-s3_datasheet_en.pdf` | 1.098.115 | PDF 1.5 (password protected) | ✅ texto extraível |
+| `esp32-s3_datasheet_en.pdf` | 1.098.115 | PDF 1.5 (falso "password protected", ver §3) | ✅ texto extraível |
 | `esp32-wroom-1.txt` | 213.221 | **ESP archive data** | ⚠️ binário com extensão .txt |
 | `EV_ICM-42688-P.pdf` | 496.716 | PDF 1.7 | ✅ |
 | `ev.txt` | 13.769 | UTF-8 text | ✅ |
-| **`icm-42688-p.pdf`** | **539** | **HTML document, ASCII text** | ❌ **SUBSTITUÍDO — ver §3.1** |
+| **`icm-42688-p.pdf`** | **539** | **HTML document, ASCII text** | ❌ **INVÁLIDO — §3.1; renomeação PENDENTE** |
 | `icm-42688-p_v2_tdk_ds-000347-v1.2.pdf` | 1.807.872 | PDF 1.7 | ✅ |
 | `icm-42688-p_v2_tdk_ds-000347-v1.6.pdf` | 1.807.872 | PDF 1.7 | ⚠️ duplicata byte a byte de v1.2 |
 | `ina240_ti_sbos662.pdf` | 1.935.924 | PDF 1.4 | ✅ |
 | `ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf` | 977.679 | PDF 1.7 | ✅ (referência) |
 | `ir2104_infineon_datasheet.pdf` | 142.488 | PDF 1.2 | ✅ |
-| `mcp3208_microchip_ds21298e.pdf` | 739.611 | PDF 1.6 | ✅ |
-| `datasheets/.ipynb_checkpoints/` | — | diretório | ignorado |
+| `mcp3208_microchip_ds21298e.pdf` | 739.611 | PDF 1.6 | ✅ criptografado RC4, texto extraível (§3) |
+| `datasheets/.ipynb_checkpoints/` | — | **diretório** (3 arquivos) | ⚠️ **AUDITADO — contém OUTRO HTML mascarado de .pdf, ver §3.4** |
 
 **Regra de ouro adotada:** para conferir, rode sempre
 
 ```
-cd /opt/jupyter/work/drone/datasheets && file *.pdf && ls -la
+cd /opt/jupyter/work/drone/datasheets && file *.pdf .ipynb_checkpoints/* && ls -la
 ```
 
 Esperado: **todos** devem responder `PDF document, version X.Y`. Qualquer linha com `HTML document` é
-download falho disfarçado, e deve ser substituído pelo arquivo `v2_` correspondente.
+download falho disfarçado. Hoje são **duas** linhas assim: `icm-42688-p.pdf` (§3.1) e
+`.ipynb_checkpoints/icm-42688-p-checkpoint.pdf` (§3.4) — a segunda só aparece se a checagem incluir o
+diretório de checkpoints, que a versão anterior declarava "ignorado" sem olhar.
 
 ---
 
@@ -273,7 +523,7 @@ download falho disfarçado, e deve ser substituído pelo arquivo `v2_` correspon
 |---|---|---|
 | **Ciss / Ciss(es) do MOSFET** | `datasheets/ipb017n10n5_infineon_REFERENCIA_NAO_ESCOLHIDO.pdf` | Buscar `Ciss` / `Ciss(es)` / "Input Capacitance" no texto extraído. A p.4 traz a linha `Gate resistance RG` mas a de capacitância de entrada não foi localizada na varredura feita |
 | **Revisão correta do datasheet do ICM-42688-P** | `datasheets/icm-42688-p_v2_tdk_ds-000347-v1.2.pdf` p.1 e rodapé | Ver §3.2 — os dois nomes de arquivo são byte a byte idênticos, então o sufixo não diz a revisão |
-| **Numeração de pinos do SOIC do INA240** | `datasheets/ina240_ti_sbos662.pdf` p.3, Figura 6-2 | Ver §2.1 — o `-layout` embaralha as duas colunas da tabela. Abrir a página como imagem |
+| **Numeração de pinos do SOIC do INA240** | `datasheets/ina240_ti_sbos662.pdf` p.3, Table 6-1 | ✅ **RESOLVIDO em 2026-09-28** — ver §2.1 e §8/Defeito 1. A tabela anterior trazia 3 de 8 pinos SOIC errados; os valores reais são REF1 = 7, REF2 = 3, V<sub>S</sub> = 6, extraídos com `pdftotext` **sem** `-layout` |
 | **Ganho de erro vs. temperatura do INA240** | `datasheets/ina240_ti_sbos662.pdf` p.5 | Já consta na tabela: ±0,5 ppm/°C a ±2,5 ppm/°C (typ/max) — resolvido |
 | **Ganho de erro do MCP3208** | `datasheets/mcp3208_microchip_ds21298e.pdf` p.2 | Adjacente ao offset na mesma tabela; relevante se a leitura de corrente precisar de precisão melhor que a do offset |
 
@@ -308,8 +558,11 @@ verificação experimental do ganho da cadeia de medição de corrente. **Não h
    é a única premissa refutada que altera um número de projeto.
 2. **Corrigir P-11** para 0,325 mA (IQCC 270 µA + IQBS 55 µA, IR2104 p.3) e registrar que 2,5 mA era a
    corrente de quiescência do INA240 (p.1), não do driver.
-3. **Decidir sobre `datasheets/icm-42688-p.pdf`** (539 B): apagar ou manter como evidência. Recomendo apagar
-   e cobrir a remoção neste índice, mas é ação destrutiva e depende do responsável.
+3. **Neutralizar os 2 HTML mascarados de `.pdf`** (§3.1 e §3.4): renomear, não apagar.
+   Comando pronto, **não executado** (operação `mv` bloqueada nesta máquina):
+   `git mv datasheets/icm-42688-p.pdf datasheets/icm-42688-p.pdf.INVALIDO_HTML`.
+   Mesmo tratamento para `datasheets/.ipynb_checkpoints/icm-42688-p-checkpoint.pdf`. Enquanto não for
+   feito, qualquer glob de `*.pdf` pode abrir HTML.
 4. **Remover a duplicata do ICM-42688-P** (1,72 MiB) após identificar qual revisão é a correta (§3.2).
 5. **Publicar netlist** em `fase1_esquema/` para que a pinout da v7 possa ser confrontada com a §2.1.
 6. **Renomear `esp32-wroom-1.txt`** para extensão correta (`.bin`), ou remover do `datasheets/` — hoje é um
@@ -343,3 +596,134 @@ porque o PDF tem paginação dupla (índice interno × 87 páginas do arquivo).
 Ambiente: `pdftotext` em `/usr/bin/pdftotext`, `python3.9`, `bash`.
 Nenhum download foi feito nesta WP; nenhum PDF foi apagado ou editado.
 Nenhum arquivo fora de `plano/WP3_PREMISSAS_DATASHEETS.md` foi criado ou modificado.
+
+---
+
+## 8. Correções após verificação adversarial (2026-09-28)
+
+Esta seção registra um reparo cirúrgico: **6 defeitos** deste documento foram encontrados por uma
+verificação adversarial e corrigidos. **Nenhum dos 14 valores que já passavam foi tocado** — Rds(on),
+Qg/Qgs/Qgd, ganho e offset do INA240, IQCC/IQBS do IR2104, IO+/−, offset/INL do MCP3208, CMRR,
+VDD3P3, LSB, pinout do IR2104 e pinout do MCP3208 continuam como estaban, com a mesma fonte e a mesma
+página. As correções abaixo são todas de **metadado, contagem, data e pinout do INA240**.
+
+### Defeito 1 — 🔴 GRAVE: pinout SOIC do INA240 errado em 3 de 8 pinos
+
+**O que estava errado.** A §2.1, sob o título "Pinout de **datasheet** — RASTREADO ✅", trazia a
+tabela do INA240 com `REF1 = —`, `REF2 = 5` e `V<sub>S</sub> = 5` na coluna SOIC. Isso era
+**fisicamente impossível**: colocava `OUT` (pino 5) e `V<sub>S</sub>` no mesmo pino 5 de um
+encapsulamento de 8 pinos — dois sinais que não podem compartilhar o mesmo contato. A nota de
+advertência do documento também estava errada: dizia "REF2 aparece como 3 e V<sub>S</sub> como 5"
+(invertendo a direção do erro) e atribuía a falha ao `-layout`.
+
+**Por que isso é um defeito de engenharia real, e não de digitação.** A §2.1 é a fonte de pinout
+que o §2.2 promete confrontar com o netlist da v7, e ela está marcada "RASTREADO ✅". Um footprint
+SOIC (D) gerado a partir dessa tabela sairia com **a trilha de saída e a trilha de alimentação
+colapsadas no mesmo pad**, e com `REF1` sem pad. Isso não apareceria em revisão de texto: só apareceria
+na placa, como um curto entre a saída do amplificador de corrente e a alimentação do INA240.
+
+**O que mudou.** A tabela da §2.1 foi recolocada com os valores reais da **Table 6-1 (Pin Functions),
+p.3**, colunas `PW (TSSOP)` / `D (SOIC)`, extraídos **sem** `-layout`:
+
+```
+$ cd /opt/jupyter/work/drone/datasheets
+$ pdftotext -f 3 -l 3 ina240_ti_sbos662.pdf - | sed -n '/Table 6-1/,/6 Pin/p'
+```
+
+Os 3 valores corrigidos: **REF1 = 7** (era "—"), **REF2 = 3** (era 5), **V<sub>S</sub> = 6** (era 5).
+Os outros 5 pinos (GND 4/2, IN– 3/1, IN+ 2/8, NC 1/4, OUT 8/5) já estavam corretos — **a coluna
+TSSOP estava certa; só a SOIC errava 3 pinos**, o que é consistente com a coluna ter sido lida de uma
+fonte embaralhada. A §5.1, que listava "numeração de pinos do SOIC do INA240" como
+NÃO EXTRAÍDO LOCALMENTE, foi marcada RESOLVIDA. A §6 item 7 (escolher as peças antes de gerar
+footprints) ganha agora um número correto para conferir.
+
+### Defeito 2 — segundo HTML mascarado de `.pdf` nunca foi auditado
+
+**O que estava errado.** A §4 listava `datasheets/.ipynb_checkpoints/` como diretório "ignorado",
+sem olhar o conteúdo. O diretório **não é inerte**: contém `icm-42688-p-checkpoint.pdf`, que é
+**byte a byte o mesmo HTML de 539 bytes** do inválido principal — md5 `a8d8007143fbbdb07b14ceafc0c5504c`
+nos dois. "Ignorado pelo git" (`.gitignore:2`) não é o mesmo que "inspecionado".
+
+**O que mudou.** Nova **§3.4** com `file`, `md5sum` (do checkpoint e dos originais) e `git check-ignore -v`
+como evidência, mais a tabela dos 3 arquivos do diretório. O resumo passa a dizer que são **dois**
+HTML mascarados de `.pdf`, não um — o que muda o alcance do risco, porque um glob **recursivo**
+(`datasheets/**/*.pdf`) pega os dois. **Nada foi apagado ou renomeado** (regra da missão), e a §4
+deixou de chamar o diretório de "ignorado". Comando de neutralização opcional registrado na §3.4.
+
+### Defeito 3 — contagem e datas de aquisição erradas
+
+**O que estava errado.** A §3 afirmava "2026-09-28 para os 6 PDFs novos". São **7** PDFs novos, e a
+data não é uniforme: 4 são de **2026-09-27** (INA240 23:44:45, MCP3208 23:44:48, ESP32-S3 23:44:51,
+IR2104 23:50:19) e 3 são de **2026-09-28 00:06:26–28** (ICM v1.2, ICM v1.6, IPB017N10N5).
+
+**O que mudou.** A §3 traz agora o `ls -la` literal e o `ls -la --time-style=full-iso` com
+segundos, mais uma tabela de data por PDF. Detalhe que a evidência revelou e que reforça a §3.2: os
+dois downloads do ICM-42688-P distam **13 ms** um do outro (00:06:26.451 e 00:06:26.468) — é a mesma
+requisição servida duas vezes, não duas revisões.
+
+### Defeito 4 — o arquivo inválido não foi substituído nem removido
+
+**O que estava errado.** O critério exigia substituir ou remover; a §3.1 dizia "o arquivo foi MANTIDO,
+não apagado" e a §6 recomendava "apagar", sem que nenhuma das duas coisas tivesse sido executada. O
+critério ficava descrito e não atendido.
+
+**Decisão tomada: renomear, não apagar — e registrar o comando, sem executá-lo.** A renomeação
+(`icm-42688-p.pdf` → `icm-42688-p.pdf.INVALIDO_HTML`) é a via segura: preserva os 539 bytes de
+evidência do modo de falha, tira o HTML do alcance de `glob("datasheets/*.pdf")` e é reversível. Apagar
+destruiria a única prova do bloqueio da Akamai por 539 bytes. **A execução foi tentada e bloqueada
+pela política de execução desta máquina** (comandos `mv` são interceptados e a negativa é final);
+não houve contorno. A §3.1 e a §6 item 3 registram o comando exato para o responsável:
+
+```
+cd /opt/jupyter/work/drone
+git mv datasheets/icm-42688-p.pdf datasheets/icm-42688-p.pdf.INVALIDO_HTML
+```
+
+O arquivo é rastreado pelo git (`git ls-files` lista `datasheets/icm-42688-p.pdf`), então o blob
+sobrevive no histórico de qualquer forma. **Enquanto a renomeação não for feita, o risco do glob está
+ativo** — a §3.1 e a §4 marcam isso explicitamente, e o §3.4 mostra que o risco é dobrado pelo
+checkpoint.
+
+### Defeito 5 — mecanismo do "password protected" estava errado, e o arquivo realmente criptografado não era este
+
+**O que estava errado.** A nota do ESP32-S3 atribuía o aviso `(password protected)` do `file` a
+"permissões de owner/restrições de cópia". **Não existe `/Encrypt` nem `/Perms` no arquivo**
+(`grep -c -a -e '/Encrypt' -e '/Perms'` → **0**) e `pdfinfo` responde **`Encrypted: no`**. A
+explicação era falsa e foi removida; o que resta é um falso positivo do `file`, cujo gatilho exato
+**não foi determinado** e não é necessário para nenhuma decisão do projeto.
+
+**O que o documento não registrava:** o arquivo **realmente criptografado** é o
+`mcp3208_microchip_ds21298e.pdf` — `pdfinfo` → `Encrypted: yes (print:yes copy:yes change:no
+addNotes:yes algorithm:RC4)`. É a criptografia padrão de permissões (RC4, senha de usuário vazia) que
+a Microchip aplica ao DS21298E. **A permissão negada é `change` (edição), não `copy`** — `copy:yes`.
+O texto extrai normalmente e sem senha: `pdftotext -f 1 -l 1 … | head -3` → `MCP3204/3208 / 2.7V
+4-Channel/8-Channel 12-Bit A/D Converters / with SPI Serial Interface`, `EXIT=0`.
+
+**O que mudou.** A nota do ESP32-S3 foi reescrita com `file` + `grep` + `pdfinfo` como evidência, e
+o caso do MCP3208 foi acrescentado logo abaixo. Nenhum valor do §1 depende disso: a extração de texto
+não é bloqueada em nenhum dos dois.
+
+### Defeito 6 — contagem "13 arquivos" vs 12
+
+**O que estava errado.** A §4 abria com "13 arquivos, sendo 10 `.pdf`". A contagem real é
+**`find . -maxdepth 1 -type f | wc -l` = 12** (10 `.pdf` + 2 `.txt`), **+ 1 subdiretório**. O "13"
+contava a linha do subdiretório como se fosse arquivo.
+
+**O que mudou.** A §4 agora abre com a contagem verificada e mostra os três comandos que a sustentam
+(`-type f` = 12, `*.pdf` = 10, `*.txt` = 2, `-type d` = 2 contando o próprio `.`), com a
+explicação do erro de contagem. A tabela ganhou as correções de status: o ESP32-S3 e o MCP3208
+passam a trazer o mecanismo real (§3), e a linha do checkpoint deixa de dizer "ignorado" e passa a
+dizer "AUDITADO — contém OUTRO HTML mascarado de .pdf".
+
+### O que NÃO foi tocado
+
+As 14 checagens que já passavam seguem intactas, com a mesma fonte e a mesma página: Rds(on)
+(IPB017N10N5 p.4), Qg/Qgs/Qgd (p.1/p.4), ganho do INA240 e offset VOS (p.3/p.5), IQCC/IQBS do IR2104
+(p.3), IO+/− (p.1), offset e INL do MCP3208 (p.2), CMRR (p.5), VDD3P3 (ESP32-S3 p.64), LSB do
+MCP3208, pinout do IR2104 (p.4) e pinout do MCP3208 (p.15). As premissas P-01..P-15, a §2.2
+(pinout da v7, NÃO VERIFICADA) e a §5 (o que segue sem lastro) não foram alteradas, exceto pela
+linha do SOIC do INA240 na §5.1, que deixou de ser "NÃO EXTRAÍDO LOCALMENTE" porque o Defeito 1
+resolveu o item.
+
+Nenhum outro arquivo do projeto foi editado. Nenhum arquivo foi apagado ou renomeado. Nenhum push foi
+feito — o commit desta correção é **local**, no branch `main` do repositório privado.
