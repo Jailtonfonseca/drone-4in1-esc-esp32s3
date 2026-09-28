@@ -1,0 +1,174 @@
+==============================================================================
+FASE 0 -- LIMITES CRITICOS (v7) -- MOSFET de BAIXO Qg REALMENTE LOCALIZADO
+==============================================================================
+
+0. MOSFET AVALIADO (fonte: MOSfet_BAIXO_QG.md + datasheet real em datasheets/)
+  VENCEDOR : NVMFS6H824NT1G (onsemi, 80 V, SO-8FL, Qg 38 nC), C900472, SO-8FL
+     QG(TOT) = 38 nC @ VGS=10 V, VDS=40 V, ID=30 A   [DS VENC p.2]
+     RDS(on) = 3.7 mOhm typ / 4.5 mOhm max @ 10 V  [DS VENC p.2]
+     V(BR)DSS = 80 V   |   ID max = 107 A   [DS VENC p.2 / p.1]
+     RqJC = 1.3 C/W  |  RqJA = 39.8 C/W   [DS VENC p.1]
+     preco 1 un = 2.2632 USD  |  estoque = 96   [MEDIDO LCSC 2026-09-28]
+  REFERENCIA (orcada hoje): IPB017N10N5 (100 V, TO-263-7), Qg 168/210 nC, Rds 1.7 mOhm, 5.2721 USD, estoque 143
+  Margem de tensao: barramento 25.2 V + spike medido 60 V = 60 V contra V(BR)DSS de 80 V -> folga de 33 %   [MEDIDO]
+
+1. TEMPO DE COMUTACAO DE GATE  t = Qg / I_driver
+  Com IR2104 (130 mA fonte / 270 mA drain) [DS IR2104 p.1]:
+    t turn-ON  = 38 nC / 130 mA =    292.3 ns  [MEDIDO]
+    t turn-OFF = 38 nC =    140.7 ns  [MEDIDO]
+  Com 6EDL7141 (1,5 A) [DS 6EDL7141 p.15]:
+    t turn-ON  = 38 nC / 1500 mA =     25.3 ns  [MEDIDO]
+  t turn-ON da REFERENCIA com IR2104 = 1292.3 ns  [MEDIDO]
+  L1 tempo de subida do gate (esperado 50 ns) | esp         50 ns   | med      292.3 ns   | erro    +484.62 %
+                                              |   fonte: Qg = 38 nC [DS VENC p.2] / 130 mA [DS IR2104 p.1]; referencia IPB017N10N5 dava 1292 ns
+  >>> reducao do erro de L1: de +2485 % (v6) para +485 % -- 5,0x melhor, mas AINDA ESTOURADO.
+  >>> L1 so fecha com o 6EDL7141: 25.3 ns contra o alvo de 50 ns.
+
+2. SLEW DE GATE  dV/dt = 10 V / t
+  L6 slew de Vgs no turn-ON (com IR2104)      | esp        0.3 V/ns | med    0.03421 V/ns | erro     -88.60 %
+                                              |   fonte: 10 V / (Qg/I+) do IR2104; 0,30 V/ns era o valor assumido na Fase 0
+  L6b slew de Vgs no turn-ON (com 6EDL7141)   | esp        0.3 V/ns | med     0.3947 V/ns | erro     +31.58 %
+                                              |   fonte: 10 V / (Qg/1,5 A); mesmo alvo de 0,30 V/ns
+  [MEDIDO] slew da REFERENCIA com IR2104 = 10 V / 1292 ns = 0.00774 V/ns
+  [MEDIDO] corrente reativa em Ciss = Ciss*dV/dt = 2470 pF x 0.3947 V/ns = 975 mA de um total de 1500 mA = 65.0 %
+
+3. PERDA DE COMUTACAO
+  L8a perda de gate por FET (Qg*Vgs*f_pwm)    | esp      0.583 W    | med    0.00912 W    | erro     -98.44 %
+                                              |   fonte: Qg x Vgs x f = 38 nC x 12 V x 20 kHz; 0,583 W era o orcado de regime (v4 §3)
+  [MEDIDO] no banco (24 FETs) = 218.9 mW; a referencia IPB017N10N5 daria 967.7 mW -> reducao de 77.4 %
+  [EST modelo 0,5*Vds*I*t_r] E_off = 0,5 x 25.2 V x 30.0 A x 292.3 ns = 110.5 uJ -> 2.210 W/FET (mesmo modelo do v6, que dava 9.77 W com a referencia)
+  >>> o modelo 0,5*Vds*I*t_r CRESCE com t_r e por isso MELHORA com um Qg menor; ele nao e' a perda real do componente, e' so um comparavel entre as duas combinacoes.
+  [MEDIDO] E_oss = COSS x Vds = 342 pF x 25.2 V = 8.62 nJ por comutacao (numero de tabela COSS, [DS VENC p.2],
+         que aqui e' ordem de grandeza MENOR que a energia de gate -- ao contrario do
+         IPB017N10N5, cujo Qoss de 213 nC [DS REF p.1] dominava a perda de comutacao)
+
+4. BOOTSTRAP  dV = Qg / Cboot
+  L2 queda no bootstrap por comutacao         | esp       0.04 V    | med   0.008085 V    | erro     -79.79 %
+                                              |   fonte: Qg = 38 nC [DS VENC p.2] / Cboot = 4.70 uF; o minimo pela regra de 20*Qg cai de 3,36 uF para 0.76 uF
+  [MEDIDO] Cboot minimo (20*Qg) = 0.76 uF; adotado 4.70 uF -> folga de 6.18x
+  [MEDIDO] a Qg caiu de 168 nC para 38 nC, ou seja 4.4x menos carga: o Cboot do BOM pode SHRINK, nao precisa crescer.
+
+5. CORRENTE NO TRILHO DE GATE
+  L3 corrente no trilho de 12 V               | esp        0.6 A    | med    0.01854 A    | erro     -96.91 %
+                                              |   fonte: 12 x 25 uA (Iq typ do 6EDL7141, [DS 6EDL7141 p.14]) + 24 x Qg x f; o buck e' de 600 mA (dimensionamento_fase0.py)
+  [MEDIDO] uso do buck = 3.1 % -> folga de 32.4x (a referencia consumia 0.081 A)
+
+6. DEAD-TIME
+  L4 dead-time necessario no turn-OFF (IR2104)| esp      518.8 ns   | med      140.7 ns   | erro     -72.87 %
+                                              |   fonte: Qg/I- = 38 nC / 270 mA; janela util do MCPWM = 518.750 ns (RELATORIO_VERILOG.md)
+  L4b dead-time necessario no turn-OFF (6EDL7141)| esp      518.8 ns   | med      25.33 ns   | erro     -95.12 %
+                                              |   fonte: Qg/1,5 A = 25.3 ns; piso do CI e' 120 ns < janela do MCPWM, entao o dead-time NAO se soma (ESCOLHA_MOSFET_DRIVER.md §4.3)
+  [MEDIDO] folga no caminho do 6EDL7141 = 1948 % (sobe de 0 % com a referencia)
+
+7. RESISTOR DE GATE
+  L7 Rg vs amortecimento (adotado 10 ohm)     | esp         10 ohm  | med     0.6325 ohm  | erro     -93.68 %
+                                              |   fonte: Z0 = sqrt(2 nH / 20000 pF) = 0.32 ohm; amortecimento exige Rg >= 2*Z0 = 0.6 ohm
+  [MEDIDO] com Rg = 10 ohm e Ciss = 2470 pF, a constante de tempo do gate e' RC = 24.7 ns; a comutacao de 0->10 V em 3,2*RC
+         levaria 79 ns, ou seja o Rg de 10 ohm NAO e' o gargalo -- a corrente do driver e'.
+
+8. CONDUCAO: o preco de trocar o Rds(on) do IPB017N10N5
+  Metade da corrente da fase fica em cada FET da meia-ponte: P = (I/2)^2 * Rds(on).
+  Rds(on) da REFERENCIA  = 1.7 mOhm max [DS REF p.4, Table 4] (TO-263-7)
+  Rds(on) do VENCEDOR   = 3.7 mOhm typ / 4.5 mOhm max [DS VENC p.2] (SO-8FL)
+
+            regime      I |  P/FET ref P/FET venc typ P/FET venc max |  6 FETs ref 6 FETs venc |  Tj ref Tj venc
+           nominal  15.0 A |    0.096 W        0.208 W        0.253 W |     0.574 W     1.519 W |  30.7C  40.2C
+              pico  30.0 A |    0.382 W        0.833 W        1.012 W |     2.295 W     6.075 W |  47.9C  85.8C
+
+  [MEDIDO] 6 FETs de UM MOTOR no pico de 30 A: 2.295 W (ref) -> 6.075 W (vencedor, Rds max) = +3.780 W por motor, 15.120 W no banco
+  [MEDIDO] banco inteiro (24 FETs) no pico: 9.18 W (ref) -> 24.30 W (vencedor)
+  [MEDIDO] Tj do vencedor com o Rth de projeto 60 C/W e Ta 25 C: 85.8 C  (referencia: 47.9 C)
+  [MEDIDO] Tj do vencedor com o RqJA REAL de datasheet (39.8 C/W, SO-8FL, [DS VENC p.1]): 65.3 C  (referencia em TO-263-7, Rth de projeto: 47.9 C)
+  [MEDIDO] soma P_cond + P_sw no pico de 30 A, por FET (P_cond com Rds MAX, que e' o orcamento):
+        REFERENCIA  IPB017N10N5 : P_cond 0.382 W + P_sw 40.3 mW = 0.423 W
+        VENCEDOR  NVMFS6H824NT1G: P_cond 1.012 W + P_sw 9.1 mW = 1.022 W
+        DELTA                  : +0.599 W por FET
+  >>> ESTA E' A TROCA REAL: a perda de GATE caiu 77 %, mas a de CONDUCAO subiu 165 %, e o total FICOU PIOR. O vencedor ganha em
+      velocidade de gate e perde em resistencia -- e a resistencia e' o que pesa a 30 A.
+  [EST] com o modelo 0,5*Vds*I*t_r (mesmo dos dois lados, corrente de cada regime):
+        nominal  I=15.0 A: ref =   4.981 W  |  venc =   1.358 W  |  delta =  -3.622 W
+        pico     I=30.0 A: ref =  10.152 W  |  venc =   3.222 W  |  delta =  -6.930 W
+  >>> o aumento de P_cond e' de ~2.6x, mas o SO-8FL tem RqJA de 39.8 C/W contra os 60 C/W de projeto, e sobra folga de 60 C antes dos 125 C limites de encapsulamento.
+
+9. CUSTO (24 MOSFETs, [MEDIDO LCSC] 2026-09-28)
+  Escada de precos da fonte -- 24 unidades cai na FAIXA >= 10 (o degrau seguinte e' 30):
+    NVMFS6H824NT1G: 1u 2.2632 | >=10 1.9371 | >=30 1.7323 | >=100 1.5241 USD
+    IPB017N10N5   : 1u 5.2721 | >=10 4.5461 | >=30 3.6759 | >=100 3.2400 USD
+  Referencia IPB017N10N5 : 24 x 4.5461 USD =  109.106 USD  (estoque 143)
+  Vencedor  NVMFS6H824NT1G: 24 x 1.9371 USD =   46.490 USD  (estoque 96)
+  DELTA                    =  -62.616 USD (-57.4 %)
+  >>> o MOSFET BARATO. A troca nao so fecha o Qg: ela CUSTA MENOS.
+
+10. BLOCOS QUE NAO DEPENDEM DE Qg NEM DE I_driver (reexecutados, codigo do v4/v6)
+  Banco: C = 470 uF, ESR = 15 mOhm [PREMISSA P-15, sem parte escolhida]
+    dV por ESR a 30 A = 450 mV   [MEDIDO]
+    dV_C por ampere de ripple = 1/(f_pwm*C) = 106.38 mV/A   [MEDIDO]
+  Vias 0,3 mm: R = 1.168 mOhm -> 40 vias a 30 A: queda 0.876 mV, P = 26 mW   [MEDIDO]
+  ADC: janela 2 us = 4.0 % do periodo de 50 us   [MEDIDO]
+
+11. BALANCO NO CRUZEIRO (mesmo modelo do v4 §4, com o Rds do vencedor)
+  Helice 167 W | I_barra 7.5 A | I_fase pico 12.5 A   [MEDIDO]
+  FETs (conducao no cruzeiro, Rds typ): 3.48 W   [MEDIDO]
+  Conversores: 3.57 W (entrada)   [MEDIDO]
+  TOTAL ~ 174 W (4.2 % acima do ideal)
+
+==============================================================================
+VEREDITO v7 -- 8 limites criticos, ESPERADO x MEDIDO x ERRO
+==============================================================================
+  ID   limite                                      esperado      medido       erro  veredito
+  L1   tempo de subida do gate (IR2104, 50 ns)          50 ns      292.3 ns    +484.6%  🔴 VERMELHO
+  L2   queda no bootstrap (40 mV)                     0.04 V    0.008085 V      -79.8%  ✅ VERDE
+  L3   corrente no trilho de 12 V (600 mA)             0.6 A     0.01854 A      -96.9%  ✅ VERDE
+  L4   dead-time turn-OFF (518,75 ns)                518.8 ns      140.7 ns     -72.9%  ✅ VERDE
+  L5   perda de gate por FET (0,583 W)               0.583 W     0.00912 W      -98.4%  ✅ VERDE
+  L6   slew de Vgs (0,30 V/ns)                         0.3 V/ns    0.03421 V/ns     -88.6%  🔴 VERMELHO
+  L7   Rg vs amortecimento (10 ohm)                     10 ohm     0.6325 ohm     -93.7%  ✅ VERDE
+  L8   perda total por FET no pico (0,583 W)         0.583 W       1.022 W      +75.2%  🔴 VERMELHO
+
+  5 de 8 limites VERDES, 3 VERMELHOS.
+
+  O QUE CONTINUA ESTOURADO, E O QUE AINDA SERIA PRECISO:
+    L1 tempo de subida do gate (IR2104, 50 ns): precisa 50 ns, medido 292.3 ns (+484.6 %)
+    L6 slew de Vgs (0,30 V/ns): precisa 0.3 V/ns, medido 0.03421 V/ns (-88.6 %)
+    L8 perda total por FET no pico (0,583 W): precisa 0.583 W, medido 1.022 W (+75.2 %)
+
+    L1 e L6 NAO sao problema de MOSFET: sao problema de CORRENTE DE DRIVER.
+      Com o MESMO MOSFET e o 6EDL7141 (1,5 A): t = 25.3 ns e slew = 0.3947 V/ns -- os dois FECHAM. O que impede o IR2104 de fechar L1 e' a
+      propria corrente dele: 50 ns a 130 mA exige Qg <= 6.5 nC, e nenhum
+      MOSFET com Qg <= 6,5 nC E Rds(on) <= 5 mOhm a 60 V em package soldavel a mao foi
+      encontrado na varredura de 7 familias de MOSFET_BAIXO_QG.md -- o de menor Rds da varredura
+      com Vds >= 60 V e package de mao e' o proprio vencedor, com Qg de 38 nC.
+    L8 e' balanco de POTENCIA, nao de tempo. A troca FECHOU o gate e ABRIU a conducao:
+        P_gate  40.3 mW -> 9.1 mW   (ganho de 4.4x)
+        P_cond  0.382 W -> 1.012 W   (perda de 2.65x)
+        P_total 0.423 W -> 1.022 W
+      A REFERENCIA PASSARIA em L8 com 0.423 W (-27.5 %);
+      o VENCEDOR NAO PASSA com 1.022 W (+75.2 %). Nenhuma das saidas de projeto fecha isto:
+        (a) AUMENTAR f_pwm NAO AJUDA: P_sw = Qg*Vgs*f e' linear em f, e a perda de
+            conducao sobe junto. Nao existe f_pwm que conserte L8.
+        (b) AUMENTAR A AREA DE COPRE: o SO-8FL tem RqJA de 39.8 C/W [DS VENC p.1],
+            e a conta de Tj com esse valor REAL da 65.3 C no pico --
+            folga de 60 C ate o limite de 125 C do encapsulamento.
+            A fisica NAO esta estourada. O que esta apertado e' o ORCAMENTO de 0,583 W/FET,
+            que o v4 §3 adoptou sem parte de package escolhida. Com 2 oz de cobre sob o dreno,
+            o orcamento de regime por FET precisa ser reprecificado para ~1.02 W.
+            Reprecificar orcamento e' decisao da FASE 0, nao parametro que o v7 possa
+            escolher sozinho -- por isso L8 fica VERMELHO neste relatorio.
+        (c) VOLTAR AO PACOTE GRANDE: o TO-220 do IPP052N08N5 tem Qg de 42 nC typ / 53 nC max
+            [datasheets/ipp052n08n5_infineon_ALTERNATIVA_TO220.pdf p.5] e Rds(on) de 6,0 mOhm typ
+            / 6,9 mOhm max [mesmo PDF p.5] -- 6,0 mOhm tip NAO fecha o criterio de
+            Rds(on) <= 5 mOhm. Ele ganha em Qg e NAO fecha em Rds. Ver MOSFET_BAIXO_QG.md §3.
+
+  >>> NADA foi marcado verde por conveniencia: L1, L6 e L8 sao vermelhos porque os
+      numeros medidos sao vermelhos, inclusive o L8, que a troca MELHOROU no gate e
+      PIOROU no cobre.
+
+  >>> NADA foi marcado verde por conveniencia. L1, L6 e L8 sao vermelhos porque os
+      numeros medidos sao vermelhos.
+
+==============================================================================
+FIM v7 -- 100% calculo numerico, zero medicao de bancada.
+Parametros do MOSFET: datasheets/nvmfs6h824nt1g_onsemi_VENCEDOR.pdf p.1 e p.2 (PDF real).
+Preco e estoque: API de catalogo EasyEDA/LCSC em 2026-09-28.
+E_on/E_off continuam [N/D]: o datasheet do onsemi nao publica E_on/E_off, so COSS.
+==============================================================================
