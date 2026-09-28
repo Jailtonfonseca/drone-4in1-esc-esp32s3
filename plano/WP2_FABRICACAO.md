@@ -67,6 +67,16 @@ $ head -20 fase3_pcb/v7/v7_drone.kicad_pcb
     (modules 319)
     (nets 203)
   )
+
+  (page A4)
+  (layers
+    (0 F.Cu signal)
+    (1 In1.Cu signal)
+    (2 In2.Cu signal)
+    (31 B.Cu signal)
+    (32 B.Adhes user)
+    (33 F.Adhes user)
+    (34 B.Paste user)
 ```
 
 `version 20171130` + `pcbnew 5.1.9` = formato **KiCad 5.1**. Isso importa para o item "schematic nativo": no KiCad 5.1 o esquema nativo é `.sch`, não `.kicad_sch` (que só existe a partir do KiCad 6).
@@ -143,14 +153,14 @@ $ ls fase3_pcb/v7/
 -PTH.drl
 v7_drone.kicad_pcb
 
-$ ls -l fase3_pcb/v7/ | awk '{print $5, $9}'
+$ ls -l fase3_pcb/v7/ | awk '{print $5, $9}' | tail -n +2
 132600 -drone_B_Cu.gbl
 2926 -drone_B_Mask.gbs
 2929 -drone_B_SilkS.gbo
 747 -drone_Edge_Cuts.gm1
 375084 -drone_F_Cu.gtl
 262928 -drone_F_Mask.gts
-879780 -drone_F_SilkS.gbo
+879780 -drone_F_SilkS.gto
 162219 -drone_In1_Cu.g2
 635727 -drone_In2_Cu.g3
 386 -NPTH.drl
@@ -166,6 +176,26 @@ O `README.md:28` e o `plano/WP1_ROTEAMENTO.md` já apontavam que o board não te
 
 ```console
 $ head -20 fase3_pcb/v7/v7_drone.kicad_pcb
+(kicad_pcb (version 20171130) (host pcbnew 5.1.9+dfsg1-1+deb11u1)
+
+  (general
+    (thickness 1.6)
+    (drawings 1)
+    (tracks 605)
+    (zones 0)
+    (modules 319)
+    (nets 203)
+  )
+
+  (page A4)
+  (layers
+    (0 F.Cu signal)
+    (1 In1.Cu signal)
+    (2 In2.Cu signal)
+    (31 B.Cu signal)
+    (32 B.Adhes user)
+    (33 F.Adhes user)
+    (34 B.Paste user)
 $ grep -c "rule_area" fase3_pcb/v7/v7_drone.kicad_pcb
 0
 $ grep -c "title_block" fase3_pcb/v7/v7_drone.kicad_pcb
@@ -284,9 +314,9 @@ Coordenadas lidas em formato 4.6 (coordenadas em 1/1.000.000 mm — na prática 
 
 ```console
 $ wc -l fase3_pcb/v7/-PTH.drl fase3_pcb/v7/-NPTH.drl
-  451 fase3_pcb/v7/-PTH.drl
-   19 fase3_pcb/v7/-NPTH.drl
-  470 total
+ 451 fase3_pcb/v7/-PTH.drl
+  19 fase3_pcb/v7/-NPTH.drl
+ 470 total
 
 $ head -20 fase3_pcb/v7/-PTH.drl
 M48
@@ -420,17 +450,18 @@ Os arquivos saem assim:
 
 ```console
 $ ls fase3_pcb/v7/
--drone_F_Cu.gtl
 -drone_B_Cu.gbl
--drone_In1_Cu.g2
--drone_In2_Cu.g3
--drone_F_Mask.gts
 -drone_B_Mask.gbs
--drone_F_SilkS.gto
 -drone_B_SilkS.gbo
 -drone_Edge_Cuts.gm1
+-drone_F_Cu.gtl
+-drone_F_Mask.gts
+-drone_F_SilkS.gto
+-drone_In1_Cu.g2
+-drone_In2_Cu.g3
 -NPTH.drl
 -PTH.drl
+v7_drone.kicad_pcb
 ```
 
 **Dois defeitos independentes, ambos confirmados:**
@@ -777,3 +808,72 @@ Passagem de verificação adversarial sobre este documento encontrou **7 defeito
 | **F7** | `.gbrjob` atribuído a limitação do KiCad 5.1 | §1 item 8 e nova §2.6 | Causa correta registrada: `gera_pcb_v7.py:545` tem **`po.SetCreateGerberJobFile(False)`** — desligado **deliberadamente**, é o default do plotador. O KiCad 5.1 grava o `.gbrjob` normalmente. Comando do item 8 trocado de GUI para "trocar por `True` na linha 545 e replotar", e nova correção **C7** em §3.3. Esforço do item 8 inalterado (0,5 h). |
 
 **Sequências verificadas e confirmadas como ausentes** (mantidas sem alteração, reconferidas em `/opt/jupyter/work` inteiro e dentro de `.ipynb_checkpoints`): `*.kicad_sch`, `*.sch`, `*.net`, `*netlist*`, `*.pos`, `*.gbrjob`, `*.lib` — `find` retorna **0** para cada classe.
+
+---
+
+## 9. Correções round 2 (2026-09-28)
+
+Segunda passagem sobre este documento encontrou **2 defeitos de conteúdo (E1, E2)** e **3 falhas da mesma classe** — saídas coladas que não eram literais ou que estavam truncadas em silêncio. As duas categorias violam a convenção declarada na linha 8 (*"a saída colada"*) e a afirmação de que **nada é truncado em silêncio**. **Nenhum número, contagem ou conclusão mudou:** 30,0 h / 34,0 h, 6 ❌ / 3 ⚠️ / 2 ✅, 12 arquivos em `datasheets/`, bloco `(setup …)`, `SetCreateGerberJobFile` na linha 545, 35/35 caminhos e a ausência de `.kicad_sch` / netlist / `.pos` / `.lib` / `.drr` seguem exatamente como estavam.
+
+### E1 — nome de artefato errado na listagem colada (§2.1)
+
+A listagem de tamanho colada em §2.1 atribuía **879780** bytes ao arquivo `-drone_F_SilkS.gbo`. O nome real desse artefato é **`-drone_F_SilkS.gto`** (silkscreen **frontal**). A extensão `.gbo` pertence à **máscara backside**, que existe, tem **2929** bytes e é um arquivo **diferente**:
+
+```console
+$ ls -l fase3_pcb/v7/-drone_F_SilkS.gto fase3_pcb/v7/-drone_B_SilkS.gbo | awk '{print $5, $9}'
+2929 fase3_pcb/v7/-drone_B_SilkS.gbo
+879780 fase3_pcb/v7/-drone_F_SilkS.gto
+```
+
+**Gravidade:** é justamente um **nome de artefato de fabricação** — o objeto deste documento. Um `.gbo` na linha do silk frontal levaria o CAM a tratar a máscara traseira como serigrafia frontal. Note que o `ls` sem tamanho, colado logo acima na mesma §2.1, já trazia o nome certo: era só a listagem com tamanhos que divergia dele.
+
+Corrigido. A listagem colada agora é **byte a byte** a saída real:
+
+```console
+$ diff <(ls -l fase3_pcb/v7/ | awk '{print $5, $9}' | tail -n +2) <(sed -n '/^\$ ls -l fase3_pcb\/v7\/ | awk/,/^```$/p' plano/WP2_FABRICACAO.md | sed '1d;$d') && echo "IDÊNTICO (diff vazio)"
+IDÊNTICO (diff vazio)
+```
+
+O comando colado passou a incluir `| tail -n +2`, porque o `ls -l` emite uma linha de total que o `awk` reduz a uma linha vazia — sem ela, a saída colada nunca seria literal.
+
+### E2 — `head -20` sem saída colada (§2.2)
+
+§2.2 abria com `$ head -20 fase3_pcb/v7/v7_drone.kicad_pcb` e **não colava saída nenhuma, nem marcava elipse**: a linha seguinte já era o próximo comando. É pior do que truncar, porque a ausência some da leitura — o documento afirmava na convenção que nada era truncado em silêncio, e aqui nem sequer havia marca de truncamento.
+
+Varredura de **todos** os comandos do documento — blocos `console` normais e os indentados dentro de blockquote — procurando os que são seguidos de outro comando sem nada entre os dois:
+
+```console
+$ awk 'function c(s){return substr(s,1,2)=="$ "||substr(s,1,4)=="> $ "} /^>/{l=$0;sub(/^> ?/,"",l);if(c(l)){if(p)print "linha "NR-1": "q; q=l; p=1; next}} {if(c($0)){if(p)print "linha "NR-1": "q; q=$0; p=1} else if($0 !~ /^[ \t]*$/) p=0}' plano/WP2_FABRICACAO.md
+linha 17: $ cd /opt/jupyter/work/drone
+linha 127: $ cd /opt/jupyter/work/drone
+linha 729: $ cd /opt/jupyter/work/drone
+```
+
+Os **3 apontamentos restantes são `cd`**, que legitimamente não produzem saída. Sobre a versão **anterior** deste documento, a mesma varredura acusava **4**:
+
+```console
+$ git show HEAD~1:plano/WP2_FABRICACAO.md | awk 'function c(s){return substr(s,1,2)=="$ "||substr(s,1,4)=="> $ "} /^>/{l=$0;sub(/^> ?/,"",l);if(c(l)){if(p)print "linha "NR-1": "q; q=l; p=1; next}} {if(c($0)){if(p)print "linha "NR-1": "q; q=$0; p=1} else if($0 !~ /^[ \t]*$/) p=0}'
+linha 17: $ cd /opt/jupyter/work/drone
+linha 117: $ cd /opt/jupyter/work/drone
+linha 168: $ head -20 fase3_pcb/v7/v7_drone.kicad_pcb
+linha 698: $ cd /opt/jupyter/work/drone
+```
+
+Os 3 `cd` são esperados; a **linha 168 — o `head -20` de §2.2 — era o buraco (E2)**. É o único, e foi corrigido.
+
+As **20 linhas reais** estão agora coladas em §2.2, inteiras — cabem inteiro, sem elipse:
+
+```console
+$ head -20 fase3_pcb/v7/v7_drone.kicad_pcb | wc -l
+20
+```
+
+### Falhas da mesma classe corrigidas na mesma varredura
+
+| # | Onde | O que estava | O que passou a estar |
+|---|---|---|---|
+| **E3** | §0 (linha 59) | `head -20` colado com **11 das 20 linhas**, sem elipse — truncamento silencioso, a mesma violação da convenção | as **20 linhas**, literais |
+| **E4** | §3.1 | `ls fase3_pcb/v7/` colado com **11 arquivos em ordem reordenada** e **sem** `v7_drone.kicad_pcb` — não era a saída daquele comando | saída **literal**: os **12** arquivos, na ordem real |
+| **E5** | §2.4 | `wc -l` dos 2 `.drl` colado com **2 espaços** de campo onde o comando emite **1** | colado **byte a byte** (` 451`, ` 19`, ` 470 total`) |
+
+E3, E4 e E5 **não alteram nenhum número** deste documento: a contagem de 9 Gerbers + 2 furos + 1 board (§2.1), as 451/19 linhas de drill (§2.4) e as conclusões de §2.3, §2.4 e §3.1 permanecem as mesmas. A correção é de literalidade da evidência, não de conteúdo.
