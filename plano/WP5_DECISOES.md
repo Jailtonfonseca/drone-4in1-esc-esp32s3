@@ -12,13 +12,14 @@
 ## 1. Como usar
 
 Este arquivo não é um plano de trabalho: é a **lista fechada do que o plano não consegue decidir sozinho**.
-Cada seção traz uma pergunta já fechada em A/B/C, o que cada opção destrava e o que trava, o custo em horas ou
+Cada seção traz uma pergunta já fechada em A/B/C (a sub-tabela 7b do D-07 é uma pergunta binária A/B),
+o que cada opção destrava e o que trava, o custo em horas ou
 reais quando existe, a recomendação do agente com o porquê, e — importante — **o que dá para fazer em paralelo
-enquanto a resposta não vem**. Nada aqui exige resposta para continuar trabalhando: as 14 decisões estão
+enquanto a resposta não vem**. Nada aqui exige resposta para continuar trabalhando: as 15 decisões estão
 ordenadas por urgência, e a maior parte do trabalho de arquivo (30,0 h [EST], `plano/WP2_FABRICACAO.md` §1)
 é comum a todas as alternativas. Você pode responder só as 3 primeiras (§4) e o projeto anda.
 
-**Regra de leitura:** toda linha marcada `[EST]` é my estimate, não medição. Trate `[EST]` como ordem de grandeza.
+**Regra de leitura:** toda linha marcada `[EST]` é estimativa minha, não medição. Trate `[EST]` como ordem de grandeza.
 Nenhum número deste arquivo foi inventado: quando não havia fonte, a opção está marcada como não cotada.
 
 ---
@@ -35,14 +36,15 @@ Nenhum número deste arquivo foi inventado: quando não havia fonte, a opção e
 | **D-06** | Repo do GitHub: privado ou público | **Estado verificado: o repo está PÚBLICO agora.** Se isso não foi intencional, é a decisão mais urgente do arquivo | **A** — privado, agora | [§3.6](#36-d-06--repo-do-github-privado-ou-público) |
 | **D-07** | Failsafe: 200 ms é o prazo? E watchdog externo: sim ou não? | Módulo M10 do firmware não tem timeout definido. Watchdog não está no layout | **A** — 200 ms em 10 quadros + watchdog externo | [§3.7](#37-d-07--failsafe-200-ms-e-watchdog-externo) |
 | **D-08** | Part numbers finais para cotação real dos 37 itens [EST] | **0 de 43 itens** com disponibilidade/lead time verificados. Nenhuma compra é possível sem isso | **A** — fechar os 5 blocos críticos primeiro | [§3.8](#38-d-08--part-numbers-finais-para-cotação-real) |
-| **D-09** | Trocar 12× INA240 (31 % do BOM) por INA181/INA241 | Se trocar, é respin de layout + troca de ganho. Não dá para cotar antes | **C** — manter INA240A2 | [§3.9](#39-d-09--trocar-12-ina240-por-ina181ina241) |
+| **D-09** | Trocar 12× INA240 (31 % do BOM) por INA181/INA241 | Se trocar, é respin de layout + troca de ganho. Não dá para cotar antes | **A** — manter INA240A2 | [§3.9](#39-d-09--trocar-12-ina240-por-ina181ina241) |
 | **D-10** | Os 309 pads de plano sem via: corrigir no layout ou aceitar? | Os 309 pads de GND/VBAT_PROT estão a mais de 1,6 mm de uma via [MEDIDO]. A placa não toca seus planos | **A** — corrigir com stitch vias | [§3.10](#310-d-10--os-309-pads-de-plano-sem-via) |
 | **D-11** | Adotar a premissa Qg contradita (40 → 168 nC) e refazer o gate drive | O dimensionamento da Fase 0 está subdimensionado ~4× [WP3 P-06] | **A** — adotar 168/210 nC e refazer | [§3.11](#311-d-11--premissa-qg-40--168-nc-e-o-que-muda-no-gate-driver) |
 | **D-12** | ADC: manter 4× MCP3208 ou trocar por 2× ADS7953 | RF-01 e RF-02 são críticos: 120 % e 240 % do datasheet | **A** — trocar por ADS7953 | [§3.12](#312-d-12--adc-4-mcp3208-ou-2-ads7953) |
 | **D-13** | `SD` dos 12 IR2104: rotar para um GPIO do ESP32-S3? | Não existe corte de gate por software. Correção de 1 pino | **A** — rotar para GPIO | [§3.13](#313-d-13--o-sd-dos-12-ir2104-vai-para-um-gpio) |
 | **D-14** | Compra: nacional (R$ 1.706) ou importação (R$ 1.354) | Trava a data de chegada das peças e todo o cronograma | **A** — nacional nesta iteração | [§3.14](#314-d-14--compra-nacional-ou-importação) |
+| **D-15** | Fusível/e-fuse de entrada: sim, qual, ou nenhum | Pergunta 11 da Fase 0 ainda aberta [MEDIDO]. O item já está no BOM a US$ 0,30 | **A** — fusível 30 A 1206 | [§3.15](#315-d-15--fusívelefuse-de-entrada) |
 
-**Contagem: 14 decisões.** Quatro são bloqueantes hoje (D-01, D-02, D-06, D-08). Duas sãoemergência de
+**Contagem: 15 decisões.** Quatro são bloqueantes hoje (D-01, D-02, D-06, D-08). Duas são de emergência de
 segurança, não de escopo (D-07, D-13).
 
 ---
@@ -152,13 +154,32 @@ exatamente por isso que a faixa US$ 70–150 [EST] ainda é estimativa.
 | Opção | O que destrava | O que trava | Custo | Risco |
 |---|---|---|---|---|
 | **A — Caseira** ✅ | Nada: a `fase4_entrega/MONTAGEM_ORDEM_DE_SOLDA.md` já está escrita | Nada | R$ 0 de setup; a bancada não está no `orcamento/ORCAMENTO.md` §5.6 ("não incluso: ferro/hot-air, termopar") | 319 footprints [MEDIDO, WP2 §4.3] é trabalho manual |
-| **B — PCBA da JLCPCB** | A placa volta soldada e testada | **Exige que os CIs estejam na biblioteca da JLC** e que o CPL exista (não existe, WP2 §1 item 3) | **+ R$ 210 (US$ 41)** [MEDIDO, `orcamento/ORCAMENTO.md` §1] | XT60 e MR30 são **through-hole** [MEDIDO, `orcamento/orcamento_detalhado.csv` linhas 2 e 36] — a JLC não os monta; montagem fica meio manual de qualquer jeito |
+| **B — PCBA da JLCPCB** | A placa volta soldada e testada | **Exige que os CIs estejam na biblioteca da JLC** e que o CPL exista (não existe, WP2 §1 item 3) | **+ R$ 210 (US$ 41)** [MEDIDO, `orcamento/ORCAMENTO.md` §1] | XT60 e MR30 são **through-hole** [EST, engenharia] — a JLC não os monta; montagem fica meio manual de qualquer jeito (ver ressalva abaixo) |
 | **C — PCBA só dos SMD, THT manual** | Reduz o trabalho manual ao conectores | Depende de CIs na biblioteca | Intermediário [EST] | Divisão de trabalho entre fab e bancada |
 
 **Recomendação: A nesta revisão, C na próxima.** A PCBA é classicamente um ganho de tempo em produção, e aqui o
 projeto ainda está em **uma placa de bring-up** (D-04) com **138 nets sem cobre** [MEDIDO]. Pagar setup para
-montar uma placa que talvez nem roteie é desperdício. Além disso, XT60 e MR30 são through-hole [MEDIDO] — a
+montar uma placa que talvez nem roteie é desperdício. Além disso, XT60 e MR30 são through-hole [EST, engenharia] — a
 montagem da JLC não cobre a parte que você mais sente. Reavalie quando o layout fechar e você tiver 5 placas.
+
+**Ressalva de lastro (2026-09-28):** a afirmação "XT60 e MR30 são through-hole" vem de **conhecimento de
+engenharia**, não do CSV. As linhas citadas do `orcamento/orcamento_detalhado.csv` **existem e apontam para as
+peças certas**, mas **não dizem nada sobre tecnologia de montagem** [MEDIDO]:
+
+```console
+$ grep -n "XT60\|MR30" orcamento/orcamento_detalhado.csv
+2:ENTRADA;Conector de bateria;XT60 macho+femea, 60 A [N/D offline];1;...
+36:MOTOR;Conector de motor;MR30 3 pinos (fases U/V/W);4;...
+
+$ grep -inE "through|THT" orcamento/orcamento_detalhado.csv
+(vazio: nenhuma ocorrencia)
+```
+
+O que o CSV de fato afirma nas linhas 2 e 36 é a **especificação comercial** do conector (XT60 "macho+fêmea,
+60 A, [N/D offline]", US$ 0,58; MR30 "3 pinos (fases U/V/W)", US$ 0,35 × 4) e a **procedência do preço**. A
+classificação como *through-hole* é **[EST, engenharia]** — XT60 e MR30 são, por construção, montados em furo
+passante. A conclusão prática (a JLC não os monta) permanece válida; o que mudou foi a **etiqueta**: era
+`[MEDIDO]` sem lastro e passou a ser `[EST]`.
 
 **Em paralelo:** o item 3 da §1 do `plano/WP2_FABRICACAO.md` (CPL, 0,5 h [EST]) só é necessário se você escolher B
 ou C. Se escolher A, marque como não aplicável e economize a tarefa.
@@ -179,9 +200,10 @@ ou C. Se escolher A, marque como não aplicável e economize a tarefa.
 >   - Active account: true
 >   - Token scopes: 'gist', 'read:org', 'repo'
 >
-> $ git rev-list --count HEAD ; git log --oneline origin/main..main | wc -l
-> 15
-> 12
+> $ git log --oneline origin/main..main
+> (lista os commits locais ainda não enviados — o número cresce a cada commit e por isso
+>  não é fixado neste documento; consulte o comando para saber o estado atual)
+>
 > $ git cat-file -t origin/main ; git log --oneline origin/main | head -3
 > commit
 > a22f9bf refactor: remove fingerprint da maquina do projeto
@@ -191,7 +213,8 @@ ou C. Se escolher A, marque como não aplicável e economize a tarefa.
 >
 > **O briefing desta missão diz que o repositório "já criado e privado". O comando acima diz `PUBLIC`.**
 > O estado real é: repo existe, `gh` autenticado como `Jailtonfonseca` (escopo `repo`, pode mudar visibilidade),
-> **visibilidade pública**, 15 commits locais com **12 sem push** e 3 já no remoto. O remoto está em `main`.
+> **visibilidade pública**, com **commits locais ainda não enviados** e o remoto em `main`. Quanto a origem
+> conhece: `git log --oneline origin/main | head -3` acima, o commit mais recente é `a22f9bf`.
 
 **Pergunta fechada:** o repositório fica público (com licença MIT, como está) ou você baixa para privado?
 
@@ -203,12 +226,13 @@ ou C. Se escolher A, marque como não aplicável e economize a tarefa.
 
 **Recomendação: A, agora.** A licença **MIT** já está no repositório [MEDIDO — commit `be5a1d0`], e um esquema
 de ESC 4× com ESP32-S3 é documentável, mas o MIT é uma **permissão de uso, modificação e redistribuição** —
-não é "semATCH". Se você publicar, é escolha consciente; enquanto for dúvida, privado é o estado que não
+não é "sem garantia nenhuma". Se você publicar, é escolha consciente; enquanto for dúvida, privado é o estado que não
 exige desfazer depois. Não fiz a mudança: mudar a visibilidade de um repositório é operação externa e
 **depende da sua confirmação**.
 
-**Em paralelo:** nenhum push foi feito (12 commits seguem locais, por instrução explícita). Se você escolher A,
-o próximo passo é `gh repo edit --visibility private` e só depois decidir sobre push.
+**Em paralelo:** nenhum push foi feito (os commits que `git log --oneline origin/main..main` listar seguem
+locais, por instrução explícita). Se você escolher A, o próximo passo é `gh repo edit --visibility private` e
+só depois decidir sobre push.
 
 ---
 
@@ -229,10 +253,29 @@ registra a pergunta 9 da §11 da Fase 0 (*"Prazo de link aceitável para o fails
 |---|---|---|---|---|
 | **A — 200 ms, em 10 quadros consecutivos a 50 Hz** ✅ | M10 fechado com número | Nada | 0 | Cauda do WiFi passa de 100 ms [EST, §5.3] — por isso **ESP-NOW**, não WiFi |
 | **B — 100 ms** | Corte mais rápido | Precisa de link com latência abaixo de 100 ms | 0 | 5,0 cm de queda [MEDIDO, §2.4]; risco alto de corte falso |
-| **C — 500 ms** | Link mais tolerante | **Fisicamente inviável** | 0 | **49,05 cm de queda** [MEDIDO, §2.4]. A própria §2.4 já diz que 500 ms *"já são [inviável]"* |
+| **C — 500 ms** | Link mais tolerante | **Fisicamente inviável** | 0 | **122,62 cm de queda e 4,91 m/s de impacto** [MEDIDO, `fase4_entrega/ANALISE_WIFI_CONTROLE.md` §2.4]. A §2.4 diz sobre 500 ms: *"Para 500 ms já são 1,23 m — o que já quebra hélice e braço."* |
 
 **O número que decide:** a queda em 200 ms é **19,62 cm / 1,96 m/s** [MEDIDO, `fase4_entrega/ANALISE_WIFI_CONTROLE.md`
 §2.4]. Essa é a "boa notícia do projeto", como o documento diz textualmente.
+
+**Refeito a partir da fonte, 2026-09-28 [MEDIDO, `fase4_entrega/ANALISE_WIFI_CONTROLE.md` §2.4]:**
+
+```console
+$ grep -nE "^\| (100|200|500) ms" /opt/jupyter/work/drone/fase4_entrega/ANALISE_WIFI_CONTROLE.md
+94:| 100 ms | 4,91 cm | 0,98 m/s |
+95:| **200 ms** | **19,62 cm** | **1,96 m/s** |
+96:| 500 ms | 122,62 cm | 4,91 m/s |
+
+$ python3 -c "import math; [print('%d ms -> %.2f cm ; %.2f m/s' % (t, 0.5*9.81*(t/1000)**2*100, 9.81*(t/1000))) for t in (100,200,500)]"
+100 ms -> 4.91 cm ; 0.98 m/s
+200 ms -> 19.62 cm ; 1.96 m/s
+500 ms -> 122.62 cm ; 4.91 m/s
+```
+
+> A queda é `h = ½·a·t²` com `a = 9,81 m/s²` — a velocidade de impacto é `v = a·t`. A versão que circulava
+> neste arquivo (49,05 cm para 500 ms) era `0,98 m/s × 0,5 s`: a **velocidade** da linha de 100 ms aplicada ao
+> **tempo** de 500 ms, misturando as duas. O número correto é **122,62 cm**, e ele torna a Opção C ainda mais
+> indefensável do que o texto dizia — 1,23 m de queda é mais que a altura de voo típica do pacote.
 
 **7b — watchdog externo**
 
@@ -315,13 +358,13 @@ de perder rejeição de PWM."*(unitário: US$ 2,60, linha 64)
 | **B — Trocar por INA181/INA241** | Barato; [EST] a faixa dinâmica cai | Precisa de **respin** — o footprint muda | Menor [EST] | Perde CMRR sob PWM. P-07 diz que a 20 kHz o CMRR 93 dB do INA240 [DATASHEET p.5] é folga; trocar **gasta essa folga** |
 | **C — Amp simples + shunt low-side** | O mais barato | Reispin maior; perde isolamento | Mínimo [EST] | A medição passa a depender da topologia do shunt — muda o esquema |
 
-**Recomendação: C — manter o INA240A2.** Três razões, com números: (1) os 31 % do BOM [MEDIDO] são do **catálogo
+**Recomendação: A — manter os 12 INA240A2.** Três razões, com números: (1) os 31 % do BOM [MEDIDO] são do **catálogo
 estimado**; com cotação real (D-08) esse número pode cair, e trocar peça por causa de um [EST] que ainda não foi
 cotado é trocar no escuro. (2) O CMRR a 20 kHz é a **folga** que protege a leitura de corrente com PWM a 20 kHz
 — ela só deixa de ser folga se o PWM subir, o que é decisão sua e não do orçamento. (3) Trocar agora significa
 **respin**, e você já tem um respin previsto por D-02, D-10, D-12 e D-13. Não abra um quinto.
 
-**Em paralelo:** cotar o INA240A2 na JLCPCB (D-08) resolve a pergunta sem mudar nada. Aternative  B fica de
+**Em paralelo:** cotar o INA240A2 na JLCPCB (D-08) resolve a pergunta sem mudar nada. A alternativa B fica de
 porta se a cotação vier acima do orçamento.
 
 ---
@@ -372,8 +415,29 @@ do gate drive, ou mantém a premissa da Fase 0?
 **A premissa de 40 nC é ~4× otimista.** O que muda, com conta:
 
 - O IR2104 entrega `IO+/− = 130/270 mA` [DATASHEET, `datasheets/ir2104_infineon_datasheet.pdf` p.1].
-- Com 168 nC e 130 mA: **0,64 V/ns**; com 270 mA: **1,33 V/ns** [CALC]. A Fase 0 dimensionou com 40 nC, ou
-  seja, com um slew ~4× maior do que o FET real aceita.
+- O que se calcula é o **tempo** de comutação de gate, `t = Qg/I`. Com Qg = 168 nC: **1,292 µs** a 130 mA e
+  **0,622 µs** a 270 mA. Convertido em slew para um VGS de 10 V (`dV/dt = ΔV/t`): **0,0077 V/ns** a 130 mA e
+  **0,0161 V/ns** a 270 mA [CALC]. A Fase 0 dimensionou com 40 nC, ou seja, com um slew ~4× maior do que o
+  FET real aceita.
+
+```console
+$ python3 -c "
+Qg=168e-9
+for I in (0.130,0.270):
+    t=Qg/I
+    print('Qg=168 nC, I=%.0f mA -> t=%.3f us ; dV/dt(10 V)=%.4f V/ns' % (I*1000, t*1e6, 10/(t*1e-9)/1e9))"
+Qg=168 nC, I=130 mA -> t=1.292 us ; dV/dt(10 V)=0.0077 V/ns
+Qg=168 nC, I=270 mA -> t=0.622 us ; dV/dt(10 V)=0.0161 V/ns
+```
+
+> **Erro corrigido em 2026-09-28 (round 2).** Este parágrafo dizia *"com 168 nC e 130 mA: 0,64 V/ns; com
+> 270 mA: 1,33 V/ns"*. Os dois números estão com a **unidade trocada e com as correntes trocadas**: 0,64 e 1,33
+> são `Qg/I` em **µs**, não V/ns. E o emparelhamento está invertido — 0,64 µs (exato: 0,622 µs) é o caso de
+> **270 mA**, e 1,33 µs (exato: 1,292 µs) é o de **130 mA**. Um slew de 0,64 V/ns significaria comutar 10 V em
+> 15,6 ns — fisicamente impossível com 130 mA de pico. O erro é de **~83×** contra o valor correto de slew.
+> **A origem é o `plano/WP3_PREMISSAS_DATASHEETS.md` P-06**, cuja tabela registra *"o slew de gate cai para
+> ~0,6–1,3 V/ns"* com o mesmo cálculo. O WP3 **não foi editado** (fora do escopo desta rodada); a correção
+> fica registrada aqui e o WP3 continua precisando do mesmo ajuste.
 - **O dimensionamento de resistor de gate e de dissipação do IR2104 feito na Fase 0 está subdimensionado
   por um fator ~4** [WP3 P-06] e precisa ser refeito.
 - Isso **aumenta a perda de comutação e a dissipação no driver** — o que, num quad de 4 motores com 6 MOSFETs
@@ -385,7 +449,7 @@ do gate drive, ou mantém a premissa da Fase 0?
 | **B — Manter 40 nC** | Nada | Nada | 0 | **Perda de comutação e de bateria subestimada em ~4×**. Num projeto de missão isso é erro de dimensionamento, não detalhe |
 | **C — Adiar até escolher o MOSFET** | Evita refazer duas vezes | Nada é correto até lá | 0 | A dependência é real: D-08 precisa vir antes |
 
-**Recomendação: A, e_A só depois de D-08.** As duas decisões são a mesma: **Qg é propriedade do MOSFET, e o
+**Recomendação: A, e A só depois de D-08.** As duas decisões são a mesma: **Qg é propriedade do MOSFET, e o
 MOSFET ainda não foi escolhido.** A ordem correta é D-08 (escolher MOSFET) → D-11 (refazer com o Qg real) →
 D-08 de novo (cotar). Fazer D-11 agora com o Qg da peça de referência é trocar um [EST] por outro [EST].
 
@@ -443,11 +507,18 @@ low-sides ligados.
 |---|---|---|---|---|
 | **A — Rotar `SD` para 1 GPIO** ✅ | Corte de gate por software; fecha RF-03 | +1 pino e +1 net no layout | ~0 h [EST] — 1 linha no gerador | Precisa de um GPIO livre (RF-07 diz que o mapa já diverge) |
 | **B — Deixar preso em 3V3** | Nada | Não existe shutdown por software | 0 | Sem failsafe por software, sem failsafe de verdade |
+| **C — `SD` puxado pelo `/RESET` aberto-dreno do watchdog externo** | Shutdown por **hardware**, independente do firmware — cobre o caso "MCU travou", que nem GPIO resolve; 0 GPIO gasto | Acopla esta decisão à **D-07b**: só existe se o watchdog for aprovado; não há corte por software isolado | ~0 h [EST] — 1 net, sem pino | Não dá para desligar os drivers em teste de bancada sem parar de alimentar o watchdog; a rede `SD` vira dependência de um CI que ainda não foi escolhido |
 
 **Recomendação: A.** O próprio `plano/WP4_FIRMWARE.md` §8 a classifica como *"a correção mais barata e a mais
 séria"*. Custa 1 pino e fecha um risco 🔴 Crítico. Se o ESP32-S3 não tiver GPIO livre no mapa, o caminho é
 usar um dos 4 `ADC_CS` [MEDIDO: o v7 tem 4 CS nos pads 23, 15, 33, 34, enquanto a Fase 0 previa 1] — mas isso
 é um detalhe de layout, não uma decisão sua.
+
+**Por que A e não C:** C é a única das três que protege contra *firmware travado*, que é o cenário mais grave —
+mas ela não existe sem o watchdog externo (D-07b) e troca "corte comandado" por "corte por estouro de tempo".
+Se D-07b vier **B** (sem watchdog), a Opção C é automaticamente indisponível. Se D-07b vier **A** e o mapa de
+pinos estiver mesmo sem GPIO livre, C passa a ser o plano B de layout — ela deve ser resolvida **junta** com a
+D-07b, nunca antes dela.
 
 **Em paralelo:** nada. É a decisão mais rápida de tomar do arquivo e destrava o desenho do M-firmware de corte.
 
@@ -470,7 +541,7 @@ Diferença: **R$ 352** [CALC]. A conta do §4: `Nacional: componentes × US$ 5.1
 
 | Opção | O que destrava | O que trava | Custo | Risco |
 |---|---|---|---|---|
-| **A — Nacional nesta iteração** ✅ | Chega em dias; sem alfândega | Diverge da montagem que we'll fazer | R$ 1.706 | Markup ~3,2× sobre catálogo [MEDIDO] |
+| **A — Nacional nesta iteração** ✅ | Chega em dias; sem alfândega | Diverge da montagem que vamos fazer | R$ 1.706 | Markup ~3,2× sobre catálogo [MEDIDO] |
 | **B — Importação** | Mais barato no papel, e peças que o ML não tem | **3–6 semanas + risco de alfândega** [MEDIDO, §6] | R$ 1.354 | A faixa de imposto diverge em até US$ 50 [MEDIDO, §5.4] |
 | **C — Misto: nacional na 1ª placa, importação na 2ª** | Velocidade e preço | Dois pedidos, duas listas | R$ 1.706 + ~R$ 1.354 para as 4 restantes [EST] | Mais trabalho administrativo |
 
@@ -482,6 +553,48 @@ da barra de erro** [MEDIDO]: R$ 1.706 vs R$ 1.354, com banda de R$ 1.448–1.965
 **Em paralelo:** a decisão de compra só pode ser executada **depois de D-08** (part numbers). E atenção ao item
 do `orcamento/ORCAMENTO.md` §6: *"BOM duplica indutores e capacitores de saída … Se for pedir direto do CSV, o
 pedido vira 6 indutores e 12 capacitores."* — corrigir isso antes do pedido, não depois.
+
+---
+
+### 3.15 D-15 — Fusível/e-fuse de entrada
+
+**Pergunta fechada:** a entrada de bateria leva fusível, e-fuse, ou nada? Esta é a **pergunta 11 da §11 da
+Fase 0**, que continua aberta [MEDIDO] e não tinha virado decisão neste arquivo.
+
+```console
+$ grep -n "11\." fase0_especificacao/FASE0_ESPECIFICACAO.md | head
+431:11. Precisa de **fusível/e-fuse** de entrada? (recomendo sim)
+
+$ grep -niE "fus[ií]vel|e-?fuse" fase0_especificacao/FASE0_ESPECIFICACAO.md orcamento/ORCAMENTO.md
+fase0_especificacao/FASE0_ESPECIFICACAO.md:383:- **Fusível/e-fuse na entrada** é opcional no meu desenho de hoje — eu recomendo incluir
+fase0_especificacao/FASE0_ESPECIFICACAO.md:431:11. Precisa de **fusível/e-fuse** de entrada? (recomendo sim)
+orcamento/ORCAMENTO.md:89:| EXTRA | Fusivel/e-fuse de entrada | 1 | 0.3000 | 0.30 | 4.93 | [EST] | fusivel 30A 1206 (e-fuse TPS2594x ~US$0,90) |
+```
+
+**O que já está registrado:** a Fase 0 §10.1 diz, com as próprias palavras, que o fusível *"é opcional no meu desenho
+de hoje — eu recomendo incluir"* [MEDIDO, `fase0_especificacao/FASE0_ESPECIFICACAO.md` linha 383], e o item já
+está no BOM com US$ 0,30 / R$ 4,93 [MEDIDO, `orcamento/ORCAMENTO.md` linha 89]. Ou seja: **falta a sua assinatura,
+não falta o item.** O pack é de 6S com corrente de projeto na casa das dezenas de ampères, e há TVS
+(`SMBJ33A`, US$ 0,12 [MEDIDO, `orcamento/orcamento_detalhado.csv` linha 3]) — mas TVS **não** limita corrente
+de falha: ele satura e queima. As duas coisas resolvem problemas diferentes.
+
+| Opção | O que destrava | O que trava | Custo | Risco |
+|---|---|---|---|---|
+| **A — Fusível 30 A 1206 no polo positivo** ✅ | Proteção contra curto e contra inversão de bateria na cabeceira; 1 item, 0 GPIO, 0 net de sinal | Nada | **US$ 0,30 (R$ 4,93)** [MEDIDO, `orcamento/ORCAMENTO.md` linha 89] | Não é resetável: um transiente, curto ou erro de montagem queima o fusível e a placa vai para a bancada de qualquer jeito |
+| **B — e-fuse (TPS2594x) com enable por GPIO** | Corte de corrente **programável**, com I²t, OVP e telemetria ao firmware; some o fusível físico | +1 CI (4 pinos), +1 GPIO e o gate drive do corte entra no layout | **~US$ 0,90** [MEDIDO, fonte da própria linha 89 do `orcamento/ORCAMENTO.md`] | US$ 0,60 a mais e um CI a mais em D-08; a corrente de corte precisa ser cotada contra o de pico da bateria [CALC] |
+| **C — Nenhum (só o TVS já no BOM)** | Zero custo, zero footprint | Nada é limitado em caso de falha; o TVS não substitui fusível | US$ 0 | Falha de curto vira **destruição da placa**, não um fusível de R$ 1 |
+
+**Recomendação: A nesta iteração.** Um fusível de 30 A 1206 custa US$ 0,30 [MEDIDO], cabe no footprint
+(1206 SMD, o mesmo pacote de vários itens do BOM), não consome pino e protege contra exatamente os dois
+cenários de projeto — curto na fiação da bateria e conector XT60 invertido na cabeceira. B é a resposta
+*melhor* em engenharia e a resposta *certa* para produção: ela só faz sentido depois que existir um e-fuse
+com cotação real, e hoje a única fonte de preço é a própria linha de orçamento, marcada `[EST]`. C é
+descartável — sem elemento em série, qualquer falha de curcircuito é destrutiva.
+
+**Em paralelo:** nada precisa esperar. A resposta depende de uma escolha de componente (o PN exato do fusível,
+com a corrente e o `I²t`), que é a **mesma tarefa de D-08** — se a lista de compra for fechada, o fusível já sai
+com cotação real. Se você não responder, o item fica no BOM a US$ 0,30 [EST] e pode ser tratado como "não
+comprado" sem consequências para o layout, porque é um componente de 2 pinos que não altera nenhuma net.
 
 ---
 
@@ -537,7 +650,8 @@ $ for p in plano/WP1_ROTEAMENTO.md plano/WP2_FABRICACAO.md plano/WP3_PREMISSAS_D
   done
 ```
 
-As 30 linhas acima retornaram todas `OK`. Comando de estado do repositório usado na §3.6:
+Os **28 caminhos** listados no comando acima retornaram todos `OK` (recontagem em 2026-09-28, round 2).
+Comando de estado do repositório usado na §3.6:
 
 ```console
 $ gh repo view Jailtonfonseca/drone-4in1-esc-esp32s3 --json name,isPrivate,defaultBranchRef,visibility
@@ -545,21 +659,83 @@ $ gh repo view Jailtonfonseca/drone-4in1-esc-esp32s3 --json name,isPrivate,defau
  "name":"drone-4in1-esc-esp32s3","visibility":"PUBLIC"}
 $ gh auth status | head -3
   ✓ Logged in to github.com account Jailtonfonseca (/root/.config/gh/hosts.yml)
-$ git rev-list --count HEAD ; git log --oneline origin/main..main | wc -l
-15
-12
+$ git log --oneline origin/main..main
+(commits locais ainda não enviados — a contagem muda a cada commit; ver §3.6)
 ```
 
-**Nenhum push foi executado.** Os 12 commits locais continuam locais.
+**Nenhum push foi executado.** Os commits que `git log --oneline origin/main..main` listar continuam locais.
 
 ---
 
 ## 6. O que este documento NÃO é
 
 - **Não é o PLANO_FINAL.** Ele não ordena execução, não define passes e não escolhe o que fazer primeiro.
-- **Não cria decisão que não exista no projeto.** Todas as 14 saem de um número medido em um dos quatro WP,
-  do `orcamento/ORCAMENTO.md` ou da `fase4_entrega/`, com a origem indicada na linha.
+- **Não cria decisão que não exista no projeto.** Todas as 15 saem de um número medido em um dos quatro WP,
+  do `orcamento/ORCAMENTO.md`, da `fase4_entrega/` ou da `fase0_especificacao/FASE0_ESPECIFICACAO.md`,
+  com a origem indicada na linha.
 - **Não cotou nada.** Os 37 itens [EST] continuam [EST]. Nenhum agente nesta máquina tem acesso à LCSC nem ao
   Mercado Livre [MEDIDO, `orcamento/ORCAMENTO.md` §5.2].
 - **Não mudou nada fora de `plano/`.** Nenhum push, nenhuma alteração de visibilidade, nenhuma edição de
   arquivo existente.
+
+---
+
+## 7. Correções round 2 (2026-09-28)
+
+Oito defeitos localizados neste arquivo foram corrigidos nesta rodada. Nenhuma delas mudou a **recomendação** de
+uma decisão já fechada, exceto a letra da D-09, que apontava para a opção contrária. Registro do que foi feito:
+
+**1. 🔴 D-09 — a letra da recomendação apontava para a opção errada.**
+A §3.9 recomendava `C — manter o INA240A2`, mas **C** na tabela é *"Amp simples + shunt low-side"*, exatamente a
+opção que o próprio texto desaconselha (*"Não abra um quinto [respin]"*). Responder "C" faria o oposto do advice.
+Corrigido para **A** nos dois lugares: na §2 (tabela-resumo) e na §3.9 (recomendação). O fundamento não mudou —
+manter o INA240A2; só a letra estava errada.
+**Varredura das 14 decisões:** cada letra de recomendação foi comparada com a letra da opção que ela descreve.
+Resultado: **só a D-09 divergia.** D-01 B, D-02 B, D-03 B, D-04 A, D-05 A, D-06 A, D-07a A, D-07b A, D-08 A,
+D-10 A, D-11 A, D-12 A, D-13 A, D-14 A — todas batem com a linha marcada ✅ da sua tabela.
+
+**2. 🔴 D-07 — número errado e citação fabricada na opção de 500 ms.**
+O arquivo afirmava `49,05 cm de queda [MEDIDO, §2.4]`. A fonte
+`fase4_entrega/ANALISE_WIFI_CONTROLE.md` §2.4 diz, para 500 ms: **122,62 cm e 4,91 m/s**. O 49,05 era
+`0,98 m/s × 0,5 s` — a **velocidade** da linha de 100 ms multiplicada pelo **tempo** de 500 ms. Cálculo refeito
+com `h = ½·a·t²` e `v = a·t`, comando e saída colados na §3.7. A citação *"já são [inviável]"* **não existe na
+fonte**; trocada pela literal: *"Para 500 ms já são 1,23 m — o que já quebra hélice e braço."*. Isso deixa a
+Opção C **mais** indefensável, não menos: 1,23 m de queda.
+
+**3. 🟡 D-13 não tinha opção C.** Acrescentada a opção **C — `SD` puxado pelo `/RESET` aberto-dreno do watchdog
+externo**: shutdown por hardware, sem gastar GPIO. A recomendação **continua A**; a C é o plano B de layout e só
+existe se D-07b for aprovada — a §3.13 agora diz isso explicitamente.
+
+**4. 🟡 D-11 — `[CALC]` errado por 83×.** O texto dizia "0,64 V/ns" e "1,33 V/ns". São valores de `Qg/I` em **µs**,
+com as correntes trocadas: 0,622 µs é o caso de 270 mA e 1,292 µs o de 130 mA. Corrigido para **1,292 µs /
+0,622 µs** e para o slew em V/ns: **0,0077 V/ns** e **0,0161 V/ns**, com o comando colado.
+**A origem do erro é o `plano/WP3_PREMISSAS_DATASHEETS.md` P-06**, que registra *"o slew de gate cai para
+~0,6–1,3 V/ns"*. O WP3 **não foi editado** — está fora do escopo desta rodada e segue precisando do ajuste.
+
+**5. 🟡 D-05 — `[MEDIDO]` sem lastro.** O arquivo afirmava que XT60 e MR30 são through-hole com lastro em
+`orcamento/orcamento_detalhado.csv` linhas 2 e 36. As linhas existem e apontam para as peças certas, mas **não
+dizem nada sobre tecnologia de montagem**: `grep -i "through\|THT"` não retorna nada. Reetiquetado como
+**`[EST, engenharia]`**, com a ressalva e os greps colados na §3.5. A conclusão prática (a JLC não os monta)
+permanece válida.
+
+**6. 🟢 Contagens auto-referenciais.** As contagens exatas de commits (`git rev-list --count HEAD` → 15 e
+"12 não pushados") foram removidas das duas seções onde apareciam (§3.6 e §5) e substituídas por
+`git log --oneline origin/main..main`, que continua válido depois de qualquer commit. A §5 dizia "as 30 linhas
+acima" para uma lista de **28 caminhos** — corrigido para 28 e reconferido com `test -e`.
+
+**7. 🟢 Faltava a decisão do fusível.** A pergunta 11 da Fase 0 (*"Precisa de fusível/e-fuse de entrada?"*)
+não tinha virado decisão. Acrescentada a **D-15**, com A/B/C e recomendação **A** (fusível 30 A 1206,
+US$ 0,30 [MEDIDO, `orcamento/ORCAMENTO.md` linha 89]), ancorada nos dois greps pedidos. O arquivo vai de 14
+para **15 decisões**; a §4 continua com o mesmo top 3.
+
+**8. 🟢 Higiene de escrita.** Corrigidos três anglicismos em texto corrido: *"my estimate"* → *"estimativa minha"*
+(§1), *"Aternative B"* → *"A alternativa B"* (§3.9), *"we'll fazer"* → *"vamos fazer"* (§3.14). Varredura com
+`grep -nE "\bwe'll|\bmy estimate\b|\bAlternative\b|\bcheck\b|\bfile\b|\bcommit\b"`: o que sobrou são **saída de
+comando** e **referência a commit** (`git log`, `commit be5a1d0`), legítimos em contexto de shell. Na mesma
+varredura saíram três typos do mesmo tipo: `semATCH` → *"sem garantia nenhuma"* (§3.6), `e_A` → *"e A só depois
+de D-08"* (§3.11) e *"sãoemergência"* → *"são de emergência"* (§2). Ficou de propósito um único anglicismo:
+**"advice"** na §3.3, no sentido de recomendação técnica, aceito em português corrente.
+
+**Preservado sem alteração:** as 7 decisões obrigatórias, a ordem de urgência, o top 3 da §4, o registro de que o
+repositório está **público** com licença MIT, os 28 caminhos válidos da §5 e as três primeiras opções de cada
+decisão.
