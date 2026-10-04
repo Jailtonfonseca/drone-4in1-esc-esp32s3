@@ -1,59 +1,69 @@
-2026-09-28 13:59:31.290 [main] INFO  Freerouting v1.9.0 (build-date: 2023-10-30)
-2026-09-28 13:59:31.683 [main] INFO  Settings were loaded from freerouting.json
-2026-09-28 13:59:32.845 [main] INFO  Opening '/opt/jupyter/work/drone/fase3_pcb/freerouting/run/v9_dsn_input.dsn'...
-2026-09-28 13:59:37.037 [main] WARN  Structure.create_board: The DSN file was exported from an old KiCad version that has known compatibility issues. Please update KiCad to version 6 or newer.
-2026-09-28 13:59:37.374 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.394 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD2' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.417 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD3' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.429 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD4' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.436 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD5' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.443 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD6' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.450 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD7' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.457 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD8' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.464 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD9' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.471 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD10' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.477 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD11' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.484 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD12' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.491 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD13' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.498 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD14' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.505 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD15' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.512 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD16' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.519 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD17' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.525 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD18' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.533 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD19' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.539 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD20' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.546 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD21' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.553 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD22' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.562 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD23' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.569 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD24' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.575 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD25' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.582 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD26' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.590 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD27' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.599 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD28' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.606 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD29' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.612 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD30' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.619 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD31' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.625 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD32' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.631 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD33' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.638 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD34' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.644 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD35' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.649 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD36' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.655 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD37' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.661 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD38' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.666 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD39' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.672 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD40' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.678 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.682 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.686 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.691 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.694 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.699 [main] WARN  Library.read_padstack_scope: the shape of padstack 'VIA1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
-2026-09-28 13:59:37.716 [main] WARN  Polygon.winding_number_after_closing: winding number != 0 expected
-2026-09-28 13:59:37.754 [main] WARN  Polygon.winding_number_after_closing: winding number != 0 expected
-2026-09-28 13:59:37.761 [main] WARN  Polygon.winding_number_after_closing: winding number != 0 expected
-2026-09-28 13:59:37.766 [main] WARN  Polygon.winding_number_after_closing: winding number != 0 expected
 2026-10-03 01:15:06.533 [main] INFO  Freerouting v1.9.0 (build-date: 2023-10-30)
 2026-10-03 01:15:08.273 [main] INFO  Opening 'v9_dsn_input.dsn'...
+java.util.concurrent.CompletionException: javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+	at java.base/java.util.concurrent.CompletableFuture.encodeRelay(CompletableFuture.java:368)
+	at java.base/java.util.concurrent.CompletableFuture.completeRelay(CompletableFuture.java:377)
+	at java.base/java.util.concurrent.CompletableFuture$UniCompose.tryFire(CompletableFuture.java:1152)
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+	at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2162)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate.stopOnError(SSLFlowDelegate.java:983)
+	at java.base/java.util.concurrent.CompletableFuture.uniExceptionally(CompletableFuture.java:990)
+	at java.base/java.util.concurrent.CompletableFuture$UniExceptionally.tryFire(CompletableFuture.java:974)
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+	at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2162)
+	at java.net.http/jdk.internal.net.http.common.SubscriberWrapper$DownstreamPusher.run1(SubscriberWrapper.java:295)
+	at java.net.http/jdk.internal.net.http.common.SubscriberWrapper$DownstreamPusher.run(SubscriberWrapper.java:259)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(SequentialScheduler.java:205)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:149)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:230)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:303)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:256)
+	at java.net.http/jdk.internal.net.http.common.SubscriberWrapper.errorCommon(SubscriberWrapper.java:419)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader.errorCommon(SSLFlowDelegate.java:366)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader.processData(SSLFlowDelegate.java:519)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader$ReaderDownstreamPusher.run(SSLFlowDelegate.java:268)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(SequentialScheduler.java:205)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:149)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$TryEndDeferredCompleter.complete(SequentialScheduler.java:347)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:151)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:230)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+	at java.net.http/jdk.internal.net.http.common.SSLTube.checkForHandshake(SSLTube.java:595)
+	at java.net.http/jdk.internal.net.http.common.SSLTube$SSLTubeFlowDelegate.checkForHandshake(SSLTube.java:156)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader.processData(SSLFlowDelegate.java:518)
+	... 9 more
+Caused by: java.lang.RuntimeException: Unexpected error: java.security.InvalidAlgorithmParameterException: the trustAnchors parameter must be non-empty
+	at java.base/sun.security.validator.PKIXValidator.<init>(PKIXValidator.java:101)
+	at java.base/sun.security.validator.Validator.getInstance(Validator.java:181)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.getValidator(X509TrustManagerImpl.java:309)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrustedInit(X509TrustManagerImpl.java:183)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:255)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:144)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1329)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.onConsumeCertificate(CertificateMessage.java:1226)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.consume(CertificateMessage.java:1169)
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:396)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:480)
+	at java.base/sun.security.ssl.SSLEngineImpl$DelegatedTask$DelegatedAction.run(SSLEngineImpl.java:1277)
+	at java.base/sun.security.ssl.SSLEngineImpl$DelegatedTask$DelegatedAction.run(SSLEngineImpl.java:1264)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:712)
+	at java.base/sun.security.ssl.SSLEngineImpl$DelegatedTask.run(SSLEngineImpl.java:1209)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate.lambda$executeTasks$3(SSLFlowDelegate.java:1118)
+	at java.net.http/jdk.internal.net.http.HttpClientImpl$DelegatingExecutor.execute(HttpClientImpl.java:157)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate.executeTasks(SSLFlowDelegate.java:1113)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate.doHandshake(SSLFlowDelegate.java:1079)
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader.processData(SSLFlowDelegate.java:484)
+	... 9 more
+Caused by: java.security.InvalidAlgorithmParameterException: the trustAnchors parameter must be non-empty
+	at java.base/java.security.cert.PKIXParameters.setTrustAnchors(PKIXParameters.java:200)
+	at java.base/java.security.cert.PKIXParameters.<init>(PKIXParameters.java:120)
+	at java.base/java.security.cert.PKIXBuilderParameters.<init>(PKIXBuilderParameters.java:104)
+	at java.base/sun.security.validator.PKIXValidator.<init>(PKIXValidator.java:98)
+	... 29 more
 2026-10-03 01:15:12.346 [main] WARN  Structure.create_board: The DSN file was exported from an old KiCad version that has known compatibility issues. Please update KiCad to version 6 or newer.
 2026-10-03 01:15:12.622 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD1' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.
 2026-10-03 01:15:12.632 [main] WARN  Library.read_padstack_scope: the shape of padstack 'PAD2' is not an area. We will enlarge it as a workaround, but it may result unintended consequences.

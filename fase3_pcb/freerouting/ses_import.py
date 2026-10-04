@@ -196,7 +196,9 @@ def main():
             layer_id = board.GetLayerID(it["layer"])
             if layer_id < 0:
                 continue
-            w = int(round(it["width_um"]))
+            # largura do SES vem em RESOLUTION units (mm 1000 -> um); KiCad quer nm.
+            # Antes: SetWidth(250) = 0,25 um de trilha (mil vezes mais fino).
+            w = int(round(it["width_um"] * 1000.0))
             if w <= 0:
                 w = 150000
             for i in range(len(it["points"]) - 1):

@@ -1,0 +1,42 @@
+(session corte_v9
+  (base_design corte_v9)
+  (placement
+    (resolution mm 1000)
+    (component "D_SOD-123"
+      (place DbM403 37587 103912 front 0)
+      (place DbM402 63606 103912 front 0)
+      (place DbM401 89625 103912 front 0)
+    )
+    (component "SOIC-8_3.9x4.9mm_P1.27mm"
+      (place QM401H 64568 5743 front 0)
+      (place QM401L 78644 5743 front 0)
+      (place QM402H 92720 5743 front 0)
+      (place QM402L 106796 5743 front 0)
+      (place QM403H 120873 5743 front 0)
+      (place QM403L 134949 5743 front 0)
+      (place UaM403 -3157 87705 front 90)
+      (place UM403 71843 17625 front 90)
+      (place UaM402 5743 87705 front 90)
+      (place UM402 80743 17625 front 90)
+      (place UaM401 14643 87705 front 90)
+      (place UM401 89643 17625 front 90)
+    )
+    (component "SOT-23"
+      (place Q_BZ 56257 45368 front 90)
+    )
+  )
+  (was_is
+  )
+  (routes 
+    (resolution mm 1000)
+    (parser
+      (host_cad "dsn_export.py (pcbnew 5.1.9)")
+      (host_version 2)
+      (write_resolution m 1000)
+    )
+    (library_out 
+    )
+    (network_out 
+    )
+  )
+)

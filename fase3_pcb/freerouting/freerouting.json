@@ -1,14 +1,12 @@
 {
-  "max_passes": 20,
-  "num_threads": 4,
+  "max_passes": 30,
+  "num_threads": 1,
   "board_update_strategy": "GREEDY",
   "hybrid_ratio": "1:1",
   "item_selection_strategy": "PRIORITIZED",
-  "save_intermediate_stages": false,
-  "optimization_improvement_threshold": 1e-05,
+  "save_intermediate_stages": true,
+  "optimization_improvement_threshold": 0.05,
   "disable_logging": false,
   "disable_analytics": true,
-  "user_id": "12270828-b711-4d16-9557-5ca2329fde48",
-  "dialog_confirmation_timeout": 20,
-  "host": "N/A"
+  "dialog_confirmation_timeout": 3
 }
