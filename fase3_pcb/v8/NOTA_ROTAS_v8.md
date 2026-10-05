@@ -29,7 +29,7 @@ Comando que reproduz a rodada:
 
 Derivado de `rota_v7.py` (que **não** foi editado). Mudanças em relação ao v7:
 
-1. **6 camadas, 3 roteáveis.** O stackup D-02 (`STACKUP_PROPOSO.md`) define
+1. **6 camadas, 3 roteáveis.** O stackup D-02 (`STACKUP_PROPOSTO.md`) define
    `In1.Cu = GND`, `In3.Cu = GND`, `In4.Cu = VBAT` como **planos** e
    `In2.Cu` como **sinal (stripline)**. O roteador usa F.Cu + In2.Cu + B.Cu
    e ignora as três de plano. O v7 só roteava em F.Cu/B.Cu.

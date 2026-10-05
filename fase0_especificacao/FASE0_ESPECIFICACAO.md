@@ -108,13 +108,17 @@ Você pediu honestidade aqui. Esta é a parte mais importante da Fase 0.
 ### 3.1 O que foi calculado **[CALC]**
 Orçamento de tempo de ar por quadro (802.11 2,4 GHz, unicast, sem retry):
 ```
-    1 Mbps (DSSS): t_ar ~   1792.0 us por quadro
-    6 Mbps (OFDM): t_ar ~    298.7 us por quadro
-   54 Mbps (OFDM): t_ar ~     33.2 us por quadro
+    1 Mbps (DSSS): t_ar ~   448.0 us por quadro
+    6 Mbps (OFDM): t_ar ~    74.7 us por quadro
+   54 Mbps (OFDM): t_ar ~     8.3 us por quadro
     50 Hz -> periodo  20.0 ms; jitter de 10 ms =  50% do periodo
    100 Hz -> periodo  10.0 ms; jitter de 10 ms = 100% do periodo
    250 Hz -> periodo   4.0 ms; jitter de 10 ms = 250% do periodo
 ```
+**[FIX auditoria 22]** — os valores anteriores (1792/298,7/33,2 µs) estavam **4×
+maiores** por um bug de unidade bits/bytes na transcrição. A conta correta (a mesma do
+`dimensionamento_fase0.py` §8): payload de 32 B = **32×8 = 256 bits** + **192** (PLCP
+DSSS) = **448 bits** → 448,0 µs @ 1 Mbps, 74,7 µs @ 6 Mbps e 8,3 µs @ 54 Mbps.
 Somando backoff CSMA, fila do driver, PHY e **retry/ARQ**, a latência real por pacote fica
 na casa de **poucos ms no melhor caso e dezenas a centenas de ms no pior caso** (retransmissão).
 Um canal com cauda de 100 ms é **inaceitável** para pilotagem direta: a 20 ms de atraso um
@@ -178,10 +182,15 @@ Canais analógicos necessários **[CALC]**:
 | **Total** | **26** |
 
 O ADC1 do ESP32-S3 tem ~10 canais e o **ADC2 é compartilhado com o rádio** (clássico problema
-de família ESP32 — **[PREMISSA a confirmar no TRM]**; **[N/D offline]**). **10 canais não cobrem 26.**
-**Solução adotada:** **ADC externo por SPI** (16 canais, ou 2×8) para corrente+BEMF, e manter no
-ADC1 do MCU só os sinais lentos (VBAT, temperatura). Bônus: o ADC externo permite
-**amostragem simultânea** das 3 fases, que é o que um FOC decente exige. Custo: 1 CI + 4 pinos SPI.
+de família ESP32 — **[PREMISSA a confirmar no TRM]**; **[N/D offline]**). **10 canais não cobrem os
+26 sinais.** **Solução adotada:** **ADC externo por SPI** para corrente+BEMF, mantendo no
+ADC1 do MCU só os sinais lentos (VBAT, temperatura).
+**[FIX auditoria 25]** Os **24 sinais de motor (12 corrente + 12 BEMF) não cabem em um CI
+de 16 canais** — a solução implementada na placa é **4× MCP3208** (SPI, 12 bits, 8 canais
+cada = **32 canais**): 1 CI por motor cobre 3 correntes + 3 BEMF (sobram 2 canais por CI),
+com **amostragem simultânea** das 3 fases de cada motor — o que um FOC decente exige.
+Custo: 4 CIs no mesmo barramento SPI (4 pinos + 4 CS). O texto anterior ("16 canais, ou
+2×8") descrevia uma intenção intermediária que a placa não implementa.
 
 ### 4.3 Portadoras defasadas 90° entre os 4 motores (achado com número) **[CALC]**
 ```
@@ -201,8 +210,9 @@ Ripple de tensão no banco para **um** motor a 30 A de pico, modelo com PWM reso
       2200        10.0 |       186mV       180mV           366mV |  0.682 V
       4400         8.0 |        93mV       144mV           237mV |  0.341 V
 ```
-A regra de "livro" `ΔV = I·t/C` **superestima em ~3 ordens de grandeza** (dá volts; o real é
-centenas de mV) porque trata a corrente de pico como DC no período inteiro. **Quem dimensiona é
+A regra de "livro" `ΔV = I·t/C` **superestima em ~3×** **[FIX auditoria 23]** — dá
+3,19 V onde o modelo com PWM resolvido dá 1,14 V (470 µF, pior caso) — porque trata a
+corrente de pico como DC no período inteiro. **Quem dimensiona é
 ESR + ESL, não os µF.**
 Spike por indutância do cabo **[CALC]**: `L=100 nH`, `di=30 A`, `dt=50 ns` → **60 V** (estoura o
 MOSFET de 40 V). Isso é o argumento definitivo para **100 nF + 10 µF colados a <2 mm de cada par
@@ -244,8 +254,8 @@ Pegadas do KiCad 5.1 **verificadas no disco** (`ls /usr/share/kicad/modules/...`
 | Entrada | Conector XT60 (60 A [N/D offline]) | `Connector_AMASS:AMASS_XT60-F_1x02_P7.20mm_Vertical` ✔ |
 | Proteção | TVS unidirecional standoff ≥ 30 V, clamp ~38 V [N/D offline] | `Diode_SMD:D_SMB` ✔ |
 | Proteção | P-FET canal P, 30 V, Rds < 10 mΩ (ideal diode) [N/D offline] | `Package_TO_SOT_SMD:TO-252-2_TabPin1` ✔ |
-| Banco | 6× 470 µF/35 V polímero low-ESR | `Capacitor_SMD:CP_Elec_8x10` ✔ |
-| Banco | 10 µF/50 V X7R + 100 nF/50 V X7R (por par de MOSFET) | `Capacitor_SMD:C_1206`, `C_0402` ✔ |
+| Banco | 4× 470 µF/35 V polímero low-ESR — **1 cap bulk por motor (ADOTADO)** | `Capacitor_SMD:CP_Elec_8x10` ✔ |
+| Banco | 4× 10 µF/50 V X7R + 40× 100 nF/50 V X7R (cerâmicos por par de MOSFETs) | `Capacitor_SMD:C_1206`, `C_0402` ✔ |
 | Potência | MOSFET N, **Vds ≥ 40 V, Rds ≤ 3 mΩ @10 V, Qg ≤ 60 nC** [PREMISSA P-05/P-06] | `Package_TO_SOT_SMD:TO-252-3_TabPin2` (DPAK) ou PowerPAK 5×6 ✔ |
 | Gate drive | Driver half-bridge single-input, bootstrap, dead-time interno ~520 ns, Vcc 12 V [N/D offline] | `Package_SO:SOIC-8_3.9x4.9mm_P1.27mm` ✔ |
 | Gate drive | Rg 4,7–22 Ω (adotado 10 Ω, ver §7 amortecimento) | `Resistor_SMD:R_0805_2012Metric` ✔ |
@@ -264,6 +274,13 @@ Pegadas do KiCad 5.1 **verificadas no disco** (`ls /usr/share/kicad/modules/...`
 | USB | USB-C receptáculo 16p | `Connector_USB:USB_C_Receptacle_GCT_USB4085` ✔ |
 | Extra | LED, buzzer, botão, pads de UART/I²C/SPI | `LED_0805`, `Buzzer_*`, `TestPoint` ✔ |
 
+> **[FIX auditoria 24] Divergência conhecida CSV × log (banco de capacitores):** os
+> logs de dimensionamento (`dimensionamento_fase0.py` §6 e `verifica_limites_entrada_v4.py`
+> §2) adotaram **4× 470 µF + 4× 10 µF + 40× 100 nF (1 cap bulk por motor)**; o
+> `lista_componentes_fase0.csv` (l. 6–8) lista **6× 470 µF / 12× 10 µF / 48× 100 nF**.
+> Os dois não batem — decisão pendente. Para a **compra, o CSV é a fonte** (é a lista de
+> compra do projeto); o log continua sendo a referência de dimensionamento.
+
 **Critério de escolha dos semicondutores (em vez de número inventado):**
 - **MOSFET**: precisa aguentar 25,2 V com margem → **Vds ≥ 40 V**; com 30 A de pico por motor e
   24 FETs no total, Rds(on) é o que decide a temperatura: cada 1 mΩ a mais custa
@@ -277,6 +294,18 @@ Pegadas do KiCad 5.1 **verificadas no disco** (`ls /usr/share/kicad/modules/...`
 ---
 
 ## 7. ORÇAMENTO DE CORRENTE E POTÊNCIA POR TRILHO **[CALC]**
+
+> **[FIX auditoria 1/2/4/7] Nota de divergência (2026-10-05):** os blocos `[CALC]`
+> citados abaixo preservam as saídas **pré-correção** dos scripts. Números corrigidos nos
+> logs regenerados: **balanço no cruzeiro** — I_fase pico **por motor** = **3,1 A** (não
+> 12,5 A), perdas de condução nos 24 FETs = **0,12 W** (não 1,88 W), TOTAL ≈ **171 W**
+> (+2,5 %); **térmica** — com P_sw linear em I (266 mW/FET a 30 A): 1,37 / 5,90 / 17,2 W
+> nos 24 FETs, Tj = 28,4 / 39,7 / 68,0 °C; **bucks** — L de pior caso (vin_max):
+> 69,8 / 13,4 / 5,0 µH, com o rótulo do ripple real do indutor adotado (buck12:
+> 17,7 %–23,6 %), não "L(30%)"; **trilhas** — adicionada a coluna IPC-2221 da camada
+> **INTERNA** (decisão do projeto): 30 A @ ΔT 10 °C = **42,6 mm** (a externa de 16,37 mm
+> não vale para o barramento interno). Fontes: `dimensionamento_fase0_saida_v2.txt` e
+> `verifica_limites_saida_v2/v4.txt` regenerados.
 
 ```
   3.3 V : ESP32-S3 pico WiFi TX 0.50 A + IMU 2 mA + baro 1 mA + LED 10 mA + margem 5 mA

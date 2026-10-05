@@ -25,16 +25,16 @@ FASE 0 -- LIMITES CRITICOS (v4, final)
       Layout e' o que prova isso: Fase 3, e bancada na Fase 4.
 
 3. TERMICA (Rth_ja PREMISSA) / VIAS / GATE / ADC -- resumo
-  cruzeiro (5 A fase) : P/FET=0.016 W -> 24 FETs= 0.39 W | Tj(Rth=60C/W, Ta=25C) = 26.0 C
-  nominal (15 A)      : P/FET=0.146 W -> 24 FETs= 3.50 W | Tj(Rth=60C/W, Ta=25C) = 33.7 C
-  pico (30 A)         : P/FET=0.583 W -> 24 FETs=13.99 W | Tj(Rth=60C/W, Ta=25C) = 60.0 C
+  cruzeiro (5 A fase) : P/FET=0.057 W -> 24 FETs= 1.37 W | Tj(Rth=60C/W, Ta=25C) = 28.4 C
+  nominal (15 A)      : P/FET=0.246 W -> 24 FETs= 5.90 W | Tj(Rth=60C/W, Ta=25C) = 39.7 C
+  pico (30 A)         : P/FET=0.716 W -> 24 FETs=17.19 W | Tj(Rth=60C/W, Ta=25C) = 68.0 C
   Via 0.3 mm: R=1.168 mOhm -> 40 vias a 30 A: queda 0.876 mV, P=26 mW total
   Gate: Z0=3.16 ohm -> Rg>=6.3 ohm (adotado 10 ohm) | f_ring=25.2 MHz
   ADC: janela 2 us = 4.0 % do periodo de 50 us | dead-time 520 ns = 1.0 % de duty
 
 4. BALANCO NO CRUZEIRO (carga real, nao nominal)
-  Helice: 167 W | I_barra 7.5 A | I_fase pico 12.5 A
-  FETs: 1.88 W | conversores: 4.00 W (entrada) | TOTAL ~ 173 W (3.5 % acima do ideal de helice)
+  Helice: 167 W | I_barra 7.5 A | I_fase pico (por motor) 3.1 A
+  FETs: 0.12 W | conversores: 4.00 W (entrada) | TOTAL ~ 171 W (2.5 % acima do ideal de helice)
 
 ==============================================================================
 FIM v3 -- 100% calculo numerico. Nenhuma medicao de bancada.

@@ -1,12 +1,12 @@
 G04 #@! TF.GenerationSoftware,KiCad,Pcbnew,5.1.9+dfsg1-1+deb11u1*
-G04 #@! TF.CreationDate,2026-09-11T22:33:21-03:00*
+G04 #@! TF.CreationDate,2026-10-04T23:00:47-03:00*
 G04 #@! TF.ProjectId,,58585858-5858-4585-9858-585858585858,rev?*
 G04 #@! TF.SameCoordinates,Original*
 G04 #@! TF.FileFunction,Copper,L1,Top*
 G04 #@! TF.FilePolarity,Positive*
 %FSLAX46Y46*%
 G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
-G04 Created by KiCad (PCBNEW 5.1.9+dfsg1-1+deb11u1) date 2026-09-11 22:33:21*
+G04 Created by KiCad (PCBNEW 5.1.9+dfsg1-1+deb11u1) date 2026-10-04 23:00:47*
 %MOMM*%
 %LPD*%
 G01*
@@ -151,7 +151,7 @@ X10000000Y-170000000D02*
 X10000000Y-10000000D01*
 D11*
 G04 #@! TO.P,U_BARO,VDD*
-G04 #@! TO.N,3V3*
+G04 #@! TO.N,3V3_IMU*
 X61025000Y-141000000D03*
 G04 #@! TO.P,U_BARO,VDDIO*
 X61675000Y-141000000D03*
@@ -201,7 +201,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CIMU,1*
-G04 #@! TO.N,3V3*
+G04 #@! TO.N,3V3_IMU*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -449,7 +449,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G04 #@! TO.P,U_IMU,8*
-G04 #@! TO.N,3V3*
+G04 #@! TO.N,3V3_IMU*
 G36*
 X20551441Y-144585368D02*
 G01*
@@ -566,7 +566,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G04 #@! TO.P,U_IMU,5*
-G04 #@! TO.N,3V3*
+G04 #@! TO.N,3V3_IMU*
 G36*
 X20601441Y-146360368D02*
 G01*
@@ -3921,7 +3921,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,FLDO,2*
-G04 #@! TO.N,3V3_A_F*
+G04 #@! TO.N,3V3_IMU*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -6476,7 +6476,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM403,1*
-G04 #@! TO.N,RBM403*
+G04 #@! TO.N,RB_M403*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -6533,7 +6533,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M403,1*
-G04 #@! TO.N,RBM403*
+G04 #@! TO.N,RB_M403*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -6562,7 +6562,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M403,2*
-G04 #@! TO.N,RBM403*
+G04 #@! TO.N,RB_M403*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -7704,7 +7704,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM402,1*
-G04 #@! TO.N,RBM402*
+G04 #@! TO.N,RB_M402*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -7761,7 +7761,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M402,1*
-G04 #@! TO.N,RBM402*
+G04 #@! TO.N,RB_M402*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -7790,7 +7790,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M402,2*
-G04 #@! TO.N,RBM402*
+G04 #@! TO.N,RB_M402*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -8949,7 +8949,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM401,1*
-G04 #@! TO.N,RBM401*
+G04 #@! TO.N,RB_M401*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -9006,7 +9006,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M401,1*
-G04 #@! TO.N,RBM401*
+G04 #@! TO.N,RB_M401*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -9035,7 +9035,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M401,2*
-G04 #@! TO.N,RBM401*
+G04 #@! TO.N,RB_M401*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -10177,7 +10177,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM303,1*
-G04 #@! TO.N,RBM303*
+G04 #@! TO.N,RB_M303*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -10234,7 +10234,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M303,1*
-G04 #@! TO.N,RBM303*
+G04 #@! TO.N,RB_M303*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -10263,7 +10263,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M303,2*
-G04 #@! TO.N,RBM303*
+G04 #@! TO.N,RB_M303*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -11405,7 +11405,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM302,1*
-G04 #@! TO.N,RBM302*
+G04 #@! TO.N,RB_M302*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -11462,7 +11462,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M302,1*
-G04 #@! TO.N,RBM302*
+G04 #@! TO.N,RB_M302*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -11491,7 +11491,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M302,2*
-G04 #@! TO.N,RBM302*
+G04 #@! TO.N,RB_M302*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -12650,7 +12650,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM301,1*
-G04 #@! TO.N,RBM301*
+G04 #@! TO.N,RB_M301*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -12707,7 +12707,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M301,1*
-G04 #@! TO.N,RBM301*
+G04 #@! TO.N,RB_M301*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -12736,7 +12736,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M301,2*
-G04 #@! TO.N,RBM301*
+G04 #@! TO.N,RB_M301*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -13878,7 +13878,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM203,1*
-G04 #@! TO.N,RBM203*
+G04 #@! TO.N,RB_M203*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -13935,7 +13935,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M203,1*
-G04 #@! TO.N,RBM203*
+G04 #@! TO.N,RB_M203*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -13964,7 +13964,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M203,2*
-G04 #@! TO.N,RBM203*
+G04 #@! TO.N,RB_M203*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -15106,7 +15106,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM202,1*
-G04 #@! TO.N,RBM202*
+G04 #@! TO.N,RB_M202*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -15163,7 +15163,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M202,1*
-G04 #@! TO.N,RBM202*
+G04 #@! TO.N,RB_M202*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -15192,7 +15192,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M202,2*
-G04 #@! TO.N,RBM202*
+G04 #@! TO.N,RB_M202*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -16351,7 +16351,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM201,1*
-G04 #@! TO.N,RBM201*
+G04 #@! TO.N,RB_M201*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -16408,7 +16408,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M201,1*
-G04 #@! TO.N,RBM201*
+G04 #@! TO.N,RB_M201*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -16437,7 +16437,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M201,2*
-G04 #@! TO.N,RBM201*
+G04 #@! TO.N,RB_M201*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -17579,7 +17579,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM103,1*
-G04 #@! TO.N,RBM103*
+G04 #@! TO.N,RB_M103*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -17636,7 +17636,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M103,1*
-G04 #@! TO.N,RBM103*
+G04 #@! TO.N,RB_M103*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -17665,7 +17665,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M103,2*
-G04 #@! TO.N,RBM103*
+G04 #@! TO.N,RB_M103*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -18807,7 +18807,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM102,1*
-G04 #@! TO.N,RBM102*
+G04 #@! TO.N,RB_M102*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -18864,7 +18864,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M102,1*
-G04 #@! TO.N,RBM102*
+G04 #@! TO.N,RB_M102*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -18893,7 +18893,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M102,2*
-G04 #@! TO.N,RBM102*
+G04 #@! TO.N,RB_M102*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -20052,7 +20052,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,CbeM101,1*
-G04 #@! TO.N,RBM101*
+G04 #@! TO.N,RB_M101*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -20109,7 +20109,7 @@ G01*
 G37*
 G04 #@! TD.AperFunction*
 G04 #@! TO.P,Rb2M101,1*
-G04 #@! TO.N,RBM101*
+G04 #@! TO.N,RB_M101*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*
@@ -20138,7 +20138,7 @@ G37*
 G04 #@! TD.AperFunction*
 G04 #@! TD*
 G04 #@! TO.P,Rb1M101,2*
-G04 #@! TO.N,RBM101*
+G04 #@! TO.N,RB_M101*
 G04 #@! TA.AperFunction,SMDPad,CuDef*
 G36*
 G01*

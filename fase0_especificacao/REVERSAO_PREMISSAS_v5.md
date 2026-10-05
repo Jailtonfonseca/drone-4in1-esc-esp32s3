@@ -150,6 +150,15 @@ projeto original "fechava": ele nunca viu o número 168.
 `FASE0_ESPECIFICACAO.md` e linha de saída do `verifica_limites_entrada_v4.py` §3). **Duas
 exigências incompatíveis, um só resistor** **[MEDIDO]**.
 
+> **[FIX auditoria 20] Nota de reconciliação de alvos (2026-10-05):** o **alvo de projeto
+> é `t ≤ 50 ns`** (os `0,05 µs` da Fase 0, mantidos como `T_ALVO` na
+> `verifica_limites_v6.py`/`v7.py`). Os **25 ns** usados nesta §2.3 (e no
+> `redimensionamento_gate_v5.py`, `T_ALVO = 25e-9`) foram um **exercício de rigor da
+> v5** — 0,05 % do período de 20 kHz e ~metade do tr do datasheet — **não** o alvo do
+> projeto. Esta nota reconcilia as duas contas: **50 ns é o critério; 25 ns foi cenário**.
+> Com qualquer um dos dois a conclusão do L7 não muda: `Rg(50 ns) = 2,27 Ω < 6,3 Ω`
+> (ver `verifica_limites_v6_saida.txt` §7 corrigido).
+
 ### 2.4 Perda de comutação
 
 `P = Qg × Vgs × f` com Qg = 168 nC, Vgs = 10 V, f = 20 kHz:

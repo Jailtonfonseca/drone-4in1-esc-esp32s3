@@ -1,8 +1,9 @@
 /* ===========================================================================
  * m1_vbat.h — modulo M1: leitura de VBAT pelo divisor resistivo
  *
- * ESQUELETO NAO VERIFICADO. ESTE CABECALHO NAO FOI COMPILADO NESTA MAQUINA.
- * Por que: o ESP-IDF nao esta instalado. Ver firmware/README.md e
+ * ESQUELETO corrigido pela auditoria de 2026-10-04 (ver
+ * AUDITORIA_ERROS_2026-10-04.md, secao F); AINDA NAO COMPILADO — precisa de
+ * idf.py build para validar. Ver firmware/README.md e
  * fase4_entrega/FIRMWARE_BUILD.md.
  *
  * Modulo de origem: plano/WP4_FIRMWARE.md §5, linha M1.

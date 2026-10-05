@@ -1,6 +1,6 @@
 # ERROS_CONHECIDOS — registro central de erros do projeto
 
-**Drone 4×ESC + ESP32-S3** · atualizado em 2026-10-04 · correções do pipeline no commit `7ee221e`
+**Drone 4×ESC + ESP32-S3** · atualizado em 2026-10-05 · correções do pipeline no commit `7ee221e` · **auditoria independente + correções v10 em 2026-10-04/05 (seção 8)**
 
 ## Como usar este arquivo
 
@@ -86,7 +86,7 @@ nunca havia sido validado ponta a ponta antes disso.
 1. **13 arquivos marcados "ESQUELETO NAO VERIFICADO"** (10 `.c/.h` de `main/` + 2 `CMakeLists.txt`
    + `sdkconfig.defaults`) — código ainda não compilado nesta máquina; os cabeçalhos declaram isso
    explicitamente. `[ABERTO — estado conhecido e declarado]`
-2. Toolchain Xtensa aarch64 instalada e funcional (gera `.elf`) — ver `firmware/FIRMWARE_BUILD.md`. `[OK]`
+2. Toolchain Xtensa aarch64 instalada e funcional (gera `.elf`) — ver `fase4_entrega/FIRMWARE_BUILD.md`. `[OK]` *(link corrigido em 2026-10-05 — o arquivo está em fase4_entrega/, não em firmware/)*
 
 ---
 
@@ -122,3 +122,58 @@ nunca havia sido validado ponta a ponta antes disso.
 `verificacoes/verifica_projeto.py` — automatizar todas as checagens acima como **asserções duras**
 (SES `wires > 0`, `nets não roteadas == 0`, `[EST] == 0`, preços preenchidos), para que "pronto"
 seja propriedade do artefato e não da impressão da sessão.
+
+---
+
+## 8. AUDITORIA INDEPENDENTE 2026-10-04 — ~110 erros (ver `AUDITORIA_ERROS_2026-10-04.md`)
+
+Uma auditoria externa do repositório inteiro (forense de artefatos + leitura do fonte do
+FreeRouting 1.9.0 + 4 subauditorias) encontrou **~110 erros**, sendo 9 bloqueadores, e
+**refutou 3 alegações deste registro** (ver 8.R). Relatório completo com evidência
+arquivo:linha em [`AUDITORIA_ERROS_2026-10-04.md`](AUDITORIA_ERROS_2026-10-04.md).
+
+### 8.1 — CRÍTICOS novos CORRIGIDOS em 2026-10-04/05 (v10)  `[CORRIGIDO na v10]`
+
+| # | Erro | Causa raiz | Correção aplicada | Prova |
+|---|---|---|---|---|
+| 1 | 27 footprints/199 pads FORA do contorno (U_MCU inteiro, 14 MOSFETs, USB-C, shunt, bulk) + 14 curtos pad×pad | `gera_pcb_v9.py:252` sinal invertido (`x − dx` em vez de `+ dx`) + `GetBoundingBox()` inflado por texto de silk | `gera_pcb_v10.py`: sinal corrigido, bbox por pads; board v10 regenerada | gate G1/G3: 0 fora, 0 curtos |
+| 2 | 12 nets BEMF órfãs + ferrite órfão | **typo de net** no `gera_pcb_v7.py`: `"RB%s"` (RBM101) no motor vs `"RB_M%d01"` no ADC; FLDO.2 em net de 1 pad | `RB_%s` padronizado; `3V3_IMU` criada (IMU+baro pós-ferrite) | gate G2: 0 nets de 1 pad; RB_M### com 4 pads |
+| 3 | Nets de potência SEM cobre (VBAT, VBAT_F, 12×PHM, 12×SNM) — **refuta o 1.g "CORRIGIDO"** | só 6 nets tinham zonas; a justificativa do 1.g valia só para GND/VBAT_PROT | 34 zonas novas no gerador v10 | gate G5: 173/173 preenchidas |
+| 4 | Bug 1.h (SES com 0 wires) — **causa raiz no `dsn_export.py`, não no roteador** | **P1 `0 == False`**: todo pad virava círculo Ø=max(w,h) → blobs selados; **P2 via nunca declarada** (`(via VIA1)`); P3 rotação dupla; P4 pins duplicados (~39 mil) | P1–P5 corrigidos; via 0,6/0,3 | corte E2E: **46 wires, 8 vias, 9/9 nets, 83 trilhas importadas** (antes 0) |
+| 5 | 57 de 102 zonas vazias; 8 vias no keepout; keepout superior faltando | ilhas sem âncora + `acha_via` com limite 0,8 < 0,9+folga; `keepout()` sem a faixa do topo | v10: todas as bordas com keepout; busca de via keepout-aware | gates G4/G5 |
+| 6 | BOM mandava comprar MOSFET errado (IPB017N10N5 TO-263-7) + 2 linhas malformadas | linha de referência nunca editada; separador faltando | `orcamento/BOM_FABRICACAO_v10.csv` (vencedor NVMFS6H824NT1G; ADC alinhado ao board: 4× MCP3208) | 43 itens × 16 campos |
+| 7 | `ses_import.py` nunca tinha completado 1 execução | `GetNetCode()` inexistente; classes `PCB_TRACK/PCB_VIA` (KiCad 6); `walk_net` não descia ao escopo `(net NOME …)` | API 5.1 correta + parser do formato real | 83 trilhas + 8 vias gravadas no KiCad |
+| 8 | Roteamento da placa completa saía vazio | consequência do item 4 | pipeline corrigido + 50 min de roteamento real | **placa completa: 1.410 wires, 404 vias, 149/151 nets, 3.909 trilhas importadas** (`fase3_pcb/v10/freerouting_run/` + `v10_roteada.kicad_pcb`) |
+
+### 8.2 — CRÍTICOS que exigem decisão humana  `[ABERTO]`
+
+1. **Margem do MOSFET vencedor**: 25,2 V + spike 60 V = **85,2 V > 80 V** pelo critério interno
+   (o mesmo que reprovou o FET de 60 V); o "folga de 33%" do `verifica_limites_v7` somava errado.
+   Opções: aceitar o risco / snubber+layout / FET ≥ 100 V. A BOM v10 compra o vencedor com a
+   pendência registrada na linha.
+2. **D-07 (watchdog) e D-12 (2× ADS7953) decididos mas ausentes do board** (E-8): a v10 mantém
+   4× MCP3208 e não tem CI supervisor — implementar na v11 ou reabrir a decisão.
+3. Firmware: 6 erros críticos concretos (API ESP-IDF, PWM ~1 Hz, LEDC duplicado, MCP3208, init
+   nunca chamado, RF-07 falsa) — correção em andamento na auditoria; **validar com idf.py build**.
+
+### 8.3 — Fase 0/2 (39 erros) e documentação (16)  `[CORREÇÃO EM ANDAMENTO]`
+
+Fase 0: perdas de FET 16× erradas, comutação I², IPC-2221 interno nunca aplicado, divisor BEMF
+3,07 V (o certo é 2,74 V), Ciss 1000× errado no v6, L×C trocados no loop de gate (veredito L7
+invertido), E_oss sem o ½. Fase 2: buck5 simulado com 12 V (não VBAT), gate_drive.cir valida a
+premissa P-06 já invalidada, netlists editados pós-log, "sem erros registrados" (§7) refutado.
+Docs: PLANO_FINAL obsoleto em ≥10 pontos, fase 4 descreve a placa v6, `[EST]` citado como
+`[MEDIDO]`, links quebrados. Ver relatório §B/C/E.
+
+### 8.4 — Refutações deste registro  `[REFUTADO]`
+
+- **§1.g "CORRIGIDO"**: falso para 26 das 28 nets excluídas do DSN (item 3 acima).
+- **§3.3 "36/43 com preço"**: real 34/43 (2 linhas malformadas contavam fabricante como preço).
+- **§7 "Fase 2: sem erros registrados"**: refutado (12 erros, ver §C do relatório).
+
+### 8.5 — Gates novos obrigatórios (implementados em `verifica_fase3_v10.py`)
+
+G1 pads dentro do contorno · G2 zero nets de 1 pad · G3 zero curtos pad×pad (SAT) ·
+G4 vias fora de keepout · G5 zonas preenchidas · G6 A4 (critério equivalente documentado) ·
+G7 ocupação **elétrica** (sem texto de silk). A v9 passava nos gates antigos sendo infabricável
+— estes teriam pegado tudo.

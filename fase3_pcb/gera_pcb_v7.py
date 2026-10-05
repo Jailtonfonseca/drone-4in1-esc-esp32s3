@@ -243,9 +243,14 @@ for mi, cx in enumerate(COL_X):
         setnet("Rd1%s" % t, "1", "3V3"); setnet("Rd1%s" % t, "2", "VREF%s" % t)
         setnet("Rd2%s" % t, "1", "VREF%s" % t); setnet("Rd2%s" % t, "2", "GND")
         setnet("Cd%s" % t, "1", "VREF%s" % t); setnet("Cd%s" % t, "2", "GND")
-        setnet("Rb1%s" % t, "1", "PH%s" % t); setnet("Rb1%s" % t, "2", "RB%s" % t)
-        setnet("Rb2%s" % t, "1", "RB%s" % t); setnet("Rb2%s" % t, "2", "GND")
-        setnet("Cbe%s" % t, "1", "RB%s" % t); setnet("Cbe%s" % t, "2", "GND")
+        # BEMF: divisor de fase (8,2k/1,0k) pendurado na fase; no' -> ADC.
+        # [FIX 2026-10-04] era "RB%s" % t (=RBM101, SEM underscore) enquanto a
+        # secao do ADC referenciava "RB_M%d01" (COM underscore) -- typo que
+        # deixava as 12 entradas BEMF do ADC orfas (1 pad) e o divisor sem
+        # consumidor (auditoria C2). Padronizado no nome com underscore.
+        setnet("Rb1%s" % t, "1", "PH%s" % t); setnet("Rb1%s" % t, "2", "RB_%s" % t)
+        setnet("Rb2%s" % t, "1", "RB_%s" % t); setnet("Rb2%s" % t, "2", "GND")
+        setnet("Cbe%s" % t, "1", "RB_%s" % t); setnet("Cbe%s" % t, "2", "GND")
 
         # --- trilhas locais (curtas, desenhadas) ---
         wire_pt("Q%sH" % t, "3", cx + 14.3, y + 15.5, "PH%s" % t, 1.5)
@@ -371,7 +376,12 @@ place("Inductor_SMD.pretty", "L_0805_2012Metric", "FLDO", 74, 78)
 setnets("U_LDO", {"VIN": "3V3", "GND": "GND", "EN": "3V3", "VOUT": "3V3_A"})
 setnet("Cldo_i", "1", "3V3"); setnet("Cldo_i", "2", "GND")
 setnet("Cldo_o", "1", "3V3_A"); setnet("Cldo_o", "2", "GND")
-setnet("FLDO", "1", "3V3_A"); setnet("FLDO", "2", "3V3_A_F")
+# [FIX 2026-10-04] a saida do ferrite era a net "3V3_A_F" com UM pad so' --
+# o IMU/barometro estavam na 3V3 (digital, sem filtro) e o filtro nao filtrava
+# ninguem (auditoria C2). Agora: LDO -> 3V3_A (amps) -> FLDO -> 3V3_IMU
+# (IMU + barometro + decoupling), como a Fase 0 especifica ("analogico: IMU +
+# barometro").
+setnet("FLDO", "1", "3V3_A"); setnet("FLDO", "2", "3V3_IMU")
 
 # ================================================================
 # ADC EXTERNO: 4x MCP3208 (1 por motor)
@@ -473,16 +483,17 @@ setnet("D3", "2", "5V"); setnet("D3", "1", "5V_AUX")
 # IMU (ICM-42688-P, LGA-14, pinout datasheet TDK) + BAROMETRO (por funcao)
 # ================================================================
 place("Package_LGA.pretty", "LGA-14_3x2.5mm_P0.5mm_LayoutBorder3x4y", "U_IMU", 20, 146, 90)
+# [FIX 2026-10-04] VDD/VDDIO na 3V3_IMU (pos-ferrite), nao na 3V3 digital.
 setnets("U_IMU", {"1": "SPI_MISO", "2": "GND", "3": "GND", "4": "IMU_INT",
-                  "5": "3V3", "6": "GND", "7": "GND", "8": "3V3", "9": "GND",
+                  "5": "3V3_IMU", "6": "GND", "7": "GND", "8": "3V3_IMU", "9": "GND",
                   "10": "GND", "11": "GND", "12": "IMU_CS", "13": "SPI_SCK",
                   "14": "SPI_MOSI"})
 place("Capacitor_SMD.pretty", "C_0402_1005Metric", "CIMU", 26, 146)
-setnet("CIMU", "1", "3V3"); setnet("CIMU", "2", "GND")
+setnet("CIMU", "1", "3V3_IMU"); setnet("CIMU", "2", "GND")
 make_lga8("U_BARO", 62, 140, ["GND", "GND2", "SDI", "SCK", "SDO", "CSB", "VDDIO", "VDD"],
           value="BARO_I2C")
 setnets("U_BARO", {"GND": "GND", "GND2": "GND", "SDI": "I2C_SDA", "SCK": "I2C_SCL",
-                   "SDO": "GND", "CSB": "3V3", "VDDIO": "3V3", "VDD": "3V3"})
+                   "SDO": "GND", "CSB": "3V3_IMU", "VDDIO": "3V3_IMU", "VDD": "3V3_IMU"})
 
 print("footprints totais:", len(MODS))
 

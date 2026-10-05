@@ -1,15 +1,18 @@
 /* ===========================================================================
  * m4_adc_spi.c — modulo M4: leitura dos 4x MCP3208 por SPI
  *
- * ESQUELETO NAO VERIFICADO. ESTE ARQUIVO NAO FOI COMPILADO NESTA MAQUINA.
- * Por que: o ESP-IDF nao esta instalado, entao nao existe idf.py nem os
- * headers de driver (driver/spi_master.h) contra os quais conferir este codigo.
- * Existe nesta maquina apenas o compilador C Xtensa, testado com um .c de 5
- * linhas sem framework (firmware/build_log.txt) — isso nao valida este codigo.
+ * ESQUELETO corrigido pela auditoria de 2026-10-04 (ver
+ * AUDITORIA_ERROS_2026-10-04.md, secao F, achados F4 e baixos); AINDA NAO
+ * COMPILADO — precisa de idf.py build para validar. O ESP-IDF nao esta
+ * instalado nesta maquina. As structs e chamadas SPI foram conferidas contra
+ * os headers reais do ESP-IDF v5.4 (components/esp_driver_spi/include/driver/
+ * spi_master.h e spi_common.h): spi_device_interface_config_t NAO tem campo
+ * de "fase de comando" separada aqui — o protocolo MCP3208 inteiro via no
+ * buffer de dados da transacao full-duplex (command_bits = 0, F4).
  *
- * AVISO SOBRE A API: as assinaturas de spi_bus_config_t, spi_device_interface_config_t
- * e das rotinas de transacao foram escritas de memoria da API do ESP-IDF v5 e
- * nao foram conferidas contra nenhum header desta maquina.
+ * AVISO SOBRE A API (permanece): spi_bus_initialize/spi_bus_add_device/
+ * spi_device_polling_transmit estao com as assinaturas do v5.4, mas nada
+ * foi linkado nesta maquina.
  *
  * Modulo de origem: plano/WP4_FIRMWARE.md §5, linha M4.
  *
@@ -26,10 +29,12 @@
  * RF-02: o MCP3208 multiplexa 8 canais e nao tem amostragem simultanea. As
  * "3 fases" de um motor sao lidas em 3 instantes diferentes.
  *
- * RF-09: o barramento SPI e um recurso unico e disputado. 24 canais x 20 kHz x
- * 24 clocks = 11 520 000 clocks/s, que estoura a 8 MHz (144 %) e a 10 MHz
- * (115 %) e so cabe a 20 MHz (57,6 %) — e o mesmo barramento serve ao IMU, que
- * precisa de leitura a 1-4 kHz sincronizada com o PID, e ao barometro.
+ * RF-09: o barramento SPI e um recurso unico e disputado. 24 canais x 20 kHz
+ * x 24 clocks = 11 520 000 clocks/s, que estoura a 8 MHz (144 %) e a 10 MHz
+ * (115 %) e so cabe a 20 MHz (57,6 %). Neste barramento mora tambem o IMU
+ * (ICM-42688-P, CS = GPIO42, INT = GPIO47), que precisa de leitura a 1-4 kHz
+ * sincronizada com o PID. O BAROMETRO NAO esta aqui: ele e I2C (pads 31/32 =
+ * GPIO38/GPIO39) — o comentario antigo dizia o contrario (baixo da auditoria).
  *
  * A saida que o proprio plano aponta e o round-robin: ler UM CI por vez, um
  * canal por vez, com fCLK = 20 x fSAMPLE = 0,60 MHz, bem dentro do que o
@@ -45,9 +50,9 @@
 #include "board_pins.h"
 
 #include "driver/spi_master.h"
+#include "esp_check.h"
 #include "esp_log.h"
 #include "esp_err.h"
-#include "esp_timer.h"
 
 static const char *TAG_M4 = "m4_adc";
 
@@ -57,15 +62,29 @@ static const char *TAG_M4 = "m4_adc";
  * MCP3208 sem disputar o barramento com o IMU. */
 #define M4_SPI_CLK_HZ            (600 * 1000)
 
-/* --- Protocolo do MCP3208 -------------------------------------------------
- * 12 clocks de conversao (tCONV) mais o quadro de 3 bytes com os bits de
- * start, SGL/DIFF, canal e o bit de MSB-first. No modo single-ended, canal
- * `ch` (0-7), o primeiro byte do quadro de 3 e:
- *   0000 0 1 SGL DIFF 00  ->  0000 0 1 1 ch1 ch0 00
- * onde ch1 e o bit alto do canal. Os 2 bytes seguintes devolvem o resultado,
- * com os 12 bits uteis nos bits 3..14 do byte final. */
-#define M4_SPI_RX_BITS           24
-#define M4_SPI_TX_BYTES          3
+/* --- Protocolo do MCP3208 (corrigido pela auditoria F4) --------------------
+ * Quadro full-duplex de 1 transacao / 3 bytes (24 clocks), modo SPI 0, MSB
+ * primeiro. O CI exige full-duplex: a conversao roda NOS MESMOS clocks em
+ * que o comando ainda esta saindo no MOSI — SPI_DEVICE_HALFDUPLEX estava
+ * errado (F4).
+ *
+ * Bytes transmitidos para o canal `ch` (0-7), single-ended:
+ *   tx[0] = 0x06 | (ch >> 2)   0000 0 1 1 D2  (start=1, SGL/DIFF=1, D2)
+ *   tx[1] = (ch & 0x03) << 6   D1 D0 000000
+ *   tx[2] = 0x00               clocks de leitura do resultado
+ * A montagem antiga (0x06 | ((ch&4)<<1) | (ch&3)) colidia bits e fazia os
+ * canais 0/2, 1/3, 4/6 e 5/7 lerem iguais; command_bits = 24 mandava ainda
+ * 24 clocks de DIN=0 ANTES do quadro, deslocando o enquadramento do CI.
+ *
+ * Decodificacao: apos o bit nulo, os 12 bits uteis caem nos 4 bits baixos do
+ * rx[1] (B11..B8) e no rx[2] inteiro (B7..B0):
+ *   raw = ((rx[1] & 0x0F) << 8) | rx[2]
+ * O decode antigo ((rx[1]<<5)|(rx[2]>>3))&0xFFF leria os clocks errados e
+ * so funcionava (com escala errada) para CH0/CH4.
+ * Referencia: datasheets/mcp3208_microchip_ds21298e.pdf; framing conferido
+ * pela auditoria de 2026-10-04 contra o DS21298. */
+#define M4_SPI_FRAME_BITS       24
+#define M4_SPI_FRAME_BYTES      3
 #define M4_MCP3208_ADC_CHANNELS  8
 
 /* Ganho do INA240A2 (50 V/V) e do shunt de 0,5 mOhm (fase4_entrega/
@@ -87,10 +106,10 @@ static bool                 s_m4_ready = false;
 /* ---------------------------------------------------------------------------
  * m4_adc_init — configura o barramento SPI e anexa os 4 MCP3208.
  *
- * Nao testado. O barramento e o mesmo do IMU e do barometro, e o plano
- * reconhece que essa disputa e um problema em aberto (RF-09); aqui ele e
- * ocupado integralmente pelos 4 ADCs, o que e uma escolha de esqueleto e nao
- * uma decisao de arquitetura fechada.
+ * Nao testado. O barramento e o mesmo do IMU (o barometro e I2C, nao mora
+ * aqui), e o plano reconhece que essa disputa e um problema em aberto
+ * (RF-09); aqui ele e ocupado integralmente pelos 4 ADCs, o que e uma
+ * escolha de esqueleto e nao uma decisao de arquitetura fechada.
  * ------------------------------------------------------------------------ */
 esp_err_t m4_adc_init(void)
 {
@@ -103,7 +122,7 @@ esp_err_t m4_adc_init(void)
         .sclk_io_num     = ADC_SPI_SCK_GPIO,
         .quadwp_io_num   = -1,
         .quadhd_io_num   = -1,
-        .max_transfer_sz = M4_SPI_TX_BYTES,
+        .max_transfer_sz = M4_SPI_FRAME_BYTES,
     };
     ESP_RETURN_ON_ERROR(spi_bus_initialize(M4_SPI_HOST, &bus, SPI_DMA_CH_AUTO),
                         "m4_adc", "falha ao inicializar o barramento SPI");
@@ -114,14 +133,19 @@ esp_err_t m4_adc_init(void)
 
     for (int i = 0; i < M4_N_ADCS; i++) {
         spi_device_interface_config_t dev = {
-            .command_bits     = M4_SPI_TX_BYTES * 8,
-            .address_bits     = 0,
-            .dummy_bits       = 0,
-            .mode             = 0,          /* MCP3208: CPOL=0, CPHA=0, MSB primeiro */
-            .clock_speed_hz   = M4_SPI_CLK_HZ,
-            .spics_io_num     = cs_gpio[i],
-            .queue_size       = 1,
-            .flags            = SPI_DEVICE_HALFDUPLEX,
+            .command_bits   = 0,    /* F4: nada de fase de comando — o quadro
+                                      * inteiro do MCP3208 vai no buffer de
+                                      * dados da transacao full-duplex.     */
+            .address_bits   = 0,
+            .dummy_bits     = 0,
+            .mode           = 0,   /* MCP3208: CPOL=0, CPHA=0, MSB primeiro */
+            .clock_source   = SPI_CLK_SRC_DEFAULT,  /* APB 80 MHz no S3      */
+            .clock_speed_hz = M4_SPI_CLK_HZ,
+            .spics_io_num   = cs_gpio[i],  /* CS por dispositivo, do board_pins */
+            .queue_size     = 1,
+            .flags          = 0,   /* F4: full-duplex; SPI_DEVICE_HALFDUPLEX
+                                      * foi REMOVIDO — o MCP3208 devolve o
+                                      * dado nos mesmos clocks do comando.  */
         };
         ESP_RETURN_ON_ERROR(spi_bus_add_device(M4_SPI_HOST, &dev, &s_dev[i]),
                             "m4_adc", "falha ao anexar um MCP3208");
@@ -146,23 +170,26 @@ esp_err_t m4_adc_read_raw(uint8_t adc_index, uint8_t channel, uint16_t *out_raw)
         return ESP_ERR_INVALID_ARG;
     }
 
-    /* Byte de comando, single-ended, canal `channel`. */
-    const uint8_t cmd = (uint8_t)(0x06u | ((channel & 0x04u) << 1) |
-                                  ((channel & 0x03u)));
-    const uint8_t tx[M4_SPI_TX_BYTES] = { cmd, 0x00u, 0x00u };
-    uint8_t rx[M4_SPI_TX_BYTES] = { 0u, 0u, 0u };
+    /* Quadro single-ended do canal `channel` — ver o bloco de protocolo no
+     * topo do arquivo (F4): start+SGL+D2 no byte 0, D1/D0 no byte 1. */
+    const uint8_t tx[M4_SPI_FRAME_BYTES] = {
+        (uint8_t)(0x06u | (channel >> 2)),
+        (uint8_t)((channel & 0x03u) << 6),
+        0x00u,
+    };
+    uint8_t rx[M4_SPI_FRAME_BYTES] = { 0u, 0u, 0u };
 
     spi_transaction_t trans = {
-        .length     = M4_SPI_RX_BITS,
-        .tx_buffer  = tx,
-        .rx_buffer  = rx,
+        .length    = M4_SPI_FRAME_BITS,   /* 24 bits, full-duplex       */
+        .rxlength  = 0,                   /* 0 = recebe `length` bits   */
+        .tx_buffer = tx,
+        .rx_buffer = rx,
     };
     ESP_RETURN_ON_ERROR(spi_device_polling_transmit(s_dev[adc_index], &trans),
                         "m4_adc", "falha na transacao SPI");
 
-    /* Os 12 bits uteis do MCP3208 ocupam os bits 3 a 14 do terceiro byte. */
-    *out_raw = (uint16_t)(((uint16_t)rx[1] << 5) | (rx[2] >> 3));
-    *out_raw &= 0x0FFFu;
+    /* B11..B8 nos 4 bits baixos de rx[1]; B7..B0 em rx[2] (F4). */
+    *out_raw = (uint16_t)((((uint16_t)(rx[1] & 0x0Fu) << 8) | rx[2]) & 0x0FFFu);
     return ESP_OK;
 }
 
@@ -178,6 +205,11 @@ esp_err_t m4_adc_read_raw(uint8_t adc_index, uint8_t channel, uint16_t *out_raw)
  * e as 3 fases sao lidas em 3 instantes diferentes. Qualquer algoritmo de
  * controle que dependa de amostragem simultanea nao pode ser escrito em cima
  * desta topologia sem trocar o ADC.
+ *
+ * Baixo da auditoria (registrado, nao corrigido com armadura): s_circuito e
+ * s_canal sao estaticos e assumem UM UNICO chamador. Este esqueleto so tem a
+ * task_de_Leitura chamando aqui; se algum dia mais de uma task usar o M4,
+ * precisa de exclusao mutua em volta do par (indice, leitura).
  * ------------------------------------------------------------------------ */
 esp_err_t m4_adc_poll(uint8_t *state)
 {
@@ -251,7 +283,10 @@ esp_err_t m4_adc_log_offset_zero(uint8_t adc_index, uint8_t channel,
     if (out_offset_raw != NULL) {
         *out_offset_raw = raw;
     }
-    ESP_LOGW(TAG_M4, "offset 0 A: CI %u canal %u = %u LSB (%.3f mA equivalentes)",
+    /* Correcao de unidade (achado ao revisar F4): m4_raw_to_ampere devolve
+     * AMPERES (40 A/V — ver M4_AMP_A_POR_VOLT); o log antigo rotulava o
+     * valor como "mA", errando o numero em 1000x. */
+    ESP_LOGW(TAG_M4, "offset 0 A: CI %u canal %u = %u LSB (%.3f A equivalentes)",
              (unsigned)adc_index, (unsigned)channel, (unsigned)raw,
              (double)m4_raw_to_ampere(raw));
     return ESP_OK;

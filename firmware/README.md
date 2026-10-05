@@ -10,6 +10,15 @@
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
+**Estado após a auditoria de 2026-10-04** (`../AUDITORIA_ERROS_2026-10-04.md`,
+seção F): os erros F1–F9 e os baixos foram corrigidos — API ESP-IDF v5.4
+verificada chamada por chamada contra os headers reais, 20 kHz exatos no M2,
+canais LEDC únicos, protocolo MCP3208 corrigido, `app_main` chamando os init,
+GPIOs reais em `board_pins.h` e `CONFIG_FREERTOS_HZ=1000`. O estado de
+**AINDA NÃO COMPILADO** não mudou: não há ESP-IDF nesta máquina, e é o
+`idf.py build` que valida o resto. Cada arquivo carrega no cabeçalho o
+carimbo "corrigido pela auditoria de 2026-10-04 … AINDA NÃO COMPILADO".
+
 ## O que existe de verdade nesta máquina
 
 Uma coisa, e ela é real: **um compilador C Xtensa para o ESP32-S3 está instalado
@@ -36,34 +45,39 @@ carimbadas no código e todos os números sem lastro marcados como tal.
 
 | Arquivo | Módulo da §5 | O que é |
 |---|---|---|
-| `main/board_pins.h` | — | mapa de pinos, extraído do netlist do layout v7 |
+| `main/board_pins.h` | — | mapa de pinos: pads do netlist v7 + GPIOs do datasheet do WROOM-1 |
 | `main/m1_vbat.c/.h` | **M1** | leitura de VBAT pelo divisor 100 k / 13,7 k |
-| `main/m2_pwm_mcpwm.c/.h` | **M2** | PWM dos motores 1 e 2 no MCPWM, dead-time em hardware |
-| `main/m3_pwm_ledc.c/.h` | **M3** | PWM dos motores 3 e 4 no LEDC, defasagem de 90° |
-| `main/m4_adc_spi.c/.h` | **M4** | leitura dos 4× MCP3208 por SPI, round-robin |
+| `main/m2_pwm_mcpwm.c/.h` | **M2** | PWM dos motores 1 e 2 no MCPWM (2 timers × 3 operadores × 2 geradores, 20 kHz exatos) |
+| `main/m3_pwm_ledc.c/.h` | **M3** | PWM dos motores 3 e 4 no LEDC (canais 0–5), defasagem por hpoint |
+| `main/m4_adc_spi.c/.h` | **M4** | leitura dos 4× MCP3208 por SPI full-duplex, round-robin |
 | `main/app_main.c` | — | ponto de entrada; **não comuta motor nenhum** |
 | `CMakeLists.txt`, `main/CMakeLists.txt` | — | estrutura de projeto ESP-IDF v5 |
-| `sdkconfig.defaults` | — | clock de 240 MHz, brownout ligado, UART0 a 115200 |
+| `sdkconfig.defaults` | — | tick de 1 kHz, clock de 240 MHz, brownout ligado, UART0 a 115200 |
 | `build_log.txt` | — | o que **realmente** foi compilado: um hello world de 5 linhas |
 
 ## As duas coisas que ninguém deve pular
 
-**1. Nenhum GPIO aqui é um GPIO de verdade.** Todos estão `-1` em
-`board_pins.h`, com a macro `GPIO_NAO_CONFERIDO`. Os números de *pad* vêm do
-netlist do layout v7 (`fase3_pcb/gera_pcb_v7.py`, linhas 400-411), mas **pad de
-módulo não é GPIO** — e a **RF-07** do plano acusa a Fase 0 §8 de divergir do
-layout inteiro nos motores 2, 3 e 4 (inclusive o pad 8, que a Fase 0 dava ao
-motor 2 e o layout dá ao motor 4). Traduzir pad → GPIO exige a tabela de
-pinagem do `datasheets/esp32-s3-wroom-1_datasheet_en.pdf`, que **não foi
-extraída**. Deixei `-1` em vez de palpite: é o que faz o build quebrar alto, em
-vez de girar um motor no pad errado.
+**1. Os GPIOs agora são GPIOs de verdade — mas continuam sem bancada.** Os
+números de *pad* vêm do netlist do layout v7 (`fase3_pcb/gera_pcb_v7.py`,
+linhas 400-411) e a tradução pad → GPIO vem da tabela "Pin Definitions" do
+datasheet do módulo, **extraída na auditoria de 2026-10-04** (achado F6: a
+premissa da RF-07 era falsa — comparavam-se pads com GPIOs; o layout
+*confirma* a Fase 0 §8: motor 1 = GPIO 4-6, 2 = 7-9, 3 = 10-12, 4 = 13-15).
+A armadilha que derruba revisão: ADC_CS2 está no pad 15, que é o **IO3**, não
+o IO17 (que é o SPI_SCK do pad 10). "Conferido" aqui significa conferido
+contra o datasheet e o netlist — **não** significa testado num módulo real.
 
-**2. O dead-time dos motores 3 e 4 não é do firmware.** Os motores 1 e 2 vão
-por MCPWM e têm dead-time programável em hardware. Os motores 3 e 4 vão por
-LEDC, que **não gera dead-time**: o único deles é o do IR2104, fixo no driver,
-de 400 ns a 650 ns (**RF-14**). Por isso o M3 tem janela própria, diferente da
-do M2, e `m3_pwm_ledc.c` tem uma função `m3_pwm_deadtime_e_fixo()` que
-devolve 0 de propósito — para o fato ficar no código, e não só num comentário.
+**2. O dead-time dos QUATRO motores é do IR2104, não do firmware.** Cada
+IR2104 tem **um único pino IN** e gera HO/LO complementares com dead-time
+interno fixo (400/520/650 ns, RF-14). São 12 sinais single-ended: não existe
+par complementar de geradores no MCU, e o dead-time programável do MCPWM não
+tem o que atrasar nessa topologia — por isso foi **removido** do M2 (achado
+F8; "M2 = MCPWM por causa do dead-time" era erro de concepção). A função
+`m3_pwm_deadtime_e_fixo()` continua devolvendo 0 de propósito — para o fato
+ficar no código, e não só num comentário. A consequência elétrica do estado
+seguro também está documentada nos fontes: IN baixo = HO baixo e LO alto
+(low-side conduzindo), e os 12 SD estão presos ao 3V3 por 10k sem GPIO (F12)
+— o firmware não pode desligar os gate drivers.
 
 ## Como compilar isto, quando houver ESP-IDF
 
@@ -76,10 +90,14 @@ devolve 0 de propósito — para o fato ficar no código, e não só num coment�
 cd /opt/jupyter/work/drone/firmware && idf.py set-target esp32s3 && idf.py build
 ```
 
-Depois do `idf.py build`, espere-se **falhar** em `main/board_pins.h` → GPIO.
-Isso não é um problema: é o `-1` fazendo o trabalho dele. O primeiro build
-honesto é o que documenta os erros da API, e a lista dos que são esperados está
-em `fase4_entrega/FIRMWARE_BUILD.md` seção 6.
+O primeiro build honesto agora não tem erro esperado em `board_pins.h` (os
+GPIOs estão preenchidos). O que o `idf.py build` pode ainda pegar, nesta
+ordem: divergência fina de assinatura entre v5.3/v5.4/v5.5 (as chamadas foram
+conferidas contra a v5.4 exata — `driver/mcpwm_prelude.h`,
+`esp_adc/adc_oneshot.h`, `driver/ledc.h`, `driver/spi_master.h`), opções de
+Kconfig renomeadas no `sdkconfig.defaults`, e nada mais que os fontes não
+expliquem. O build que compilar ainda **não** valida: frequência, níveis e
+protocolo só existem no osciloscópio, com a placa em bancada **sem helices**.
 
 ## O que este firmware não faz, e por que isso importa
 

@@ -92,7 +92,9 @@ N_FETS, N_DRIVERS = 24, 12
 DT_RTL = 518.750e-9
 BUCK_12V_A = 0.60
 T_ALVO = 0.05e-6
-SPIKE_MEDIDO = 60.0       # spike de cabo medido na Fase 0
+SPIKE_CALC = 60.0        # [FIX auditoria 14] spike de cabo L*di/dt = 100 nH x 30 A / 50 ns,
+                         # CALCULADO na Fase 0 (FASE0_ESPECIFICACAO.md §4.4 / verifica_limites_
+                         # entrada_v2 §1). NAO e' medido -- o rotulo antigo "[MEDIDO]" era falso.
 
 p("=" * 78)
 p("FASE 0 -- LIMITES CRITICOS (v7) -- MOSFET de BAIXO Qg REALMENTE LOCALIZADO")
@@ -106,9 +108,19 @@ p(f"     RqJC = {MOS_RTHJC:.1f} C/W  |  RqJA = {MOS_RTHJA:.1f} C/W   [DS VENC p.
 p(f"     preco 1 un = {MOS_PRECO:.4f} USD  |  estoque = {MOS_ESTOQUE}   [MEDIDO LCSC 2026-09-28]")
 p(f"  REFERENCIA (orcada hoje): {REF_NAME}, Qg {REF_QG_TYP*1e9:.0f}/{REF_QG_MAX*1e9:.0f} nC, "
   f"Rds {REF_RDS*1e3:.1f} mOhm, {REF_PRECO:.4f} USD, estoque {REF_ESTOQUE}")
-p(f"  Margem de tensao: barramento {VBAT_MAX:.1f} V + spike medido {SPIKE_MEDIDO:.0f} V = "
-  f"{SPIKE_MEDIDO:.0f} V contra V(BR)DSS de {MOS_VDS:.0f} V -> folga de "
-  f"{MOS_VDS/SPIKE_MEDIDO*100-100:.0f} %   [MEDIDO]")
+# [FIX auditoria 14] margem de tensao no pior caso: o spike SOMA ao barramento.
+# pior caso = 25,2 V + 60 V = 85,2 V contra V(BR)DSS de 80 V -> margem -6,1% (FALHA).
+# A linha antiga somava ERRADO ("25,2 + 60 = 60") e reportava "folga de 33%" comparando
+# 80 V so' contra o spike de 60 V, ignorando o barramento.
+v_worst = VBAT_MAX + SPIKE_CALC                          # 85,2 V
+margem_vds = (MOS_VDS - v_worst) / v_worst * 100.0      # -6,1 %
+p(f"  Margem de tensao: barramento {VBAT_MAX:.1f} V + spike [CALC] {SPIKE_CALC:.0f} V = "
+  f"{v_worst:.1f} V contra V(BR)DSS de {MOS_VDS:.0f} V -> margem de {margem_vds:.1f} % "
+  f"({'FOLGA' if margem_vds >= 0 else 'FALHA'})  [CALC]")
+p("  >>> [FIX auditoria 14] HONESTO: o MOSFET vencedor de 80 V NAO passa no criterio de")
+p("      spike do projeto (pior caso 85,2 V > 80 V; o mesmo criterio reprovou o de 60 V por")
+p("      'zero margem'). decisao pendente: aceitar o risco, reduzir o spike (snubber/layout)")
+p("      ou subir para FET >= 100 V. O spike de 60 V e' [CALC], nao 'medido'.")
 
 # =============================================================================
 # 1. TEMPO DE COMUTACAO DE GATE
@@ -204,14 +216,20 @@ linha("L4 dead-time necessario no turn-OFF (IR2104)", DT_RTL * 1e9, t_off * 1e9,
 linha("L4b dead-time necessario no turn-OFF (6EDL7141)", DT_RTL * 1e9, t_off_6ed * 1e9,
       f"Qg/1,5 A = {t_off_6ed*1e9:.1f} ns; piso do CI e' 120 ns < janela do MCPWM, "
       f"entao o dead-time NAO se soma (ESCOLHA_MOSFET_DRIVER.md §4.3)", "ns")
+# [FIX auditoria 15] percentual = tempo x 100 / valor_base. A formula antiga era
+# (DT_RTL - t_ref)*100 -- tempo multiplicado por 100 SEM dividir pela base ("sobe de 0 %").
+t_ref_6ed = REF_QG_TYP / DRV_IPEAK_6ED                   # 112 ns
 p(f"  [MEDIDO] folga no caminho do 6EDL7141 = {(DT_RTL - t_off_6ed)/t_off_6ed*100:.0f} % "
-  f"(sobe de {(DT_RTL - REF_QG_TYP/DRV_IPEAK_6ED)*100:.0f} % com a referencia)")
+  f"(sobe de {(DT_RTL - t_ref_6ed)/t_ref_6ed*100:.0f} % com a referencia)")
 
 # =============================================================================
 # 7. Rg
 # =============================================================================
 p("\n7. RESISTOR DE GATE")
-C_LACO, L_LACO = 20e-9, 2e-9
+# [FIX auditoria 9/16] L e C do laco de gate do v4 §3: 20 nH e 2 nF (o v7 tinha TROCADOS:
+# 20 nF / 2 nH -> Z0 = 0,32 ohm em vez de 3,16 ohm). Com os valores corretos o piso de
+# amortecimento e' Rg >= 6,3 ohm (o adotado 10 ohm continua atendendo).
+C_LACO, L_LACO = 2e-9, 20e-9   # 2 nF e 20 nH (v4 §3) [FIX auditoria 9]
 Z0 = math.sqrt(L_LACO / C_LACO)
 RG_ADOTADO = 10.0
 linha("L7 Rg vs amortecimento (adotado 10 ohm)", RG_ADOTADO, 2 * Z0,
@@ -221,6 +239,13 @@ p(f"  [MEDIDO] com Rg = {RG_ADOTADO:.0f} ohm e Ciss = {MOS_CISS*1e12:.0f} pF, a 
   f"de tempo do gate e' RC = {RG_ADOTADO*MOS_CISS*1e9:.1f} ns; a comutacao de 0->10 V em 3,2*RC")
 p(f"         levaria {3.2*RG_ADOTADO*MOS_CISS*1e9:.0f} ns, ou seja o Rg de 10 ohm NAO e' o gargalo -- "
   f"a corrente do driver e'.")
+# [FIX auditoria 9] nota honesta: com o Z0 CORRETO (3,16 ohm) o piso de amortecimento e'
+# 6,3 ohm. Para o VENCEDOR + 6EDL7141 nao ha conflito (t = 25,3 ns com Rg de 10 ohm);
+# para a REFERENCIA de 168 nC o conflito amortecimento x velocidade continua (o Rg p/
+# 50 ns seria ~2,3 ohm < 6,3 ohm) -- veredito L7 do verifica_limites_v6.py.
+p(f"  [FIX auditoria 9] com o Z0 correto, o amortecimento exige Rg >= {2*Z0:.1f} ohm: o adotado "
+  f"{RG_ADOTADO:.0f} ohm atende; com o IR2104 o L1 ja' esta estourado por corrente do driver "
+  f"({t_on*1e9:.0f} ns).")
 
 # =============================================================================
 # 8. CONDUCAO  -- o preco de trocar 1,7 mOhm por 3,7/4,5 mOhm
@@ -301,11 +326,13 @@ p(f"  Vias 0,3 mm: R = {rv*1e3:.3f} mOhm -> 40 vias a {IPK:.0f} A: queda {IPK*rv
 p(f"  ADC: janela 2 us = {2/(1/FPWM*1e6)*100:.1f} % do periodo de {1e6/FPWM:.0f} us   [MEDIDO]")
 P_H = 750 / 4.5
 I_BUS = P_H / VBAT_NOM
-I_FASE = I_BUS / 0.6
+# [FIX auditoria 1] pico de fase POR MOTOR: (i_bus/4)/0,6 = 3,1 A (o v7 usava i_bus/0,6
+# = 12,5 A -- corrente TOTAL do drone como pico de fase de um motor so')
+I_FASE = (I_BUS / 4) / 0.6
 i_12_b = N_DRIVERS * 25e-6 + N_FETS * MOS_QG * FPWM
 conv = (3.3 * 0.55 + VTRILHO * i_12_b + 5 * 0.20) / 0.85
 p("\n11. BALANCO NO CRUZEIRO (mesmo modelo do v4 §4, com o Rds do vencedor)")
-p(f"  Helice {P_H:.0f} W | I_barra {I_BUS:.1f} A | I_fase pico {I_FASE:.1f} A   [MEDIDO]")
+p(f"  Helice {P_H:.0f} W | I_barra {I_BUS:.1f} A | I_fase pico (por motor) {I_FASE:.1f} A   [MEDIDO]")
 p(f"  FETs (conducao no cruzeiro, Rds typ): {N_FETS*(I_FASE/2)**2*MOS_RDS_TYP:.2f} W   [MEDIDO]")
 p(f"  Conversores: {conv:.2f} W (entrada)   [MEDIDO]")
 p(f"  TOTAL ~ {P_H + N_FETS*(I_FASE/2)**2*MOS_RDS_TYP + conv:.0f} W "
@@ -383,9 +410,8 @@ if estourados:
     p("  >>> NADA foi marcado verde por conveniencia: L1, L6 e L8 sao vermelhos porque os")
     p("      numeros medidos sao vermelhos, inclusive o L8, que a troca MELHOROU no gate e")
     p("      PIOROU no cobre.")
-    p("")
-    p("  >>> NADA foi marcado verde por conveniencia. L1, L6 e L8 sao vermelhos porque os")
-    p("      numeros medidos sao vermelhos.")
+    # [FIX auditoria 16] removido o paragrafo final DUPLICADO ("NADA foi marcado verde..."
+    # aparecia duas vezes seguidas na saida)
 p("\n" + "=" * 78)
 p("FIM v7 -- 100% calculo numerico, zero medicao de bancada.")
 p("Parametros do MOSFET: datasheets/nvmfs6h824nt1g_onsemi_VENCEDOR.pdf p.1 e p.2 (PDF real).")

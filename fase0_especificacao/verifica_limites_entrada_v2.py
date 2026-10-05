@@ -64,11 +64,16 @@ p("      a <2 mm do par, com o loop de comutacao minimizado no layout.")
 
 # ================================================================ 2. TERMICA
 p("\n2. TERMICA DO MOSFET -- dois pontos de operacao (Rth_ja e' PREMISSA)")
-rds = 2.0e-3; Ta = 25.0; psw_fet = 0.133
+# [FIX auditoria 2] P_sw = f*V*I*(tr+tf)/2 e' LINEAR em I (o v2 usava 0,133*(I/30)^2, que
+# caia 4x quando a corrente caia pela metade). A 30 A: 20 kHz x 22,2 V x 30 A x 40 ns / 2
+# = 266 mW/FET (o 0,133 W vinha do /2 duplicado do dimensionamento_fase0.py, corrigido).
+rds = 2.0e-3; Ta = 25.0
+psw_fet_30 = fpwm * 22.2 * 30.0 * (20e-9 + 20e-9) / 2      # 0,2664 W por FET a 30 A
 for nome, ipk in [("cruzeiro (~5 A de fase pico)", 5.0), ("nominal (15 A)", 15.0), ("pico (30 A)", 30.0)]:
     pc = (ipk / 2) ** 2 * rds
-    ptot = pc + psw_fet * (ipk / 30.0) ** 2
-    p(f"  {nome:26s}: P_cond={pc*1e3:7.1f} mW, P_sw={psw_fet*(ipk/30)**2*1e3:6.1f} mW -> P={ptot:5.2f} W/FET "
+    psw = psw_fet_30 * (ipk / 30.0)                        # linear em I [FIX auditoria 2]
+    ptot = pc + psw
+    p(f"  {nome:26s}: P_cond={pc*1e3:7.1f} mW, P_sw={psw*1e3:6.1f} mW -> P={ptot:5.2f} W/FET "
       f"-> 24 FETs = {24*ptot:5.2f} W")
     for rth in (30, 60, 100):
         tj = Ta + ptot * rth
@@ -109,7 +114,11 @@ p("\n6. BALANCO DE POTENCIA -- CARGA REAL, nao nominal")
 auw, gW = 750.0, 4.5
 p_hover = auw / gW
 i_hover_bus = p_hover / 22.2
-i_fase_hover = i_hover_bus / 0.75 / 0.8      # desfazendo o modelo (3/4)*m*Ipk
+# [FIX auditoria 1] pico de fase POR MOTOR: o barramento alimenta 4 motores, cada um
+# entregando (3/4)*m*Ipk_motor -> Ipk_motor = (i_bus/4)/(0,75*0,8) = 3,1 A. O v2 usava
+# i_bus/0,6 = 12,5 A: tratava a corrente TOTAL do drone como pico de fase de UM motor
+# (perda de conducao 16x maior: 1,88 W -> 0,12 W nos 24 FETs).
+i_fase_hover = i_hover_bus / 4 / 0.75 / 0.8   # desfazendo o modelo (3/4)*m*Ipk, por motor
 pc_h = (i_fase_hover / 2) ** 2 * rds * 24
 conv_cruzeiro = 3.3 * 0.55 + 12 * 0.049 + 5 * 0.20
 conv_cruzeiro = conv_cruzeiro / 0.85          # entrada, 85% de rendimento
@@ -120,7 +129,8 @@ p(f"  Perdas de conducao nos 24 FETs (cruzeiro): {pc_h:.2f} W")
 p(f"  Conversores (MCU+radio 0.55 A@3.3, gate 49 mA@12, aux 0.20 A@5): {conv_cruzeiro:.2f} W na entrada")
 p(f"  TOTAL da placa no cruzeiro = {p_hover:.0f} W (helice) + {pc_h:.2f} W + {conv_cruzeiro:.2f} W "
   f"= {ptot_h:.0f} W  ({ptot_h/p_hover*100-100:.1f} % acima do ideal)")
-p(f"  No PICO (4x30 A): so' a conducao dos FETs = {24*(15**2*rds):.1f} W + comutacao ~3.2 W + helice (I^2) "
+p(f"  No PICO (4x30 A): so' a conducao dos FETs = {24*(15**2*rds):.1f} W + comutacao "
+  f"{24*psw_fet_30:.1f} W (24 x 266 mW, [FIX auditoria 2]) + helice (I^2) "
   f"-> regime termico de rajada, NAO continuo.")
 p("  >>> Rendimento da helice (g/W) e' PREMISSA. O numero que importa (temperatura real em voo)")
 p("      nao existe nesta maquina: exige tunel de vento/bancada.")

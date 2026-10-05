@@ -1,10 +1,13 @@
-﻿# ===========================================================================
+# ===========================================================================
 # firmware/CMakeLists.txt — projeto ESP-IDF do firmware de bordo do drone
 #
-# ESQUELETO NAO VERIFICADO. ESTE ARQUIVO NAO FOI PROCESSADO POR NENHUM
-# GERADOR DE BUILD NESTA MAQUINA. Por que: o ESP-IDF nao esta instalado,
-# entao nao existe idf.py nem o conjunto de ferramentas que consome este
-# CMakeLists.txt. Ver ../fase4_entrega/FIRMWARE_BUILD.md.
+# ESQUELETO corrigido pela auditoria de 2026-10-04 (ver
+# AUDITORIA_ERROS_2026-10-04.md, secao F); AINDA NAO COMPILADO — precisa de
+# idf.py build para validar. Este arquivo em si nao mudou na auditoria (a
+# estrutura de projeto ESP-IDF v5 esta correta); o que esta em revisao e o
+# conteudo de main/ e o sdkconfig.defaults. Por que nao rodou: o ESP-IDF nao
+# esta instalado, entao nao existe idf.py nem o conjunto de ferramentas que
+# consome este CMakeLists.txt. Ver ../fase4_entrega/FIRMWARE_BUILD.md.
 #
 # A estrutura segue a da ESP-IDF v5, com o componente do usuario em main/.
 # Ao rodar `idf.py build`, a ESP-IDF le este arquivo, o de main/CMakeLists.txt

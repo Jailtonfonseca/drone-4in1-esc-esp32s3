@@ -32,7 +32,9 @@ MOS_QG_TYP = 168e-9      # [DS FET p.4, Table 6]  Qg total typ
 MOS_QG_MAX = 210e-9      # [DS FET p.4, Table 6]  Qg total max ("not subject to production test")
 MOS_RDS = 1.7e-3         # [DS FET p.4, Table 4]  RDS(on) max @ VGS=10 V, ID=100 A
 MOS_RDS_TYP = 1.5e-3     # [DS FET p.4, Table 4]  RDS(on) typ
-MOS_CISS = 12.0e-12      # [DS FET p.4, Table 5]  Ciss typ (VGS=0 V, VDS=50 V, 1 MHz)
+MOS_CISS = 12.0e-9       # [DS FET p.4, Table 5]  Ciss typ (VGS=0 V, VDS=50 V, 1 MHz)
+                         # [FIX auditoria 8] 12 nF = 12.000 pF (o v6 tinha 12e-12 = 12 pF,
+                         # 1000x menor -- a v5 (CISS_TYP = 12,0e-9) estava certa)
 MOS_TR = 23e-9           # [DS FET p.4, Table 5]  rise time com Rg,ext = 1,6 ohm
 MOS_TF = 27e-9           # [DS FET p.4, Table 5]  fall time
 MOS_RG_EXT = 1.6         # [DS FET p.4, Table 5]  Rg externo usado na caracterizacao do DS
@@ -180,23 +182,30 @@ linha("L8 perda de comutacao por FET", 0.583, p_sw_est,
 p("")
 p("  CONTRAPROVA: o modelo acima NAO e' a perda real. O datasheet publica Qoss em TABELA:")
 p(f"  [DS FET p.1, Table 1 'Key Performance Parameters' e p.4, Table 7] Qoss = {MOS_QOSS*1e9:.0f} nC typ")
-e_oss = MOS_QOSS * VBAT_MAX
+# [FIX auditoria 11] E_oss = (1/2)*Qoss*Vds (a energia capaciva e' 1/2*C*V^2 = 1/2*Q*V;
+# o v6 esquecia o 1/2 -> 107,4 mW/FET em vez de 53,7 mW/FET)
+e_oss = 0.5 * MOS_QOSS * VBAT_MAX
 p_oss = e_oss * FPWM
-p(f"  [MEDIDO] E_oss = Qoss * Vds = {MOS_QOSS*1e9:.0f} nC x {VBAT_MAX} V = {e_oss*1e6:.2f} uJ")
+p(f"  [MEDIDO] E_oss = 1/2 x Qoss x Vds = {MOS_QOSS*1e9:.0f} nC x {VBAT_MAX} V / 2 = {e_oss*1e6:.2f} uJ")
 p(f"  [MEDIDO] P(E_oss) = {e_oss*1e6:.2f} uJ x {FPWM/1e3:.0f} kHz = {p_oss*1e3:.1f} mW/FET "
   f"-> {N_FETS*p_oss:.2f} W no banco   [DS] -- energia que o MOSFET DESPERDICA por comutacao")
 p(f"  [MEDIDO] P(E_oss) e' {p_oss/p_sw_est*100:.2f} % da estimativa de {p_sw_est:.2f} W do modelo 0,5*Vds*I*tr")
-p(f"  [MEDIDO] e' {0.133/p_oss*100:.0f} % dos 0,133 W que o v4 §3 usava de parcela de comutacao")
+# [FIX auditoria 12] razao na direcao certa: p_oss/0,133 (o v6 imprimia 0,133/p_oss e chamava
+# o resultado de "% dos 0,133 W"). Com o 1/2 do [FIX auditoria 11] aplicado, o piso de Qoss
+# e' 40% da parcela de 0,133 W (sem o 1/2 seria 81% -- numero que a auditoria cita).
+p(f"  [MEDIDO] o piso de Qoss e' {p_oss/0.133*100:.0f} % da parcela de 0,133 W que o v4 §3 usava "
+  f"(0,133 W = {0.133/p_oss:.2f}x o piso)")
 p(f"  [DS FET p.4, Table 7] Qrr = {MOS_QRR*1e9:.0f} nC typ / 470 nC max a 100 A/us: recuperacao")
 p(f"        injetada no barramento a cada comutacao = {MOS_QRR/MOS_QG_TYP*100:.0f} % do proprio Qg")
 linha("L8b perda de comutacao por FET -- piso de datasheet (Qoss)", 0.583, p_oss,
-      "Qoss x Vds x f, com Qoss lido da Table 1 do datasheet; e' o unico numero de tabela "
-      "disponivel, porque E_on/E_off nao sao publicados [MEDIDO]", "W")
+      "0,5 x Qoss x Vds x f [FIX auditoria 11], com Qoss lido da Table 1 do datasheet; e' o unico "
+      "numero de tabela disponivel, porque E_on/E_off nao sao publicados [MEDIDO]", "W")
 p("  >>> VEREDITO HONESTO DE L8: os dois numeros medem coisas diferentes. O de 0,133 W do v4 e' um")
 p("      chute de projeto; o de Qoss e' energia de comutacao por natureza no FET, e' TABELA de")
-p("      datasheet, e da' uma ordem de grandeza a menos. O numero de 9,77 W do")
-p("      redimensionamento_gate_v5 era artefato do modelo 0,5*Vds*I*tr, que cresce com t_r sem")
-p("      limite e nao descreve o dispositivo. O que de fato NAO esta determinado e E_off:")
+p("      datasheet, e esta ~2 ordens de grandeza ABAIXO do modelo [FIX auditoria 11]: os 9,77 W")
+p("      do redimensionamento_gate_v5 sao 182x o piso de Qoss com o 1/2 (53,7 mW), ou 91x sem")
+p("      o 1/2 -- era artefato do modelo 0,5*Vds*I*tr, que cresce com t_r sem limite e nao")
+p("      descreve o dispositivo. O que de fato NAO esta determinado e E_off:")
 p("      [N/D offline] -- nenhum dos PDFs em datasheets/ publica E_on/E_off.")
 
 # =============================================================================
@@ -212,8 +221,19 @@ linha("L2 queda no bootstrap por comutacao", 0.040, dv_boot,
 p(f"  [MEDIDO] Cboot minimo pela regra de 20*Qg = {cboot_min*1e6:.2f} uF (adotado: {CBOOT*1e6:.2f} uF, "
   f"fator {CBOOT/cboot_min:.2f}x)")
 p(f"  [MEDIDO] queda no pior caso (Qg max) = {dv_boot_max*1e3:.0f} mV = {dv_boot_max/VTRILHO*100:.2f} % de {VTRILHO:.0f} V")
-p(f"  [MEDIDO] Cboot necessario para 0,5 % de queda com Qg max = {MOS_QG_MAX/0.005*1e6:.2f} uF")
-p(f"  >>> o Cboot de 1 uF do BOM original {'serva' if CBOOT >= cboot_min else 'NAO SERVE'} para a combinacao escolhida")
+# [FIX auditoria 10] Cboot p/ 0,5% de queda = Qg/(0,005 x 12 V) = 3,5 uF. O "42 uF" antigo
+# esquecia de multiplicar pelos 12 V no denominador (210 nC / 0,005 = 42 uF -- errado).
+p(f"  [MEDIDO] Cboot necessario para 0,5 % de queda com Qg max = Qg/(0,005 x 12 V) = "
+  f"{MOS_QG_MAX/(0.005*VTRILHO)*1e6:.2f} uF")
+# [FIX auditoria 10/19] a frase final agora TESTA E CITA o Cboot ADOTADO (2x 2,2 uF =
+# 4,7 uF) -- antes dizia "o Cboot de 1 uF do BOM original serve" testando os 4,7 uF.
+p(f"  >>> o Cboot ADOTADO (2x 2,2 uF = {CBOOT*1e6:.2f} uF) "
+  f"{'SERVE' if CBOOT >= cboot_min else 'NAO SERVE'} para a combinacao escolhida "
+  f"(regra 20*Qg = {cboot_min*1e6:.2f} uF; queda typ {dv_boot*1e3:.1f} mV)")
+p(f"  >>> [FIX auditoria 19] ATENCAO: o BOM lista 1x 2,2 uF POR HALF-BRIDGE -> 168 nC/2,2 uF "
+  f"= 76,4 mV > 40 mV (limite L2).")
+p(f"      O BOM precisa de 2x 2,2 uF por canal OU o L2 precisa ser revisado -- o 35,7 mV "
+  f"acima e' a conta com 4,7 uF, NAO com 2,2 uF.")
 
 # =============================================================================
 # 5. CORRENTE NO TRILHO DE 12 V
@@ -265,7 +285,10 @@ p(f"  [MEDIDO] custo em duty: {janela/(1/FPWM)*100:.2f} % do periodo a 20 kHz; s
 # 7. Rg  --  amortecimento x velocidade
 # =============================================================================
 p("\n7. RESISTOR DE GATE: amortecimento x velocidade (as duas contas nao cabem no mesmo resistor)")
-C_LACO, L_LACO = 20e-9, 2e-9   # v4 §3: 20 nF e 2 nH
+# [FIX auditoria 9/16] L e C do laco de gate do v4 §3: 20 nH e 2 nF (o v6 tinha TROCADOS:
+# 20 nF / 2 nH -> Z0 10x menor e o "L7 OK" era artefato). Com os valores corretos:
+# Z0 = sqrt(20 nH / 2 nF) = 3,16 ohm -> amortecimento exige Rg >= 6,3 ohm.
+C_LACO, L_LACO = 2e-9, 20e-9   # 2 nF e 20 nH (v4 §3) [FIX auditoria 9]
 Z0 = math.sqrt(L_LACO / C_LACO)
 RG_ADOTADO = 10.0
 rg_min_slew = VTRILHO / (MOS_QG_TYP / T_ALVO) - MOS_RG_INT
@@ -278,6 +301,12 @@ p(f"  [MEDIDO] com Rg = {RG_ADOTADO:.0f} + {MOS_RG_INT:.1f} = {RG_ADOTADO+MOS_RG
   f"corrente-limitado, quem manda e' o DRIVER: a corrente pedida seria "
   f"{VTRILHO/(RG_ADOTADO+MOS_RG_INT):.3f} A contra {DRV_IPEAK:.2f} A disponiveis")
 p(f"  [MEDIDO] f_ring = 1/(2*pi*sqrt(LC)) = {1/(2*math.pi*math.sqrt(C_LACO*L_LACO))/1e6:.1f} MHz")
+# [FIX auditoria 9] veredito honesto de L7 com os valores CORRETOS de L e C
+p(f"  [FIX auditoria 9] VEREDITO HONESTO DE L7: o Rg para 50 ns ({rg_min_slew:.2f} ohm) e' MENOR "
+  f"que o piso de amortecimento ({2*Z0:.1f} ohm).")
+p(f"      A incompatibilidade amortecimento x velocidade CONTINUA (mesma conclusao do")
+p(f"      redimensionamento_gate_v5 §4: sao duas exigencias que nao cabem no mesmo resistor).")
+p(f"      O 'L7 OK' da saida anterior era artefato do LxC trocado (Z0 10x menor).")
 
 # =============================================================================
 # 8. PERDAS DE CONDUCAO E BALANCO  (o que troca o Rds(on) do MOSFET)
@@ -331,9 +360,11 @@ p(f"  ADC: janela 2 us = {2/(1/FPWM*1e6)*100:.1f} % do periodo de {1e6/FPWM:.0f}
 p("\n10. BALANCO NO CRUZEIRO (mesmo modelo do v4 §4)")
 P_H = 750 / 4.5
 I_BUS = P_H / VBAT_NOM
-I_FASE = I_BUS / 0.6
+# [FIX auditoria 1] pico de fase POR MOTOR: (i_bus/4)/0,6 = 3,1 A (o v6 usava i_bus/0,6
+# = 12,5 A -- corrente TOTAL do drone como pico de fase de um motor so')
+I_FASE = (I_BUS / 4) / 0.6
 conv = (3.3 * 0.55 + VTRILHO * i_12 + 5 * 0.20) / 0.85
-p(f"  Helice: {P_H:.0f} W | I_barra {I_BUS:.1f} A | I_fase pico {I_FASE:.1f} A")
+p(f"  Helice: {P_H:.0f} W | I_barra {I_BUS:.1f} A | I_fase pico (por motor) {I_FASE:.1f} A")
 p(f"  FETs (conducao no cruzeiro): {24*(I_FASE/2)**2*MOS_RDS:.2f} W")
 p(f"  Conversores: {conv:.2f} W (entrada) | TOTAL ~ {P_H + 24*(I_FASE/2)**2*MOS_RDS + conv:.0f} W "
   f"({(P_H + 24*(I_FASE/2)**2*MOS_RDS + conv)/P_H*100-100:.1f} % acima do ideal de helice)")

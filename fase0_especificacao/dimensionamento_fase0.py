@@ -56,7 +56,10 @@ print(f"  (premissa adotada: Rds_on = {P['P05_rds_on']*1e3:.1f} mOhm -> "
 
 # perdas de comutacao (estimativa analitica, NAO medida)
 tr = tf = 20e-9
-Esw = Vnom * P["P03_i_pico_motor"] * (tr + tf) / 2 / 2   # /2 dev: cada FET chaveia ~1 vez por periodo util
+# [FIX auditoria 2] formula padrao Esw = V*I*(tr+tf)/2. O "/2 /2" anterior duplicava o fator
+# 1/2: a parcela "cada FET chaveia ~1 vez por periodo" ja' esta no (tr+tf)/2 multiplicado
+# por f_sw. Correto a 30 A: 22,2 V x 30 A x 40 ns / 2 = 13,32 uJ -> 266 mW/FET (era 133 mW).
+Esw = Vnom * P["P03_i_pico_motor"] * (tr + tf) / 2
 Psw_fet = Esw * P["P07_fpwm"]
 print(f"  Comutacao: tr=tf=20 ns -> Esw={Esw*1e9:.2f} nJ por evento -> {Psw_fet*1e3:.1f} mW/FET "
       f"-> 24 FETs = {Psw_fet*24:.2f} W")
@@ -95,8 +98,10 @@ print(f"Queda no bootstrap a cada ciclo: dV = Qg/Cboot = {P['P06_qg']/1e-6:.3f} 
 # dimensao do trilho 12 V
 iq12 = 12 * P["P11_iq_driver"]
 i12_total = iq12 + 24 * Pg_fet / vgs
+# [FIX auditoria 6] folga real = 0,60 A / 0,0492 A = 12,2x (o texto fixo dizia "3x")
 print(f"Trilho 12 V: quiescencia 12*{P['P11_iq_driver']*1e3:.1f} mA = {iq12*1e3:.0f} mA + "
-      f"{24*Pg_fet/vgs*1e3:.1f} mA (carga de gate) = {i12_total*1e3:.0f} mA -> BUCK 12 V / 0.60 A com folga 3x")
+      f"{24*Pg_fet/vgs*1e3:.1f} mA (carga de gate) = {i12_total*1e3:.0f} mA -> BUCK 12 V / 0.60 A "
+      f"com folga {0.60/i12_total:.1f}x")
 
 # ---------------------------------------------------------------- 3. SENSORIAMENTO
 h("3. SENSORIAMENTO DE CORRENTE (shunt low-side + amp) e BEMF")
@@ -120,10 +125,15 @@ print(f"  Resolucao ADC: {lsb*1e6:.0f} uV/LSB -> {lsb/(Rsh*G)*1000:.1f} mA/LSB  
 print("  >>> ATENCAO: shunt low-side so' e' valido quando o FET inferior esta ON -> a amostragem do ADC")
 print("      TEM de ser sincronizada com o PWM (trigger no centro/centro-esquerda do periodo).")
     # BEMF
-div = 25.2 / 3.0
-print(f"  BEMF: divisor 1:{div:.2f} (ex. 8.2k/1.0k) -> 25.2 V => 3.07 V; cap 1 nF + clamp 3.3 V.")
-vb = 3.07 - 0
-print(f"      erro de divisor 1% : {3.07*0.02:.3f} V -> {3.07*0.02/(3.07/25.2):.2f} V na fase")
+# [FIX auditoria 3] divisor 8,2k/1,0k => razao (8,2+1,0)/1,0 = 9,2:1. O "1:8,40" antigo
+# usava 25,2/3,07 (so' os 8,2k no denominador), dando 3,07 V. Correto:
+# VREF = 25,2 V x 1,0k/9,2k = 2,739 V (a Fase 2 mede 2,739 V no bemf_div.cir).
+rb_top, rb_bot = 8.2e3, 1.0e3
+div = (rb_top + rb_bot) / rb_bot          # 9,2
+vbemf = 25.2 * rb_bot / (rb_top + rb_bot)  # 2,739 V
+print(f"  BEMF: divisor {div:.1f}:1 (ex. 8.2k/1.0k) -> 25.2 V => {vbemf:.3f} V; cap 1 nF + clamp 3.3 V.")
+vb = vbemf
+print(f"      erro de divisor 1% : {vbemf*0.02:.3f} V -> {vbemf*0.02/(vbemf/25.2):.2f} V na fase")
 
 h("4. VBAT SENSE + FILTRO DE ADC")
 Rtop, Rbot = 100e3, 13.7e3      # 25.2 V -> 3.03 V
@@ -139,24 +149,40 @@ print(f"  Filtro RC (C=100 nF): fc={fc:.1f} Hz (paralelo de Thevenin {Rtop*Rbot/
 
 # ---------------------------------------------------------------- 5. BUCKS
 h("5. FONTES CHAVEADAS (3 bucks) -- fsw = 500 kHz")
-def buck(nome, vin_max, vin_min, vout, iout, fb=500e3, dril=0.30, dvout=0.010, esr=2e-3):
+def buck(nome, vin_max, vin_min, vout, iout, fb=500e3, dril=0.30, dvout=0.010, esr=2e-3,
+         l_adotado=None):
     dmax = vout / vin_min; dmin = vout / vin_max
     d = vout / vin_max
-    L = (vin_max - vout) * dmax / (dril * iout * fb)
+    # [FIX auditoria 4] pior caso do indutor usa vin_MAX com D = vout/vin_max (dmin).
+    # A formula antiga misturava os extremos: (vin_max - vout) com dmax (duty na vin_MIN).
+    # BUCK 12 V: (25,2-12)*(12/25,2)/(0,3*0,6*500k) = 69,8 uH (a formula antiga dava 88,9 uH).
+    L = (vin_max - vout) * dmin / (dril * iout * fb)
     cout = dril * iout / (8 * fb * dvout)
     icin_rms = iout * math.sqrt(d * (1 - d))
     pin = vout * iout / 0.90
     iin = pin / vin_min
     print(f"\n  [{nome}] {vin_min:.1f}-{vin_max:.1f} V -> {vout} V @ {iout:.2f} A")
-    print(f"    D = {dmin:.3f}..{dmax:.3f} | L(30% ripple) = {L*1e6:.1f} uH -> adotar {round(L*1e6)} uH")
+    print(f"    D = {dmin:.3f}..{dmax:.3f} | L p/ {dril*100:.0f}% de ripple no pior caso (vin_max) "
+          f"= {L*1e6:.1f} uH")
+    if l_adotado is not None:
+        # [FIX auditoria 4] rotulo honesto: ripple REAL do indutor ADOTADO (CSV de compra),
+        # nao "L(30% ripple)" -- o 88,9->89 uH adotado do buck12 da' 17,7% (vin_min) a
+        # 23,6% (vin_max), nao 30%.
+        rip_vmin = (vin_min - vout) * dmax / (l_adotado * fb) / iout * 100
+        rip_vmax = (vin_max - vout) * dmin / (l_adotado * fb) / iout * 100
+        print(f"    adotado no CSV de compra (lista_componentes_fase0.csv l.30-32: "
+              f"89/17/5 uH): {l_adotado*1e6:.1f} uH -> "
+              f"ripple real {rip_vmin:.1f}% (vin_min) .. {rip_vmax:.1f}% (vin_max)")
     print(f"    Cout (dV={dvout*1e3:.0f} mV) = {cout*1e6:.1f} uF -> adotar 2x22 uF X7R + 100 nF")
     print(f"    ripple ESR: dV_esr = dIL*ESR = {dril*iout*esr*1e3:.1f} mV (domina sobre o capacitivo)")
     print(f"    Ic_in(rms) = {icin_rms:.3f} A | Pin({0.90*100:.0f}%) = {pin:.2f} W -> Iin(vin_min) = {iin*1e3:.0f} mA")
-    return dict(L=L, Cout=cout, D=dmax, iin=iin, icin=icin_rms)
+    return dict(L=L, Cout=cout, D=dmax, iin=iin, icin=icin_rms, pin=pin)  # [FIX auditoria 5] pin no retorno
 
-b12 = buck("BUCK 12 V (gate drivers)", Vmax, Vmin, 12.0, 0.60, dvout=0.012)
-b5 = buck("BUCK 5 V (USB/perifericos/aux)", Vmax, Vmin, 5.0, 2.00, dvout=0.025)
-b33 = buck("BUCK 3.3 V (MCU+WiFi+sensores)", 5.0, 4.75, 3.3, 1.50, dvout=0.033)
+# [FIX auditoria 4] l_adotado = valor adotado no CSV de compra (l.30/31/32);
+# buck12: 89 uH no CSV (88,9 uH calculado antes do fix)
+b12 = buck("BUCK 12 V (gate drivers)", Vmax, Vmin, 12.0, 0.60, dvout=0.012, l_adotado=88.9e-6)
+b5 = buck("BUCK 5 V (USB/perifericos/aux)", Vmax, Vmin, 5.0, 2.00, dvout=0.025, l_adotado=17.0e-6)
+b33 = buck("BUCK 3.3 V (MCU+WiFi+sensores)", 5.0, 4.75, 3.3, 1.50, dvout=0.033, l_adotado=5.0e-6)
 ldo = dict(p=(5.0-3.3)*0.15)
 print(f"\n  [LDO 3.3 V_A (analogico IMU/baro)] 5 V -> 3.3 V @ 0.15 A : Pdiss = {ldo['p']:.3f} W (SOT-23 com pad, OK)")
 
@@ -186,12 +212,18 @@ def ipc2221(I, dT, oz=2, external=True):
     return w_mil * 0.0254, A_mil, t_mil
 for I in (10, 30, 60, 120):
     for dT in (10, 20, 30):
-        w, A, t = ipc2221(I, dT, 2)
+        w, A, t = ipc2221(I, dT, 2)                       # camada EXTERNA (k=0,048) -- mantida
+        wi, Ai, ti = ipc2221(I, dT, 2, external=False)    # [FIX auditoria 7] camada INTERNA (k=0,024)
         print(f"  I={I:5.0f} A, 2 oz (t={t:.0f} mil={t*25.4:.0f} um), dT={dT:2.0f} C -> "
-              f"A={A:8.1f} mil^2 -> largura = {w:.2f} mm ({w/25.4*1000:.0f} mil)")
+              f"externa: A={A:8.1f} mil^2 -> largura = {w:.2f} mm ({w/25.4*1000:.0f} mil) | "
+              f"interna: A={Ai:8.1f} mil^2 -> largura = {wi:.2f} mm ({wi/25.4*1000:.0f} mil)")
     print()
+# [FIX auditoria 7] a decisao de projeto e' barramento em camada INTERNA -> a coluna que
+# dimensiona e' a INTERNA (k=0,024): 30 A internos @ dT 10 C = 42,3 mm. A tabela antiga
+# publicava so' a externa (16,37 mm) -- 2,56x otimista para a decisao tomada.
 print("  Decisao: barramento DC (dezenas de A continuos) EM CAMADA INTERNA + metal exposto/barra;")
 print("  nao existe trilha de 2 oz que aguente 120 A de forma continua -- 120 A e' PICO, nao continuo.")
+print("  >>> Para o barramento INTERNO vale a coluna 'interna' (k=0,024): 30 A @ dT 10 C = 42,6 mm.")
 
 # vias
 def via_capacity(d_drill=0.3, t_wall=25e-6, dT=10):
@@ -235,10 +267,24 @@ t5 = b33["iin"] + 0.150 + 0.020
 print(f"  5 V   : 3.3 V buck (corrente de ENTRADA) {b33['iin']*1000:.0f} mA + LDO analogico 150 mA + "
       f"USB/aux 20 mA = {t5:.3f} A -> buck 2.0 A")
 print(f"  VBAT  : motores {itot_cont:.0f} A continuo / {itot_pk:.0f} A pico + {0.05+0.10+0.15:.2f} A dos conversores")
-print(f"  Total de conversao (perdas ~10%): {b12['iin']*12+b5['iin']*5+b33['iin']*5:.2f} W de entrada nos bucks")
+# [FIX auditoria 5] a conta antiga ("13,44 W de entrada") multiplicava corrente de ENTRADA
+# (na vin_min) pela tensao de SAIDA -- grandeza sem sentido. Potencia de entrada correta =
+# soma dos Pin: buck12 (8,0 W) + buck5 (11,1 W) = 19,1 W vindos da VBAT. O buck 3,3 V e'
+# alimentado pelo trilho de 5 V: o Pin dele ja' esta' contabilizado dentro do buck 5 V.
+print(f"  Total de conversao (perdas ~10%): Pin = {b12['pin']:.2f} W (buck12) + {b5['pin']:.2f} W (buck5) "
+      f"= {b12['pin']+b5['pin']:.2f} W de entrada vindos da VBAT "
+      f"(buck 3,3 V alimentado pelo trilho de 5 V, ja' contabilizado no buck 5 V)")
 
 # ---------------------------------------------------------------- JSON
-res = dict(premissas=P, tensoes=dict(vmax=Vmax, vnom=Vnom, vmin=Vmin),
+# [FIX auditoria 21] o JSON existente (dimensionamento_fase0.json) e' um artefato HISTORICO:
+# P06_qg=40 nC e i12 foram REVERTIDOS pela REVERSAO_PREMISSAS_v5 (Qg real 168/210 nC,
+# i12 = 82,8/104,7 mA). Toda escrita futura deste arquivo carrega o aviso abaixo no topo.
+nota = ("SUPERSEDED (parcial): P06_qg=40nC e i12 deste JSON foram REVERTIDOS pela "
+        "REVERSAO_PREMISSAS_v5 (Qg real 168 nC typ / 210 nC max; i12 82,8 mA typ / 104,7 mA max; "
+        "P_sw de gate 33,6/42 mW por FET). Nao usar P06_qg/i12/p_sw_total sem ler "
+        "REVERSAO_PREMISSAS_v5.md e redimensionamento_gate_v5.py. [FIX auditoria 21]")
+res = dict(_superseded_note=nota,
+           premissas=P, tensoes=dict(vmax=Vmax, vnom=Vnom, vmin=Vmin),
            i_pico_total=itot_pk, i_cont_total=itot_cont, i_hover=i_hover,
            p_hover=p_hover, p_sw_total=Psw_fet*24,
            p_cond_total=24*(irms_fet(30)**2*P["P05_rds_on"]),

@@ -104,21 +104,44 @@ def walk_routes(routes):
 
 
 def walk_net(net):
-    """net = (network_out (net NOME (wire ...) (via ...) ...))"""
-    net_name = None
-    if len(net) > 1 and isinstance(net[1], str):
-        net_name = net[1]
+    """[FIX 2026-10-04] formato REAL do FR 1.9.0:
+
+        (network_out
+          (net NOME
+            (wire (path LAYER W x1 y1 ...))
+            (via PADSTACK x y (net NOME))
+          )
+        )
+
+    A versao anterior procurava (wire)/(via) DIRETO sob network_out e o nome
+    da net em net[1] -- nunca achava nada (itens no SES: 0). O nome da net
+    esta UM nivel abaixo, dentro de cada escopo (net NOME ...), e os
+    wires/vias sao filhos DESTE. Strings quotadas chegam como ("STR", valor).
+    """
+    def _s(tok):
+        return tok[1] if isinstance(tok, tuple) else tok
+
     res = []
     for item in net:
-        if not isinstance(item, list):
+        if not isinstance(item, list) or not item:
             continue
-        if item and item[0] == "wire":
-            for sub in item:
-                if isinstance(sub, list) and sub and sub[0] == "path":
-                    res.append(parse_path(sub, net_name))
-        elif item and item[0] == "via":
-            res.append(parse_via(item, net_name))
-    return [r for r in res if r]
+        if item[0] != "net":
+            continue
+        net_name = _s(item[1]) if len(item) > 1 else None
+        for sub in item:
+            if not isinstance(sub, list) or not sub:
+                continue
+            if sub[0] == "wire":
+                for s2 in sub:
+                    if isinstance(s2, list) and s2 and s2[0] == "path":
+                        r = parse_path(s2, net_name)
+                        if r:
+                            res.append(r)
+            elif sub[0] == "via":
+                r = parse_via(sub, net_name)
+                if r:
+                    res.append(r)
+    return res
 
 
 def parse_path(path, net_name):
@@ -146,9 +169,15 @@ def parse_via(v, net_name):
     return {"kind": "via", "layer": None, "x": x, "y": y, "net": net_name}
 
 
-def via_diameter(ses_text, default_um=800.0):
-    """Le o diametro do padstack de via do (library_out ...) do SES, em um."""
-    m = re.search(r'\(padstack\s+(\S+)\s*$', "", re.M)
+def via_diameter(ses_text, default_um=600.0):
+    """Le o diametro do padstack de via do (library_out ...) do SES, em um.
+
+    [FIX auditoria C9] default era 800 um; a regra do board e' via 0,6/0,3
+    (setup ...) — e agora o (library_out) do SES tem o padstack da via (antes
+    era vazio: o DSN nao declarava (via VIA1)). A linha re.search(...) morta
+    (aplicava o padrao a uma string vazia e o resultado nao era usado) foi
+    removida.
+    """
     # procura o primeiro polygon de (library_out (padstack ...)
     blocks = re.findall(r'\(padstack[^\n]*\n((?:.*\n)*?)\s*\)', ses_text)
     best = default_um
@@ -179,10 +208,13 @@ def main():
     n_existing = len(list(board.GetTracks()))
 
     # mapa nome-de-net -> netcode do kicad
+    # [FIX 2026-10-04] NETINFO_ITEM nao tem GetNetCode() no pcbnew 5.1.9
+    # (AttributeError na primeira execucao real deste importador) — o netcode
+    # e' GetNet().
     netcode = {}
     ni = board.GetNetInfo()
     for i in range(ni.GetNetCount()):
-        code = ni.GetNetItem(i).GetNetCode()
+        code = ni.GetNetItem(i).GetNet()
         name = str(ni.GetNetItem(i).GetNetname())
         netcode[name] = code
 
@@ -203,7 +235,7 @@ def main():
                 w = 150000
             for i in range(len(it["points"]) - 1):
                 (x1, y1), (x2, y2) = it["points"][i], it["points"][i + 1]
-                t = pcbnew.PCB_TRACK(board)
+                t = pcbnew.TRACK(board)   # [FIX] KiCad 5.1: TRACK, nao PCB_TRACK
                 t.SetStart(pcbnew.wxPointMM(x1, y1))
                 t.SetEnd(pcbnew.wxPointMM(x2, y2))
                 t.SetWidth(w)
@@ -212,11 +244,11 @@ def main():
                 board.Add(t)
                 n_seg += 1
         else:
-            v = pcbnew.PCB_VIA(board)
+            v = pcbnew.VIA(board)     # [FIX] KiCad 5.1: VIA, nao PCB_VIA
             v.SetPosition(pcbnew.wxPointMM(it["x"], it["y"]))
             v.SetWidth(int(round(d_via * 1000.0)))
             v.SetDrill(int(round(d_via * 500.0)))
-            v.SetViaType(pcbnew.VIATYPE_THROUGH)
+            v.SetViaType(pcbnew.VIA_THROUGH)  # [FIX] 5.1: VIA_THROUGH
             v.SetLayerPair(board.GetLayerID("F.Cu"), board.GetLayerID("B.Cu"))
             v.SetNetCode(code)
             board.Add(v)
@@ -230,7 +262,8 @@ def main():
     t = 0
     vias = 0
     for tr in chk.GetTracks():
-        if tr.GetClass() == "PCB_VIA":
+        # [FIX] KiCad 5.1: Type() == PCB_VIA_T (GetClass() devolve "VIA"/"TRACK")
+        if tr.Type() == pcbnew.PCB_VIA_T:
             vias += 1
         else:
             t += 1

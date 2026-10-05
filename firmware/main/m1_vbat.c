@@ -1,13 +1,16 @@
 /* ===========================================================================
  * m1_vbat.c — modulo M1: leitura de VBAT pelo divisor resistivo
  *
- * ESQUELETO NAO VERIFICADO. ESTE ARQUIVO NAO FOI COMPILADO NESTA MAQUINA.
- * Por que: o ESP-IDF nao esta instalado, entao nao existe idf.py nem o
- * componente driver (adc_oneshot.h, esp_adc_cal.h) contra o qual compilar.
- * Existe nesta maquina apenas o compilador C Xtensa, testado com um arquivo
- * de 5 linhas sem framework (firmware/build_log.txt). Isso nao valida este
- * codigo: nenhuma linha abaixo passou pelo preprocessador, pelo compilador ou
- * pelo linker.
+ * ESQUELETO corrigido pela auditoria de 2026-10-04 (ver
+ * AUDITORIA_ERROS_2026-10-04.md, secao F, achados F1/F5/F6); AINDA NAO
+ * COMPILADO — precisa de idf.py build para validar. O ESP-IDF nao esta
+ * instalado nesta maquina; existe apenas o compilador C Xtensa testado com
+ * um arquivo de 5 linhas sem framework (firmware/build_log.txt), o que nao
+ * valida este codigo. As assinaturas de adc_oneshot/adc_cali abaixo foram
+ * conferidas contra os headers reais do ESP-IDF v5.4
+ * (components/esp_adc/include/esp_adc/adc_oneshot.h e adc_cali_scheme.h):
+ * nao existe handle de canal; adc_oneshot_config_channel() recebe a unidade
+ * e o numero do canal.
  *
  * Modulo de origem: plano/WP4_FIRMWARE.md §5, linha M1.
  *
@@ -23,9 +26,10 @@
 #include "m1_vbat.h"
 #include "board_pins.h"
 
-#include "driver/adc_oneshot.h"
+#include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
+#include "esp_check.h"
 #include "esp_log.h"
 #include "esp_err.h"
 
@@ -41,40 +45,46 @@
 #define VBAT_DIV_RATIO  (RVB2_OHM / (RVB1_OHM + RVB2_OHM))   /* 0,1204925242 */
 
 /* --- ADC interno ---------------------------------------------------------
- * VBAT_SENSE entra por ADC1. Com GPIO = -1 (PENDENTE_DE_CONFERIR), o
- * canal_unit_id abaixo e uma constante arbitraria: o mapa real so existe
- * depois de traduzir pad -> GPIO pelo datasheet do modulo. Ver board_pins.h. */
+ * VBAT_SENSE entra pelo pad 39 do modulo = IO1 = GPIO1 = ADC1_CH0 (tabela
+ * "Pin Definitions" do datasheet do WROOM-1, conferida na auditoria de
+ * 2026-10-04; ver board_pins.h). O canal abaixo nao e mais um palpite. */
 #define VBAT_ADC_UNIT           ADC_UNIT_1
-#define VBAT_ADC_CHANNEL        ADC_CHANNEL_0   /* GPIO1 = ADC1_CH0, se confirmado */
+#define VBAT_ADC_CHANNEL        ADC_CHANNEL_0   /* GPIO1 = ADC1_CH0 */
 #define VBAT_ADC_ATTEN           ADC_ATTEN_DB_12 /* fundo de escala ate ~3,1 V */
 
 /* --- Conversao para volts de bateria ------------------------------------
- * 1 LSB do ADC de 12 bits comattenuacao de 12 dB, segundo a referencia de
- * full scale assumida pelo projeto para a VDD3P3:
- *   3,3 V / 4096 = 805,66 uV por LSB no pino
- * isso da 6,7 mV por LSB referred a VBAT depois do divisor.
- * O ganho real do atenuador depende da calibracao de fabrica, que e por isso
- * que a leitira usa esp_adc_cali em vez de um numero fixo. */
+ * 1 LSB do ADC de 12 bits: 4095 e o ultimo degrau, nao 4096 (corrigido pela
+ * auditoria de 2026-10-04, baixos):
+ *   3,3 V / 4095 = 805,86 uV por LSB no pino
+ * isso da 6,69 mV por LSB referred a VBAT depois do divisor.
+ * ATENCAO (baixo da auditoria): este fator so e usado no FALLBACK, quando a
+ * calibracao de fabrica falha. Com atenuacao de 12 dB o fundo de escala real
+ * e ~3,1 V (nao 3,3 V), entao o fallback le ALTO por ~6 % — o passo 10 do
+ * plano de bancada so fecha com a cali de fabrica funcionando. */
 #define VBAT_VREF_VOLTS         3.3f
 #define VBAT_LSB_AT_PIN         (VBAT_VREF_VOLTS / 4095.0f)   /* 805,86 uV */
 
 static const char *TAG_M1 = "m1_vbat";
 
-/* Estado do modulo. tudo estatico por enquanto: o M1 e single-task. */
+/* Estado do modulo. tudo estatico por enquanto: o M1 e single-task.
+ * Nao existe mais handle de canal: na API oneshot do v5.4 o canal e um
+ * argumento de adc_oneshot_config_channel()/adc_oneshot_read(). */
 static adc_oneshot_unit_handle_t s_vbat_unit   = NULL;
-static adc_oneshot_chan_handle_t s_vbat_chan   = NULL;
 static adc_cali_handle_t         s_vbat_cali   = NULL;
-static bool                       s_vbat_ready  = false;
+static bool                      s_vbat_ready  = false;
 
 /* ---------------------------------------------------------------------------
  * m1_vbat_init — configura o ADC1 e a calibracao de fabrica.
  *
- * Nao testado. Se VBAT_ADC_CHANNEL nao bater com o GPIO real, a ESP-IDF
- * aborta com ESP_ERR_INVALID_ARG na propria adc_oneshot_config_t.
+ * Nao testado. O canal ADC1_CH0 tem que bater com o GPIO1 do board_pins.h;
+ * se um dia mudarem um sem o outro, o criterio do passo 10 falha em bancada
+ * (o driver nao tem como validar a correspondencia GPIO<->canal por conta
+ * propria: adc_oneshot_config_channel so recebe o canal).
  * ------------------------------------------------------------------------ */
 esp_err_t m1_vbat_init(void)
 {
-    ESP_LOGI(TAG_M1, "M1: init VBAT (divisor %.7f)", (double)VBAT_DIV_RATIO);
+    ESP_LOGI(TAG_M1, "M1: init VBAT (GPIO%d, divisor %.7f)", VBAT_SENSE_GPIO,
+             (double)VBAT_DIV_RATIO);
 
     adc_oneshot_unit_init_cfg_t unit_cfg = {
         .unit_id = VBAT_ADC_UNIT,
@@ -86,15 +96,17 @@ esp_err_t m1_vbat_init(void)
         .atten = VBAT_ADC_ATTEN,
         .bitwidth = ADC_BITWIDTH_DEFAULT,
     };
-    ESP_RETURN_ON_ERROR(adc_oneshot_config_channel(s_vbat_unit, &chan_cfg,
-                                                    &s_vbat_chan),
+    ESP_RETURN_ON_ERROR(adc_oneshot_config_channel(s_vbat_unit, VBAT_ADC_CHANNEL,
+                                                   &chan_cfg),
                         "m1_vbat", "falha ao configurar o canal de VBAT");
 
     /* Calibracao de fabrica. ATEN de 12 dB e o unico que cobre 3,036412 V
      * com margem: com 11 dB o fundo de escala (~2,5 V) cortaria a leitura de
-     * bateria cheia. */
+     * bateria cheia. O campo .chan existe na adc_cali_curve_fitting_config_t
+     * do v5.4 (calibracao por canal nos chips que suportam). */
     adc_cali_curve_fitting_config_t cali_cfg = {
         .unit_id  = VBAT_ADC_UNIT,
+        .chan     = VBAT_ADC_CHANNEL,
         .atten    = VBAT_ADC_ATTEN,
         .bitwidth = ADC_BITWIDTH_DEFAULT,
     };
@@ -122,7 +134,7 @@ bool m1_vbat_read_volts(float *out_volts)
     }
 
     int raw = 0;
-    if (adc_oneshot_read(s_vbat_chan, &raw) != ESP_OK) {
+    if (adc_oneshot_read(s_vbat_unit, VBAT_ADC_CHANNEL, &raw) != ESP_OK) {
         return false;
     }
 
@@ -131,6 +143,8 @@ bool m1_vbat_read_volts(float *out_volts)
     if (s_vbat_cali != NULL && adc_cali_raw_to_voltage(s_vbat_cali, raw, &mv) == ESP_OK) {
         v_pino = (float)mv / 1000.0f;
     } else {
+        /* Fallback bruto: le ~6 % alto por ignorar a escala da atenuacao de
+         * 12 dB (fundo de escala ~3,1 V, nao 3,3 V) — ver o aviso no topo. */
         v_pino = (float)raw * VBAT_LSB_AT_PIN;
     }
 

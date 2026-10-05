@@ -44,7 +44,11 @@ Qg ≤ 70 nC. O driver foi fechado e cotado; **o MOSFET de Caminho C ficou PENDE
 | corrente implícita em Qg/tr | 7,30 A = 56,2× o IO+ | **[MEDIDO]** |
 
 O alvo de projeto é **t ≤ 50 ns** (`verifica_limites_v6.py`, `T_ALVO`), o mesmo
-`0,05 µs` que a Fase 0 adotou e a v5 manteve.
+`0,05 µs` que a Fase 0 adotou. **[FIX auditoria 20 — reconciliação de alvos]:** a v5
+*não* "mantinha" os 50 ns — ela exercitou **25 ns** (`T_ALVO = 25e-9` no
+`redimensionamento_gate_v5.py`, ~0,05 % do período de 20 kHz) como cenário de rigor.
+**Alvo de projeto = 50 ns; 25 ns foi exercício da v5** (nota correspondente em
+`REVERSAO_PREMISSAS_v5.md` §2.3).
 
 ---
 
@@ -187,7 +191,7 @@ disponíveis, ou seja, estouro. **A direção do excesso inverteu.**
 | L1 tempo de subida | 50 ns | **112 ns** | 🔴 **+124 %** |
 | L6 slew de Vgs | 0,30 V/ns | **0,0893 V/ns** | 🔴 **−70 %** |
 | L8 perda de comutação (modelo) | 0,583 W | **0,847 W** | 🔴 +45 % |
-| L2 bootstrap | 40 mV | 35,7 mV com 2,2 µF | ✅ −10,6 % |
+| L2 bootstrap | 40 mV | **76,4 mV com o 1× 2,2 µF do BOM** (168 nC/2,2 µF); 35,7 mV só com 2× 2,2 µF (= 4,7 µF) | 🔴 **+91 %** com o BOM atual — **[FIX auditoria 19]**: o BOM precisa de **2× 2,2 µF por canal** OU o L2 precisa ser revisado. O "35,7 mV com 2,2 µF" anterior era a conta com 4,7 µF |
 | L3 trilho de 12 V | 600 mA | 80,9 mA | ✅ −86,5 % |
 | L4 dead-time | 518,75 ns | 112 ns | ✅ −78,4 % |
 | L7 Rg vs amortecimento | 10 Ω | 2,27 Ω precisaria p/ 50 ns; 2·Z0 = 0,63 Ω | ✅ |
@@ -242,7 +246,7 @@ peça 2,6× mais cara.
   ressalva mais séria do documento. Se ela for inaceitável, o plano B é `IR2011` em
   SOIC-8 (soldável), ao custo de **redesenhar o gate drive** para dois rails.
 - **Firmware:** 6 PWMs por CI contra 1 (**+12 GPIOs**) e **+1 barramento SPI**. O
-  `firmware/m2_pwm_mcpwm.c` precisa de 6 GPIOs por motor configurados como 3 pares
+  `firmware/main/m2_pwm_mcpwm.c` precisa de 6 GPIOs por motor configurados como 3 pares
   complementares, e `app_main.c` precisa da sequência SPI de inicialização (PVCC,
   corrente de gate, slew, dead-time).
 - **Componentes de support que faltam:** o 6EDL7141 usa bombas de carga e pede
@@ -266,6 +270,13 @@ Preços da faixa de 1 unidade, `[MEDIDO LCSC]` 2026-09-28. O preço do Cboot vem
 faixa de **≥ 10 unidades** (`0,0867 USD`): a fonte não devolveu a faixa de 1 unidade
 para o CL31B225KBHNNNE nesta consulta, e isso está anotado na linha do CSV.
 
+> ⚠️ **[FIX auditoria 19] O Cboot cotado NÃO fecha o L2 na quantidade listada.** A
+> tabela acima cotou **12 × 2,2 µF = 1 cap por half-bridge**. Com o Qg real de 168 nC:
+> `168 nC / 2,2 µF = 76,4 mV > 40 mV` (limite L2) — e viola a regra `20·Qg = 3,36 µF`
+> da própria v5. Ou o BOM passa a listar **2× 2,2 µF por canal (24 caps, ~+1,04 USD)**,
+> ou o limite L2 (40 mV) precisa ser revisado. O "35,7 mV ✅" da §4.4/§6.4 é a conta com
+> **4,7 µF (2× 2,2 µF em paralelo)** — afirmar "35,7 mV com 2,2 µF" não fecha.
+
 Full BOM detalhado: `orcamento/BOM_FABRICACAO_atualizada.csv` (só as linhas que mudam).
 
 ### 6.2 Layout
@@ -277,7 +288,7 @@ Full BOM detalhado: `orcamento/BOM_FABRICACAO_atualizada.csv` (só as linhas que
 | Cboot | 12 × 0805 | 12 × **1206** |
 | Bombas de carga | — | **+ 12 × 220 nF + 4 × 1 µF** (CCP x / CVCCLS) **[DS p. 15]**, não orçados |
 | EP do VQFN | — | exige plano de terra sob o chip; é a fonte de calor dos 4 CI **[EST]** |
-| Área | — | 4 CI de 7×7 mm com EP **vs** 12 SOIC-8 de 3,9×4,9 mm: área de silício **cai 18 %** (196 mm² → 196 mm² de moldura, mas 1 CI cobre 3 fases) **[EST]** |
+| Área | — | 4 CI de 7×7 mm com EP **vs** 12 SOIC-8 de 3,9×4,9 mm: área **cai 14,5 %** (12×SOIC-8 = 12×19,1 = **229 mm²** → 4×7×7 = 4×49 = **196 mm²**; e 1 CI cobre 3 fases) **[EST]** **[FIX auditoria 17 — o texto anterior dizia "cai 18% (196→196 mm²)", auto-contraditório]** |
 
 ### 6.3 Premissa P-06
 
@@ -301,7 +312,7 @@ Saída real completa: `fase0_especificacao/verifica_limites_v6_saida.txt` (159 l
 | ID | Limite | Esperado | Medido | Erro | v5 (IR2104) | v6 (6EDL7141) |
 |---|---|---|---|---|---|---|
 | L1 | tempo de subida do gate | 50 ns | **112 ns** | +124,00 % | 1292 ns 🔴 | 112 ns 🔴 |
-| L2 | queda no bootstrap | 40 mV | **35,7 mV** | −10,64 % | 168 mV 🔴 | **35,7 mV ✅** |
+| L2 | queda no bootstrap | 40 mV | **35,7 mV** (com 4,7 µF = 2× 2,2 µF) | −10,64 % | 168 mV 🔴 | 35,7 mV ✅ **com 2× 2,2 µF**; com o 1× 2,2 µF do BOM: **76,4 mV 🔴** **[FIX auditoria 19]** |
 | L3 | corrente no trilho de 12 V | 600 mA | **80,9 mA** | −86,51 % | 104,7 mA ✅ | **80,9 mA ✅** |
 | L4 | dead-time (turn-OFF) | 518,75 ns | **112 ns** | −78,41 % | 622 ns 🔴 | **112 ns ✅** |
 | L5 | potência de porta por FET | — | 33,6 mW | — | +320 % | inalterado (não é limite térmico) |
@@ -321,16 +332,16 @@ modelo que **cresce sem limite com `t_r`** e não descreve o dispositivo. O IPB0
 | | Valor | Fonte |
 |---|---|---|
 | Qoss | **213 nC typ / 283 nC max** | **[DS p. 1, Table 1]** e **[DS p. 4, Table 7]** |
-| `E_oss = Qoss × Vds` | 213 nC × 25,2 V = **5,37 µJ** | **[MEDIDO]** |
-| `P(E_oss) = E_oss × f` | **107,4 mW/FET** → 2,58 W no banco | **[MEDIDO]** |
+| `E_oss = ½·Qoss·Vds` | ½ × 213 nC × 25,2 V = **2,68 µJ** | **[MEDIDO]** **[FIX auditoria 11 — sem o ½ dava 5,37 µJ]** |
+| `P(E_oss) = E_oss × f` | **53,7 mW/FET** → 1,29 W no banco | **[MEDIDO]** |
 
-**107 mW contra os 9,77 W do modelo: 89× de diferença.** `Qoss` é a energia de
+**53,7 mW contra os 9,77 W do modelo: 182× de diferença (91× sem o ½).** `Qoss` é a energia de
 comutação *por natureza* no FET, é número de tabela, e é o único disponível — `E_on` e
 `E_off` **não são publicados** por nenhum dos PDFs em `datasheets/` **[MEDIDO]**.
 
 Ou seja: **o L8 da v5 era majoritariamente artefato de modelo.** Com o piso de
-datasheet, a perda de comutação do FET de referência é de 0,107 W, **abaixo** dos
-0,583 W de regime que o `verifica_limites_entrada_v4.py` §3 usou como orçamento. O
+datasheet, a perda de comutação do FET de referência é de 0,0537 W **[FIX auditoria 11]**,
+**abaixo** dos 0,583 W de regime que o `verifica_limites_entrada_v4.py` §3 usou como orçamento. O
 `verifica_limites_v6.py` reporta **os dois** — o do modelo, marcado `[EST]`, e o da
 tabela, marcado `[MEDIDO]` — e deixa explícito que o que falta é `E_off`, não um
 número deLoss de comutação.

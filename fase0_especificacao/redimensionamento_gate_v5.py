@@ -635,10 +635,21 @@ p(f"      Nenhum desses quatro mudou com P-06/P-11. [MEDIDO] as saidas sao ident
 p(f"    - Termica de regime (§3, primeiro bloco): depende so' de Rds(on) (P-05, mantida em 2,0 mOhm)")
 p(f"      e de I. Nao muda. [MEDIDO]")
 p(f"    - Vias, Z0, f_ring, ADC: nao dependem de Qg nem de Iq. Nao mudam. [MEDIDO]")
-p(f"    - Balanco no cruzeiro (§4): a parcela 'conversores' usa 12 x 0,049 A do trilho orcado;")
-p(f"      com Qg real sobe para {i12_max:.3f} A, o que muda o total de 173 W para "
-  f"{173+12*(i12_max-0.049)*12/0.85:.0f} W. [MEDIDO] Folga de 3,5 % vira "
-  f"{(173+12*(i12_max-0.049)*12/0.85)/167*100-100:.1f} % -- nenhum limite estourado.")
+p(f"    - Balanco no cruzeiro (§4): a parcela 'conversores' usa 12 V x 0,049 A do trilho orcado;")
+# [FIX auditoria 13] i12_max (104,7 mA) ja' e' o TOTAL dos 12 drivers + 24 gates: o
+# incremento NAO ganha outro fator 12 (a formula antiga fazia 12*(i12_max-0,049)*12/0,85
+# = 9,4 W -> "173 -> 182 W, folga 9,2%", 12x exagerado). Correto:
+# dP(trilho) = 12 V x (0,1047-0,049) A = 0,67 W; na entrada do buck (rend. 85%) = 0,79 W.
+dp12_rail = V12 * (i12_max - 0.049)          # 0,67 W no trilho de 12 V
+dp12_in = dp12_rail / 0.85                   # 0,79 W na entrada do buck
+p(f"      com Qg real o trilho INTEIRO sobe para {i12_max:.4f} A (ja' e' o TOTAL dos 12 drivers")
+p(f"      + 24 gates): dP = 12 V x (0,1047-0,049) A = {dp12_rail:.2f} W no trilho "
+  f"({dp12_in:.2f} W na entrada do buck). [MEDIDO]")
+p(f"      Sobre o total de 172,6 W do v4 §4 (base pre-correcao do [FIX auditoria 1]) isso da "
+  f"{172.55+dp12_in:.1f} W -- folga de 3,5 % vira {(172.55+dp12_in)/166.67*100-100:.1f} %.")
+p(f"      Sobre o total CORRIGIDO do v4 §4 ({170.79:.1f} W, perdas de FET 0,12 W): "
+  f"{170.79+dp12_in:.1f} W, folga de 2,5 % vira {(170.79+dp12_in)/166.67*100-100:.1f} % -- "
+  f"nenhum limite estourado.")
 
 # ------------------------------------------------------------------ SAIDA EM ARQUIVO
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "redimensionamento_gate_v5_saida.txt")

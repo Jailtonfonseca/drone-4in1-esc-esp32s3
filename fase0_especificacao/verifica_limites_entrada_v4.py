@@ -72,8 +72,11 @@ p("      Layout e' o que prova isso: Fase 3, e bancada na Fase 4.")
 
 p("\n3. TERMICA (Rth_ja PREMISSA) / VIAS / GATE / ADC -- resumo")
 rds = 2.0e-3
+# [FIX auditoria 2] P_sw = f*V*I*(tr+tf)/2, LINEAR em I (o v4 usava 0,133*(I/30)^2, que
+# escala com I^2). A 30 A: 20 kHz x 22,2 V x 30 A x 40 ns / 2 = 266 mW/FET.
+psw_fet_30 = fpwm * 22.2 * 30.0 * (20e-9 + 20e-9) / 2     # 0,2664 W por FET a 30 A
 for nome, ipk in [("cruzeiro (5 A fase)",5.0),("nominal (15 A)",15.0),("pico (30 A)",30.0)]:
-    pc = (ipk/2)**2*rds; psw = 0.133*(ipk/30)**2
+    pc = (ipk/2)**2*rds; psw = psw_fet_30*(ipk/30)         # linear em I [FIX auditoria 2]
     p(f"  {nome:20s}: P/FET={pc+psw:.3f} W -> 24 FETs={24*(pc+psw):5.2f} W | "
       f"Tj(Rth=60C/W, Ta=25C) = {25+(pc+psw)*60:.1f} C")
 Rv = 1.72e-8*1.6e-3/(math.pi*0.3e-3*25e-6)
@@ -83,10 +86,13 @@ p(f"  Gate: Z0={Z0:.2f} ohm -> Rg>=6.3 ohm (adotado 10 ohm) | f_ring={1/(2*math.
 p(f"  ADC: janela 2 us = {2/(1/fpwm*1e6)*100:.1f} % do periodo de 50 us | dead-time 520 ns = {0.52/50*100:.1f} % de duty")
 
 p("\n4. BALANCO NO CRUZEIRO (carga real, nao nominal)")
-p_h = 750/4.5; i_bus = p_h/22.2; i_fase = i_bus/0.6
+# [FIX auditoria 1] pico de fase POR MOTOR: (i_bus/4)/0,6 = 3,1 A -- nao i_bus/0,6 = 12,5 A
+# (que tratava a corrente TOTAL do drone como pico de fase de um motor so': perda de
+# conducao 16x maior, 1,88 W -> 0,12 W nos 24 FETs).
+p_h = 750/4.5; i_bus = p_h/22.2; i_fase = (i_bus/4)/0.6
 pc_h = (i_fase/2)**2*rds*24
 conv = (3.3*0.55 + 12*0.049 + 5*0.20)/0.85
-p(f"  Helice: {p_h:.0f} W | I_barra {i_bus:.1f} A | I_fase pico {i_fase:.1f} A")
+p(f"  Helice: {p_h:.0f} W | I_barra {i_bus:.1f} A | I_fase pico (por motor) {i_fase:.1f} A")
 p(f"  FETs: {pc_h:.2f} W | conversores: {conv:.2f} W (entrada) | TOTAL ~ {p_h+pc_h+conv:.0f} W "
   f"({(p_h+pc_h+conv)/p_h*100-100:.1f} % acima do ideal de helice)")
 

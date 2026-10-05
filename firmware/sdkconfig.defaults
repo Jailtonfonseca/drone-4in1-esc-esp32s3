@@ -1,11 +1,11 @@
 # ===========================================================================
 # firmware/sdkconfig.defaults — configuracao padrao do sdkconfig
 #
-# ESQUELETO NAO VERIFICADO. ESTE ARQUIVO NAO FOI CONSUMIDO POR NENHUMA
-# FERRAMENTA NESTA MAQUINA. Por que: o ESP-IDF nao esta instalado, entao nao
-# existe idf.py nem o Kconfig que valida estas chaves. Uma chave escrita errado
-# aqui so aparece como erro no primeiro `idf.py build` — e este arquivo nao foi
-# nem aberto por essa ferramenta. Ver ../fase4_entrega/FIRMWARE_BUILD.md.
+# ESQUELETO corrigido pela auditoria de 2026-10-04 (ver
+# AUDITORIA_ERROS_2026-10-04.md, secao F, achado F9); AINDA NAO COMPILADO —
+# nenhuma ferramenta consumiu este arquivo nesta maquina porque o ESP-IDF nao
+# esta instalado. Uma chave escrita errado aqui so aparece como erro no
+# primeiro `idf.py build`. Ver ../fase4_entrega/FIRMWARE_BUILD.md.
 #
 # As chaves vem da ESP-IDF v5. Os valores sao os que a §5 e os modulos exigem:
 #   - clock de 240 MHz, o clock nominal do ESP32-S3, com PMU ligada para o
@@ -21,6 +21,13 @@
 # ========================================================================
 
 CONFIG_IDF_TARGET="esp32s3"
+
+# --- Tick do FreeRTOS (achado F9 da auditoria) -------------------------------
+# CONFIG_FREERTOS_HZ=1000: sem esta linha o default e 100 Hz, e
+# pdMS_TO_TICKS(1) trunca para 0 tick — vTaskDelay(0) e so um yield, o laco
+# de leitura do app_main faminta a idle da CPU0 e o task watchdog dispara a
+# cada 5 s. Com 1000 Hz, 1 ms = 1 tick de verdade.
+CONFIG_FREERTOS_HZ=1000
 
 # --- Clock ------------------------------------------------------------------
 CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y

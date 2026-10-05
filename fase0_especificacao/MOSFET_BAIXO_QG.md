@@ -30,6 +30,12 @@ P-xx ainda aberta · **[EST]** estimativa declarada · **[N/D]** não determinad
 > KiCad 5.1 e é a mesma do IR2104, soldável à mão), e custa **57,1 % a menos** que o
 > IPB017N10N5. Os 33 MPN da varredura anterior não estavam errados por serem inventados:
 > estavam errados por não terem sido **conferidos contra a fonte**.
+>
+> ⚠️ **[FIX auditoria 14] RESSALVA (2026-10-05):** o pior caso de tensão do projeto é
+> **25,2 V + 60 V de spike [CALC] = 85,2 V > 80 V** — margem **−6,1 %**, **FALHA** pelo
+> critério interno de spike (o mesmo que reprovou o NVMFS5C628NT1G de 60 V). Ver §4 e
+> `verifica_limites_v7_saida.txt` §0: **decisão pendente — aceitar o risco, reduzir o
+> spike (snubber/layout) ou subir para FET ≥ 100 V.**
 
 ---
 
@@ -56,7 +62,7 @@ errada.
 
 | Critério | Valor | Justificativa |
 |---|---|---|
-| Vds ≥ 60 V | barramento 6S = 25,2 V + spike de cabo **medido em 60 V** na Fase 0 | `[MEDIDO]` em `fase0_especificacao/` |
+| Vds ≥ 60 V | barramento 6S = 25,2 V + spike de cabo **calculado em 60 V** na Fase 0 (L·di/dt = 100 nH × 30 A / 50 ns) | `[CALC]` em `fase0_especificacao/` **[FIX auditoria 14: o spike é [CALC], não "[MEDIDO]" — nada foi medido em bancada na Fase 0]** |
 | Qg ≤ 70 nC **a 10 V** | teto que a premissa P-06 já usava (60 nC) | `FASE0_ESPECIFICACAO.md` linha 249 |
 | Rds(on) ≤ 5 mΩ **a 10 V** | para não estourar a térmica com Rth = 60 °C/W | `[PREMISSA]` P-xx |
 | Package soldável à mão | TO-220, TO-263, TO-247, DPAK/TO-252, SO-8, SOT-223 — **sem BGA/QFN/pitch fino** | decisão **D-05** (montagem caseira) |
@@ -93,8 +99,9 @@ publicado por essa fonte, então está como `NAO_INFORMADO_PELA_FONTE`.
 
 **`NVMFS5C628NT1G` (C900448) — o quasi-vencedor.** Tem os melhores números da tabela em
 Rds (2,3 mΩ typ) e Qg (34 nC), e é o mesmo package do vencedor. Reprova por **margem de
-tensão**: é um FET de **60 V** e o spike de cabo **medido** na Fase 0 é de **60 V**. Isso
-é zero margem, numFET cuja margem de avalanche é justamente o que protege o barramento
+tensão**: é um FET de **60 V** e o pior caso da Fase 0 é **25,2 V de barramento + 60 V
+de spike [CALC] = 85,2 V** — muito acima dos 60 V **[FIX auditoria 14]**. Isso
+é zero margem contra o spike sozinho (60 V = 60 V), num FET cuja margem de avalanche é justamente o que protege o barramento
 quando o timer de dead-time erra. Soma-se o estoque 20 < 24. Fica registrado como
 **segunda opção** — é a peça a comprar se a medição de spike de cabo for refeita e der
 abaixo de 60 V.
@@ -117,7 +124,7 @@ esta entrega insistir em PDF.
 
 | Critério | Exigido | Medido no PDF | Margem |
 |---|---|---|---|
-| Vds ≥ 60 V | 60 V | **80 V** [DS p. 2] | **+33 %** sobre o spike de 60 V |
+| Vds ≥ 60 V | pior caso: 25,2 V de barramento + 60 V de spike **[CALC]** = **85,2 V** | **80 V** [DS p. 2] | 🔴 **−6,1 %** — **FALHA no critério de spike do projeto** **[FIX auditoria 14]** |
 | Qg ≤ 70 nC @ 10 V | 70 nC | **38 nC** [DS p. 2] | **−46 %** |
 | Rds(on) ≤ 5 mΩ @ 10 V | 5 mΩ | **3,7 typ / 4,5 max mΩ** [DS p. 2] | 10 % de folga no **max** |
 | Package de mão | TO-220…SO-8 | **SO-8FL** | pinos 1,27 mm, bench solder |
@@ -181,7 +188,10 @@ Todas **[MEDIDO]** em `verifica_limites_v7.py`; saída real em
 | razão | **4,42× melhor** | 4,42× melhor | 4,42× melhor | 4,42× melhor |
 
 O ganho é **exatamente 168/38 = 4,42×**, porque t = Qg/I e a corrente do driver não
-mudou. A corrente do trilho de gate no banco cai de 121,1 mA para 18,5 mA.
+mudou. A corrente do trilho de gate no banco cai de **82,8 mA** para 18,5 mA.
+**[FIX auditoria 18]** — o "121,1 mA" anterior não tinha fonte em nenhum log; a base
+documentada é a da v5: `redimensionamento_gate_v5_saida.txt` §6b, `I_12V total = 12 ×
+180 µA + 24 × 168 nC × 20 kHz = 82,8 mA` (Qg typ, quiescência do IR2104).
 
 ### 6.2 Perda de gate — `P_sw = Qg · Vgs · f_pwm` a 20 kHz, 12 V
 

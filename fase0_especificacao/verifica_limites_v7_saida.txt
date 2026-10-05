@@ -10,7 +10,11 @@ FASE 0 -- LIMITES CRITICOS (v7) -- MOSFET de BAIXO Qg REALMENTE LOCALIZADO
      RqJC = 1.3 C/W  |  RqJA = 39.8 C/W   [DS VENC p.1]
      preco 1 un = 2.2632 USD  |  estoque = 96   [MEDIDO LCSC 2026-09-28]
   REFERENCIA (orcada hoje): IPB017N10N5 (100 V, TO-263-7), Qg 168/210 nC, Rds 1.7 mOhm, 5.2721 USD, estoque 143
-  Margem de tensao: barramento 25.2 V + spike medido 60 V = 60 V contra V(BR)DSS de 80 V -> folga de 33 %   [MEDIDO]
+  Margem de tensao: barramento 25.2 V + spike [CALC] 60 V = 85.2 V contra V(BR)DSS de 80 V -> margem de -6.1 % (FALHA)  [CALC]
+  >>> [FIX auditoria 14] HONESTO: o MOSFET vencedor de 80 V NAO passa no criterio de
+      spike do projeto (pior caso 85,2 V > 80 V; o mesmo criterio reprovou o de 60 V por
+      'zero margem'). decisao pendente: aceitar o risco, reduzir o spike (snubber/layout)
+      ou subir para FET >= 100 V. O spike de 60 V e' [CALC], nao 'medido'.
 
 1. TEMPO DE COMUTACAO DE GATE  t = Qg / I_driver
   Com IR2104 (130 mA fonte / 270 mA drain) [DS IR2104 p.1]:
@@ -58,13 +62,14 @@ FASE 0 -- LIMITES CRITICOS (v7) -- MOSFET de BAIXO Qg REALMENTE LOCALIZADO
                                               |   fonte: Qg/I- = 38 nC / 270 mA; janela util do MCPWM = 518.750 ns (RELATORIO_VERILOG.md)
   L4b dead-time necessario no turn-OFF (6EDL7141)| esp      518.8 ns   | med      25.33 ns   | erro     -95.12 %
                                               |   fonte: Qg/1,5 A = 25.3 ns; piso do CI e' 120 ns < janela do MCPWM, entao o dead-time NAO se soma (ESCOLHA_MOSFET_DRIVER.md §4.3)
-  [MEDIDO] folga no caminho do 6EDL7141 = 1948 % (sobe de 0 % com a referencia)
+  [MEDIDO] folga no caminho do 6EDL7141 = 1948 % (sobe de 363 % com a referencia)
 
 7. RESISTOR DE GATE
-  L7 Rg vs amortecimento (adotado 10 ohm)     | esp         10 ohm  | med     0.6325 ohm  | erro     -93.68 %
-                                              |   fonte: Z0 = sqrt(2 nH / 20000 pF) = 0.32 ohm; amortecimento exige Rg >= 2*Z0 = 0.6 ohm
+  L7 Rg vs amortecimento (adotado 10 ohm)     | esp         10 ohm  | med      6.325 ohm  | erro     -36.75 %
+                                              |   fonte: Z0 = sqrt(20 nH / 2000 pF) = 3.16 ohm; amortecimento exige Rg >= 2*Z0 = 6.3 ohm
   [MEDIDO] com Rg = 10 ohm e Ciss = 2470 pF, a constante de tempo do gate e' RC = 24.7 ns; a comutacao de 0->10 V em 3,2*RC
          levaria 79 ns, ou seja o Rg de 10 ohm NAO e' o gargalo -- a corrente do driver e'.
+  [FIX auditoria 9] com o Z0 correto, o amortecimento exige Rg >= 6.3 ohm: o adotado 10 ohm atende; com o IR2104 o L1 ja' esta estourado por corrente do driver (292 ns).
 
 8. CONDUCAO: o preco de trocar o Rds(on) do IPB017N10N5
   Metade da corrente da fase fica em cada FET da meia-ponte: P = (I/2)^2 * Rds(on).
@@ -107,10 +112,10 @@ FASE 0 -- LIMITES CRITICOS (v7) -- MOSFET de BAIXO Qg REALMENTE LOCALIZADO
   ADC: janela 2 us = 4.0 % do periodo de 50 us   [MEDIDO]
 
 11. BALANCO NO CRUZEIRO (mesmo modelo do v4 §4, com o Rds do vencedor)
-  Helice 167 W | I_barra 7.5 A | I_fase pico 12.5 A   [MEDIDO]
-  FETs (conducao no cruzeiro, Rds typ): 3.48 W   [MEDIDO]
+  Helice 167 W | I_barra 7.5 A | I_fase pico (por motor) 3.1 A   [MEDIDO]
+  FETs (conducao no cruzeiro, Rds typ): 0.22 W   [MEDIDO]
   Conversores: 3.57 W (entrada)   [MEDIDO]
-  TOTAL ~ 174 W (4.2 % acima do ideal)
+  TOTAL ~ 170 W (2.3 % acima do ideal)
 
 ==============================================================================
 VEREDITO v7 -- 8 limites criticos, ESPERADO x MEDIDO x ERRO
@@ -122,7 +127,7 @@ VEREDITO v7 -- 8 limites criticos, ESPERADO x MEDIDO x ERRO
   L4   dead-time turn-OFF (518,75 ns)                518.8 ns      140.7 ns     -72.9%  ✅ VERDE
   L5   perda de gate por FET (0,583 W)               0.583 W     0.00912 W      -98.4%  ✅ VERDE
   L6   slew de Vgs (0,30 V/ns)                         0.3 V/ns    0.03421 V/ns     -88.6%  🔴 VERMELHO
-  L7   Rg vs amortecimento (10 ohm)                     10 ohm     0.6325 ohm     -93.7%  ✅ VERDE
+  L7   Rg vs amortecimento (10 ohm)                     10 ohm      6.325 ohm     -36.8%  ✅ VERDE
   L8   perda total por FET no pico (0,583 W)         0.583 W       1.022 W      +75.2%  🔴 VERMELHO
 
   5 de 8 limites VERDES, 3 VERMELHOS.
@@ -162,9 +167,6 @@ VEREDITO v7 -- 8 limites criticos, ESPERADO x MEDIDO x ERRO
   >>> NADA foi marcado verde por conveniencia: L1, L6 e L8 sao vermelhos porque os
       numeros medidos sao vermelhos, inclusive o L8, que a troca MELHOROU no gate e
       PIOROU no cobre.
-
-  >>> NADA foi marcado verde por conveniencia. L1, L6 e L8 sao vermelhos porque os
-      numeros medidos sao vermelhos.
 
 ==============================================================================
 FIM v7 -- 100% calculo numerico, zero medicao de bancada.

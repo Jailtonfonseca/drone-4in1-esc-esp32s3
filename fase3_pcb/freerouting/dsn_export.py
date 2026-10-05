@@ -82,24 +82,44 @@ def copper_layers(board):
     return [board.GetLayerName(i) for i in ids]
 
 
-def pad_shape_scope(layer, shape_enum, size, drill, is_tht):
+def pad_shape_scope(layer, is_circle, ex, ey):
     """Emite (shape ...) para um pad, aceito pelo Shape.java do FreeRouting 1.9.
 
+    [FIX auditoria P1 — 0 == False] a versao anterior recebia `shape_enum` e
+    testava `pcbnew.PAD_SHAPE_CIRCLE == shape_enum`: o argumento era o BOOL
+    de shape_is_circle() e PAD_SHAPE_CIRCLE == 0, e `0 == False` e' True em
+    Python -> TODO pad virava (circle layer max(w,h) 0 0), o ramo (rect ...)
+    era inalcançavel, e pads SOIC-8 de Ø1,95 mm em pitch 1,27 mm se
+    sobreponham entre nets diferentes -> blobs selados -> 0 rotas (bug 1.h).
+
     ORDEM DOS ARGUMENTOS DO CIRCULO (medida no Shape.read_circle_scope do
-    FreeRouting 1.9.0): (circle <layer> <DIAMETRO> <x> <y>). A ordem antiga
-    (x y diam) fazia o leitor pegar o x como diametro -> pads de diametro ZERO
-    ("not an area") -> autorroteador sem alvos -> 0 rotas.
+    FreeRouting 1.9.0): (circle <layer> <DIAMETRO> <x> <y>).
     """
+    if is_circle:
+        d = 2.0 * max(ex, ey)
+        return "(circle %s %s %s %s)" % (layer, fnum(d), fnum(0), fnum(0))
+    # demais shapes (rect, oval, roundrect, trapezoid, custom) -> envelope
+    # retangular no frame do FOOTPRINT (meio-extensoes ex/ey ja rotacionadas
+    # pela orientacao propria do pad relativa ao modulo)
+    return "(rect %s %s %s %s %s)" % (layer, fnum(-ex), fnum(-ey),
+                                      fnum(ex), fnum(ey))
+
+
+def pad_halfextents(pad):
+    """Meio-extensoes (ex, ey) do envelope do pad NO FRAME DO FOOTPRINT.
+
+    Chamar com o modulo em orientacao ZERO (ver build): aí
+    pad.GetOrientation() e' a rotacao PROPRIA do pad relativa ao modulo, e o
+    envelope de (w, h) rotacionado por ela e' o rect que o DSN precisa.
+    """
+    size = pad.GetSize()
     w = size.x / MM
     h = size.y / MM
-    cx = 0.0
-    cy = 0.0
-    if is_tht or pcbnew.PAD_SHAPE_CIRCLE == shape_enum:
-        d = w if w >= h else h
-        return "(circle %s %s %s %s)" % (layer, fnum(d), fnum(cx), fnum(cy))
-    # demais shapes (rect, oval, roundrect, trapezoid, custom) -> envelope retangular
-    return "(rect %s %s %s %s %s)" % (layer, fnum(cx - w / 2.0), fnum(cy - h / 2.0),
-                                       fnum(cx + w / 2.0), fnum(cy + h / 2.0))
+    ang = math.radians((pad.GetOrientation() / 10.0) % 360.0)
+    ca, sa = abs(math.cos(ang)), abs(math.sin(ang))
+    ex = (w * ca + h * sa) / 2.0
+    ey = (w * sa + h * ca) / 2.0
+    return ex, ey
 
 
 def build(board, only_net_prefix=None, max_modules=None):
@@ -112,20 +132,31 @@ def build(board, only_net_prefix=None, max_modules=None):
         modules = modules[:max_modules]
 
     # chaves unicas de padstack -> nome de padstack
-    padstack_defs = []          # [(nome, layer, shape_scope, is_tht)]
+    # [FIX P5] um padstack THT ganha shape em TODAS as camadas de cobre (o
+    # pad atravessa a placa); SMD continua com shape so na camada do lado.
+    padstack_defs = []          # [(nome, [shape_scope,...], is_tht)]
     padstack_index = {}
 
-    def padstack_for(pad, layer):
+    def padstack_for(pad, front):
         size = pad.GetSize()
         is_tht = pad.GetDrillSize().x > 0
-        key = (layer, int(size.x), int(size.y), int(pad.GetDrillSize().x),
-               int(shape_is_circle(pad)), is_tht)
+        # [chave inclui a rotacao PROPRIA do pad: pads de mesmo tamanho com
+        # rotacoes diferentes tem envelopes diferentes no frame do footprint]
+        own_rot = int(round(pad.GetOrientation()))   # decigraus (modulo em rot 0)
+        key = (front, int(size.x), int(size.y), int(pad.GetDrillSize().x),
+               int(shape_is_circle(pad)), is_tht, own_rot)
         if key in padstack_index:
             return padstack_index[key]
         name = "PAD%d" % (len(padstack_defs) + 1)
         padstack_index[key] = name
-        padstack_defs.append((name, layer, pad_shape_scope(
-            layer, shape_is_circle(pad), size, pad.GetDrillSize(), is_tht), is_tht))
+        ex, ey = pad_halfextents(pad)      # modulo esta' em orientacao ZERO aqui
+        isc = shape_is_circle(pad)
+        if is_tht:
+            shapes = [pad_shape_scope(ln, isc, ex, ey) for ln in lname]
+        else:
+            ln = lname[0] if front else lname[-1]
+            shapes = [pad_shape_scope(ln, isc, ex, ey)]
+        padstack_defs.append((name, shapes, is_tht))
         return name
 
     def shape_is_circle(pad):
@@ -138,6 +169,7 @@ def build(board, only_net_prefix=None, max_modules=None):
     images = {}      # pkg_name -> (outline_pts, [ (pin_name, padstack, x, y) ])
     placements = {}  # pkg_name -> [(ref, x, y, front, rot)]
     net_pins = {}    # net_name -> [ "REF-PADNUM" ]
+    _first_done = {}  # [FIX P4] marca o pacote cuja image ja foi emitida
 
     for m in modules:
         ref = str(m.GetReference())
@@ -157,33 +189,61 @@ def build(board, only_net_prefix=None, max_modules=None):
 
         placements.setdefault(pkg, []).append((ref, x, y, front, rot))
 
-        if pkg not in images:
-            # outline = retangulo do bounding box do footprint, em coords relativas.
-            # (Antes: concatenava TODAS as linhas da silkscreen num unico poligono
-            #  -> autointerseccao -> "winding number != 0" em cascata no leitor.)
-            bbm = m.GetBoundingBox()
-            x1r = (bbm.GetX() - pos.x) / MM
-            y1r = (bbm.GetY() - pos.y) / MM
-            x2r = x1r + bbm.GetWidth() / MM
-            y2r = y1r + bbm.GetHeight() / MM
-            pts = [(x1r, y1r), (x2r, y1r), (x2r, y2r), (x1r, y2r), (x1r, y1r)]
-            images[pkg] = {"outline": pts, "pins": []}
+        # [FIX P3] offsets LOCAIS do footprint: pcbnew guarda os pads no frame
+        # do modulo e o FreeRouting APLICA a rotacao do (place ...) aos pins
+        # da image (Pin.relative_location -> turn_90_degree). A versao antiga
+        # gravava offsets JA rotacionados (pad.GetPosition() e' absoluto) ->
+        # rotacao dupla -> 51/105 pads do corte em posicao errada.
+        # Truque robusto: orientacao ZERO temporaria -> GetPosition() devolve
+        # o offset LOCAL do pad; depois restaura a orientacao original.
+        saved_orient = m.GetOrientation()
+        m.SetOrientation(0)
+        try:
+            if pkg not in images:
+                # [FIX auditoria] outline por PADS (o GetBoundingBox infla
+                # com texto de silk e gerava outlines 2-3x o chip). O outline
+                # da image NAO e' obstaculo no FR 1.9 (Package.java separa
+                # outline de keepout) -- e' so envelope visual.
+                l = t = r = b = None
+                for p0 in m.Pads():
+                    pp = p0.GetPosition()
+                    l = pp.x if l is None else min(l, pp.x)
+                    r = pp.x if r is None else max(r, pp.x)
+                    t = pp.y if t is None else min(t, pp.y)
+                    b = pp.y if b is None else max(b, pp.y)
+                if l is not None:
+                    mg = 0.5 * MM
+                    x1r, y1r = (l - mg) / MM, (t - mg) / MM
+                    x2r, y2r = (r + mg) / MM, (b + mg) / MM
+                else:
+                    bbm = m.GetBoundingBox()
+                    x1r = (bbm.GetX() - pos.x) / MM
+                    y1r = (bbm.GetY() - pos.y) / MM
+                    x2r = x1r + bbm.GetWidth() / MM
+                    y2r = y1r + bbm.GetHeight() / MM
+                pts = [(x1r, y1r), (x2r, y1r), (x2r, y2r), (x1r, y2r), (x1r, y1r)]
+                images[pkg] = {"outline": pts, "pins": []}
 
-        for pad in m.Pads():
-            pnum = str(pad.GetName())
-            if not pnum:
-                continue
-            ppos = pad.GetPosition()
-            # relativo ao centro do modulo, ja rotacionado pelo pcbnew
-            rx = (ppos.x - pos.x) / MM
-            ry = (ppos.y - pos.y) / MM
-            # nome de camada tem que ser IDENTICO ao declarado em (structure ...)
-            pl = lname[0] if front else lname[-1]
-            ps = padstack_for(pad, pl)
-            images[pkg]["pins"].append((pnum, ps, rx, ry))
-            net = str(pad.GetNetname())
-            if net and net != "":
-                net_pins.setdefault(sanitize_net(net), []).append("%s-%s" % (ref, pnum))
+            for pad in m.Pads():
+                pnum = str(pad.GetName())
+                if not pnum:
+                    continue
+                ppos = pad.GetPosition()      # offset LOCAL (modulo em rot 0)
+                rx = (ppos.x - pos.x) / MM
+                ry = (ppos.y - pos.y) / MM
+                # [FIX P4] pins da image so' do PRIMEIRO modulo do pacote: a
+                # versao antiga appending os pads de TODAS as instancias
+                # (image SOIC-8 com 96/384 entradas; ~39.000 pinos no board).
+                ps = padstack_for(pad, front)
+                if not _first_done.get(pkg):
+                    images[pkg]["pins"].append((pnum, ps, rx, ry))
+                net = str(pad.GetNetname())
+                if net and net != "":
+                    net_pins.setdefault(sanitize_net(net), []).append(
+                        "%s-%s" % (ref, pnum))
+            _first_done[pkg] = True
+        finally:
+            m.SetOrientation(saved_orient)
 
     # --- bounding box do board (Edge.Cuts) ---------------------------------
     bb = board.GetBoardEdgesBoundingBox()
@@ -192,7 +252,10 @@ def build(board, only_net_prefix=None, max_modules=None):
     by2 = (bb.GetY() + bb.GetHeight()) / MM
 
     # via padstack generico
-    via_d = 0.8
+    # [FIX auditoria C9] era 0,8 mm — a regra do proprio board (setup ...) e'
+    # via_size 0,6000 / via_drill 0,3000; o FreeRouting roteou com 0,8 e o
+    # ses_import regravava 0,8/0,4 (violando a regra de projeto). Alinhado.
+    via_d = 0.6
 
     out = []
     w = out.append
@@ -227,6 +290,12 @@ def build(board, only_net_prefix=None, max_modules=None):
         w('      (shape (circle %s %s 0 0))' % (ln, fnum(via_d)))
     w('      (attach off)')
     w('    )')
+    # [FIX auditoria P2 — bug 1.h] a via padstack estava DEFINIDA mas nunca
+    # DECLARADA: o FR 1.9.0 so registra vias do escopo (via ...) da structure
+    # (Structure.java:866-868) — sem esta linha, via_padstack_names fica null,
+    # set_via_padstacks nunca roda e o board fica SEM NENHUMA via (prova:
+    # (library_out) vazio nos SES antigos) — impossivel mudar de camada.
+    w('    (via VIA1)')
     w('  )')
 
     # placement
@@ -253,9 +322,10 @@ def build(board, only_net_prefix=None, max_modules=None):
         for (pnum, ps, rx, ry) in info["pins"]:
             w('      (pin %s %s %s %s)' % (ps, pnum, fnum(rx), fnum(ry)))
         w('    )')
-    for (name, layer, shape_scope, is_tht) in padstack_defs:
+    for (name, shape_scopes, is_tht) in padstack_defs:
         w('    (padstack %s' % name)
-        w('      (shape %s)' % shape_scope)
+        for shape_scope in shape_scopes:
+            w('      (shape %s)' % shape_scope)
         if is_tht:
             w('      (attach on)')
         else:

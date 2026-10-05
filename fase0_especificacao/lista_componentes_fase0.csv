@@ -1,4 +1,4 @@
-﻿bloco;item;valor_especificacao;qtd;footprint_kicad_5.1;existe_no_kicad;observacao_de_compra
+bloco;item;valor_especificacao;qtd;footprint_kicad_5.1;existe_no_kicad;observacao_de_compra
 ENTRADA;Conector de bateria;XT60 macho+femea, 60 A [N/D offline];1;Connector_AMASS:AMASS_XT60-F_1x02_P7.20mm_Vertical;SIM;solda em furo - verificar corrente nominal no datasheet do fabricante
 PROTECAO;TVS unidirecional;standoff >= 30 V, clamp ~38 V [N/D offline];1;Diode_SMD:D_SMB;SIM;comprar com Vbr acima de 25,2 V (nao conduzir em operacao)
 PROTECAO;P-FET anti-inversao;canal P, Vds >= 30 V, Rds < 10 mOhm [N/D offline];1;Package_TO_SOT_SMD:TO-252-2_TabPin1;SIM;evita 3,8 W de perda que um diodo Schottky causaria (calculado)
@@ -17,7 +17,7 @@ GATE DRIVE;Capacitor local do driver;10 uF / 25 V X7R;12;Capacitor_SMD:C_1206_32
 CORRENTE;Shunt de fase;0,5 mOhm 2 W 2512 manganina (112 mW continuo calculado);12;Resistor_SMD:R_2512_6332Metric;SIM;3 por motor
 CORRENTE;Amplificador diferencial;ganho 50, CMVR >= 30 V, largura de banda >= 400 kHz [N/D offline];12;Package_SO:SOIC-8-1EP_3.9x4.9mm_EP2.41x3.81mm;SIM;1 por shunt; saida centrada em 1,65 V
 CORRENTE;Divisor de referencia;10k/10k 1% + 100 nF;12;Resistor_SMD:R_0603_1608Metric;SIM;gera 1,65 V de offset
-BEMF;Divisor de fase;8,2k/1,0k 1% (25,2 V -> 3,07 V calculado);12;Resistor_SMD:R_0603_1608Metric;SIM;3 por motor
+BEMF;Divisor de fase;8,2k/1,0k 1% (25,2 V -> 2,74 V calculado);12;Resistor_SMD:R_0603_1608Metric;SIM;3 por motor [FIX auditoria 3: 25,2 V x 1,0k/9,2k = 2,74 V; o valor anterior de 3,07 V usava so' os 8,2k no divisor]
 BEMF;Filtro + clamp;1 nF + diodo clamp 3,3 V / zenner;12;Capacitor_SMD:C_0402_1005Metric;SIM;
 ADC;ADC externo SPI;16 canais, >= 200 ksps, 12 bits [N/D offline];1;Package_DFN_QFN / Package_SO conforme CI;SIM (generico);obrigatorio: ADC do ESP32 nao cobre 26 canais (calculado)
 ADC;Mux analogico (se usar 2x CI de 8 canais);[N/D offline];2;Package_SO:SOIC-16;SIM (generico);alternativa ao ADC de 16 canais

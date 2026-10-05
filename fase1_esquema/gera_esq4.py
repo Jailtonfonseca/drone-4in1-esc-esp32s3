@@ -114,7 +114,9 @@ d += elm.Label().at((20.5, 15.2)).label('VBAT', fontsize=9, color='#8c2f2f')
 d += elm.Label().at((9, -8.4)).label(
     'Notas: (1) 1 pino PWM por half-bridge -> o driver gera o complementar com dead-time interno.\n'
     '(2) Amostragem do ADC sincrona ao PWM: shunt low-side so e valido com QnB conduzindo.\n'
-    '(3) BEMF passa por divisor 8,2k/1,0k (25,2 V -> 3,07 V) + 1 nF + clamp 3,3 V.\n'
+    # [FIX auditoria 3] divisor 8,2k/1,0k = 9,2:1 -> 25,2 V x 1,0k/9,2k = 2,74 V
+    # (o valor anterior "3,07 V" usava so' os 8,2k no divisor, i.e. 25,2/8,2)
+    '(3) BEMF passa por divisor 8,2k/1,0k = 9,2:1 (25,2 V -> 2,74 V) + 1 nF + clamp 3,3 V.\n'
     '(4) 100 nF + 10 uF ceramicos colados a cada par de MOSFETs (nao desenhados por clareza).', fontsize=8.6)
 d.save(D + "esq4_esc_trifasico.png")
 print("fig 4 gerada")

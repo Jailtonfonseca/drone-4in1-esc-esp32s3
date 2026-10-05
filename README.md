@@ -1,5 +1,14 @@
 # Drone — 4×ESC trifásico + ESP32-S3 na mesma PCB
 
+> ⚠️ **Estado real (2026-10-05):** a versão corrente do board é a **v10**
+> ([`fase3_pcb/v10/NOTA_V10.md`](fase3_pcb/v10/NOTA_V10.md)) — ela corrige os erros da
+> auditoria de 2026-10-04 ([`AUDITORIA_ERROS_2026-10-04.md`](AUDITORIA_ERROS_2026-10-04.md)):
+> footprints fora do contorno, typo de net BEMF, nets de potência sem cobre e a causa raiz do
+> bug do roteador (exportador DSN). A BOM corrente é a
+> [`orcamento/BOM_FABRICACAO_v10.csv`](orcamento/BOM_FABRICACAO_v10.csv) (MOSFET
+> `NVMFS6H824NT1G`, 24 un — a BOM antiga mandava comprar o FET errado). Muito do texto
+> abaixo ainda descreve a v6/v7 (ver seção E-5/E-14 da auditoria) e será revisto.
+
 Projeto de **uma única PCB** que concentra: 4 inversores trifásicos (ESC), gate drivers,
 sensoriamento de corrente, MCU com WiFi (ESP32-S3), IMU, barômetro, USB e toda a regulação
 de energia a partir de pack LiPo 6S (25,2 V máx / 19,8 V mín).

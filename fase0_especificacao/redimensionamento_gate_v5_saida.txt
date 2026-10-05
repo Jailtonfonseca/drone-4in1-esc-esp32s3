@@ -496,5 +496,8 @@ REDIMENSIONAMENTO DO GATE DRIVE (v5) -- Qg REAL
     - Termica de regime (§3, primeiro bloco): depende so' de Rds(on) (P-05, mantida em 2,0 mOhm)
       e de I. Nao muda. [MEDIDO]
     - Vias, Z0, f_ring, ADC: nao dependem de Qg nem de Iq. Nao mudam. [MEDIDO]
-    - Balanco no cruzeiro (§4): a parcela 'conversores' usa 12 x 0,049 A do trilho orcado;
-      com Qg real sobe para 0.105 A, o que muda o total de 173 W para 182 W. [MEDIDO] Folga de 3,5 % vira 9.2 % -- nenhum limite estourado.
+    - Balanco no cruzeiro (§4): a parcela 'conversores' usa 12 V x 0,049 A do trilho orcado;
+      com Qg real o trilho INTEIRO sobe para 0.1047 A (ja' e' o TOTAL dos 12 drivers
+      + 24 gates): dP = 12 V x (0,1047-0,049) A = 0.67 W no trilho (0.79 W na entrada do buck). [MEDIDO]
+      Sobre o total de 172,6 W do v4 §4 (base pre-correcao do [FIX auditoria 1]) isso da 173.3 W -- folga de 3,5 % vira 4.0 %.
+      Sobre o total CORRIGIDO do v4 §4 (170.8 W, perdas de FET 0,12 W): 171.6 W, folga de 2,5 % vira 2.9 % -- nenhum limite estourado.

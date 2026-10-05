@@ -1,0 +1,81 @@
+==============================================================================
+FASE 3 -- VERIFICACAO DA v10 (gates novos da auditoria 2026-10-04) [VERIF]
+==============================================================================
+arquivo : /root/extensao_mount_test/drone/fase3_pcb/v10/v10_drone.kicad_pcb
+pcbnew  : 5.1.9+dfsg1-1+deb11u1
+
+contorno Edge.Cuts: 190.10 x 145.10 mm  (-0.05, -0.05) .. (190.05, 145.05)
+
+inventario
+  footprints / pads / nets-com-pad : 319 / 1093 / 179
+  trilhas / vias                   : 0 / 398
+  zonas de cobre / keepouts        : 173 / 4
+
+G1  pads dentro do contorno
+  pads fora: 0  (todos dentro)
+
+G2  nets com circuito fechado (>= 2 pads)
+  nets de 1 pad: 0  (nenhuma)
+
+G3  curtos pad×pad (SAT, nets diferentes)
+  curtos: 0  (nenhum)
+
+G4  vias de stitch fora das faixas de keepout (borda 0,9 mm)
+  vias dentro da faixa proibida: 0  (nenhuma)
+
+G5  zonas de cobre preenchidas
+  zonas de cobre: 173 | preenchidas: 173 | vazias: 0
+    12V        10 zona(s), 10 preenchida(s)
+    3V3        16 zona(s), 16 preenchida(s)
+    3V3_A       8 zona(s),  8 preenchida(s)
+    5V          8 zona(s),  8 preenchida(s)
+    GND         3 zona(s),  3 preenchida(s)
+    PHM101      5 zona(s),  5 preenchida(s)
+    PHM102      5 zona(s),  5 preenchida(s)
+    PHM103      5 zona(s),  5 preenchida(s)
+    PHM201      4 zona(s),  4 preenchida(s)
+    PHM202      4 zona(s),  4 preenchida(s)
+    PHM203      5 zona(s),  5 preenchida(s)
+    PHM301      5 zona(s),  5 preenchida(s)
+    PHM302      5 zona(s),  5 preenchida(s)
+    PHM303      5 zona(s),  5 preenchida(s)
+    PHM401      5 zona(s),  5 preenchida(s)
+    PHM402      5 zona(s),  5 preenchida(s)
+    PHM403      4 zona(s),  4 preenchida(s)
+    SNM101      3 zona(s),  3 preenchida(s)
+    SNM102      3 zona(s),  3 preenchida(s)
+    SNM103      3 zona(s),  3 preenchida(s)
+    SNM201      3 zona(s),  3 preenchida(s)
+    SNM202      3 zona(s),  3 preenchida(s)
+    SNM203      3 zona(s),  3 preenchida(s)
+    SNM301      3 zona(s),  3 preenchida(s)
+    SNM302      3 zona(s),  3 preenchida(s)
+    SNM303      3 zona(s),  3 preenchida(s)
+    SNM401      3 zona(s),  3 preenchida(s)
+    SNM402      3 zona(s),  3 preenchida(s)
+    SNM403      3 zona(s),  3 preenchida(s)
+    VBAT        4 zona(s),  4 preenchida(s)
+    VBAT_F      6 zona(s),  6 preenchida(s)
+    VBAT_PROT  25 zona(s), 25 preenchida(s)
+
+G6  A4 stitch: via a <= 1,6 mm do CENTRO ou <= 0,5 mm da BORDA do cobre
+    (criterio equivalente DOCUMENTADO no GATES_REVISADOS.md A4/G1-A4: o
+     alvo '0 sem via' medido ao centro e' insatisfazivel nesta geometria)
+  pads GND/VBAT_PROT: 249 | so' ao centro: 18 fora | criterio equivalente: 18 fora
+  sem via (criterio equivalente) -> U_MCU.41, U_LDO.GND, Cblk6.2, Cblk6.1, Cblk5.2, Cblk5.1, Cblk4.2, Cblk4.1, Cblk3.2, Cblk3.1, Cblk2.2, Cblk2.1, Cblk1.2, Cblk1.1, D1.2
+
+G7  ocupacao ELETRICA (pads + 0,15 mm; sem texto de silk)
+  soma das areas eletricas: 6464.9 mm2 de 27583.5 mm2 = 23.44 %
+
+------------------------------------------------------------------------------
+VEREDITO POR GATE (nao maquiado)
+  [OK  ] G1 pads dentro do contorno                 0 fora                   (criterio: 0)
+  [OK  ] G2 nets com >= 2 pads                      0 orfas                  (criterio: 0)
+  [OK  ] G3 curtos pad×pad                          0 curtos                 (criterio: 0)
+  [OK  ] G4 vias fora dos keepouts                  0 violacoes              (criterio: 0)
+  [OK  ] G5 zonas preenchidas                       0 vazias de 173          (criterio: 0)
+  [FALHA] G6 A4 stitch GND/VBAT_PROT                 18 pads sem via          (criterio: 0)
+  [OK  ] G7 ocupacao eletrica                       23.44 %                  (criterio: <= 65 %)
+
+  VEREDITO: HA GATES EM FALHA (ver acima)
+==============================================================================

@@ -1,5 +1,15 @@
 # PLANO_FINAL — do estado atual ao primeiro voo
 
+> ⚠️ **SUPERSEDO PARCIAL (2026-10-05):** este documento descreve o estado de **28/09**
+> (v7). NÃO use os números de estado daqui sem conferir os artefatos atuais. A auditoria
+> de 2026-10-04 ([`AUDITORIA_ERROS_2026-10-04.md`](AUDITORIA_ERROS_2026-10-04.md), seção E,
+> achado E-4) listou ≥10 afirmações defasadas (nets, pads, "v8 vazio", dimensões, BOM…).
+> Estado real atual: **board v10** ([`fase3_pcb/v10/NOTA_V10.md`](fase3_pcb/v10/NOTA_V10.md) —
+> gates G1–G5/G7 OK; pipeline FreeRouting provado no corte: 46 wires/9 nets; roteamento
+> completo em andamento), **BOM v10** ([`orcamento/BOM_FABRICACAO_v10.csv`](orcamento/BOM_FABRICACAO_v10.csv)),
+> firmware existente com correções da auditoria em revisão. Pendências de decisão:
+> margem do MOSFET (85,2 V > 80 V), watchdog D-07, ADC D-12.
+
 Documento único de execução. Consolida `plano/WP1_ROTEAMENTO.md`, `plano/WP2_FABRICACAO.md`,
 `plano/WP3_PREMISSAS_DATASHEETS.md`, `plano/WP4_FIRMWARE.md` e `plano/WP5_DECISOES.md` numa
 ordem de trabalho só. **Data de consolidação: 2026-09-28.**

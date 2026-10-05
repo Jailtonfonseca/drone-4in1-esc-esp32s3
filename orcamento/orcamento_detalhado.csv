@@ -17,7 +17,7 @@ GATE DRIVE;Capacitor local do driver;10 uF / 25 V X7R;12;0.1400;1.6800;27.59;[ES
 CORRENTE;Shunt de fase;0,5 mOhm 2 W 2512 manganina (112 mW continuo calculado);12;0.3000;3.6000;59.11;[EST];"0,5 mOhm 2W 2512 manganina; eBay 50pcs US$13,30 = US$0,27 COT"
 CORRENTE;Amplificador diferencial;ganho 50, CMVR >= 30 V, largura de banda >= 400 kHz [N/D offline];12;2.6000;31.2000;512.30;[EST];"INA240A2; modulo breakout = US$7,80 COT (7semi); CI ~US$2,5-3,3"
 CORRENTE;Divisor de referencia;10k/10k 1% + 100 nF;12;0.0300;0.3600;5.91;[EST];2x R 0603 1% + 100nF
-BEMF;Divisor de fase;8,2k/1,0k 1% (25,2 V -> 3,07 V calculado);12;0.0200;0.2400;3.94;[EST];2x R 0603 1% por fase
+BEMF;Divisor de fase;8,2k/1,0k 1% (25,2 V -> 2,74 V calculado);12;0.0200;0.2400;3.94;[EST];2x R 0603 1% por fase
 BEMF;Filtro + clamp;1 nF + diodo clamp 3,3 V / zenner;12;0.0400;0.4800;7.88;[EST];1nF 0402 + zener clamp
 ADC;ADC externo SPI;16 canais, >= 200 ksps, 12 bits [N/D offline];1;8.0000;8.0000;131.36;[EST];ADS7953 16ch 12b 1Msps (Mouser single = US$13,56 COT)
 ADC;Mux analogico (se usar 2x CI de 8 canais);[N/D offline];2;1.2000;2.4000;39.41;[EST];alternativa barata: 2x MCP3208 ~US$2,60 cada -> ver nota

@@ -20,18 +20,18 @@ VERIFICACAO DE LIMITES CRITICOS -- Fase 0 (v2)
       a <2 mm do par, com o loop de comutacao minimizado no layout.
 
 2. TERMICA DO MOSFET -- dois pontos de operacao (Rth_ja e' PREMISSA)
-  cruzeiro (~5 A de fase pico): P_cond=   12.5 mW, P_sw=   3.7 mW -> P= 0.02 W/FET -> 24 FETs =  0.39 W
-      Rth_ja= 30 C/W -> Tj=  25.5 C 
-      Rth_ja= 60 C/W -> Tj=  26.0 C 
-      Rth_ja=100 C/W -> Tj=  26.6 C 
-  nominal (15 A)            : P_cond=  112.5 mW, P_sw=  33.2 mW -> P= 0.15 W/FET -> 24 FETs =  3.50 W
-      Rth_ja= 30 C/W -> Tj=  29.4 C 
-      Rth_ja= 60 C/W -> Tj=  33.7 C 
-      Rth_ja=100 C/W -> Tj=  39.6 C 
-  pico (30 A)               : P_cond=  450.0 mW, P_sw= 133.0 mW -> P= 0.58 W/FET -> 24 FETs = 13.99 W
-      Rth_ja= 30 C/W -> Tj=  42.5 C 
-      Rth_ja= 60 C/W -> Tj=  60.0 C 
-      Rth_ja=100 C/W -> Tj=  83.3 C 
+  cruzeiro (~5 A de fase pico): P_cond=   12.5 mW, P_sw=  44.4 mW -> P= 0.06 W/FET -> 24 FETs =  1.37 W
+      Rth_ja= 30 C/W -> Tj=  26.7 C 
+      Rth_ja= 60 C/W -> Tj=  28.4 C 
+      Rth_ja=100 C/W -> Tj=  30.7 C 
+  nominal (15 A)            : P_cond=  112.5 mW, P_sw= 133.2 mW -> P= 0.25 W/FET -> 24 FETs =  5.90 W
+      Rth_ja= 30 C/W -> Tj=  32.4 C 
+      Rth_ja= 60 C/W -> Tj=  39.7 C 
+      Rth_ja=100 C/W -> Tj=  49.6 C 
+  pico (30 A)               : P_cond=  450.0 mW, P_sw= 266.4 mW -> P= 0.72 W/FET -> 24 FETs = 17.19 W
+      Rth_ja= 30 C/W -> Tj=  46.5 C 
+      Rth_ja= 60 C/W -> Tj=  68.0 C 
+      Rth_ja=100 C/W -> Tj=  96.6 C 
   >>> Rth_ja vem da AREA DE COBRE do layout -> a temperatura e' decidida no PCB (Fase 3)
       e comprovada com termopar (Fase 4). Nada aqui e' medicao.
 
@@ -54,11 +54,11 @@ VERIFICACAO DE LIMITES CRITICOS -- Fase 0 (v2)
   taxa de amostragem: 1 amostra/ciclo = 20 ksps (FOC ok); 2 amostras = 40 ksps
 
 6. BALANCO DE POTENCIA -- CARGA REAL, nao nominal
-  Empuxo p/ sustentar 750 g: 167 W -> I_barra = 7.5 A -> I_fase(pico) = 12.5 A
-  Perdas de conducao nos 24 FETs (cruzeiro): 1.88 W
+  Empuxo p/ sustentar 750 g: 167 W -> I_barra = 7.5 A -> I_fase(pico) = 3.1 A
+  Perdas de conducao nos 24 FETs (cruzeiro): 0.12 W
   Conversores (MCU+radio 0.55 A@3.3, gate 49 mA@12, aux 0.20 A@5): 4.00 W na entrada
-  TOTAL da placa no cruzeiro = 167 W (helice) + 1.88 W + 4.00 W = 173 W  (3.5 % acima do ideal)
-  No PICO (4x30 A): so' a conducao dos FETs = 10.8 W + comutacao ~3.2 W + helice (I^2) -> regime termico de rajada, NAO continuo.
+  TOTAL da placa no cruzeiro = 167 W (helice) + 0.12 W + 4.00 W = 171 W  (2.5 % acima do ideal)
+  No PICO (4x30 A): so' a conducao dos FETs = 10.8 W + comutacao 6.4 W (24 x 266 mW, [FIX auditoria 2]) + helice (I^2) -> regime termico de rajada, NAO continuo.
   >>> Rendimento da helice (g/W) e' PREMISSA. O numero que importa (temperatura real em voo)
       nao existe nesta maquina: exige tunel de vento/bancada.
 

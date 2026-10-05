@@ -35,8 +35,8 @@ FASE 0 -- LIMITES CRITICOS (v6) -- combinacao MOSFET + driver ESCOLHIDA
   L6 slew de Vgs no turn-OFF                  | esp        0.3 V/ns | med    0.08929 V/ns | erro     -70.24 %
                                               |   fonte: 10 V / (Qg typ / I-)
   [MEDIDO] corrente reativa em Ciss durante a comutacao: I = Ciss*dV/dt
-        Ciss = 12 pF [DS FET p.4, Table 5] -> I_Ciss = Ciss*dV/dt = 12 pF x 0.0893 V/ns = 1.1 mA = 0.1 % de I_gate
-  [MEDIDO] corrente total no no de gate = (1 + Ciss*dV/dt/I) x I_gate = 1.00x a corrente do driver
+        Ciss = 12000 pF [DS FET p.4, Table 5] -> I_Ciss = Ciss*dV/dt = 12000 pF x 0.0893 V/ns = 1071.4 mA = 71.4 % de I_gate
+  [MEDIDO] corrente total no no de gate = (1 + Ciss*dV/dt/I) x I_gate = 1.71x a corrente do driver
 
 3. PERDA DE COMUTACAO NO MOSFET
   [EST modelo 0,5*Vds*I*t_r] E_off(turn-ON) = 0,5 x 25.2 V x 30.0 A x 112.0 ns = 42.3 uJ
@@ -50,19 +50,20 @@ FASE 0 -- LIMITES CRITICOS (v6) -- combinacao MOSFET + driver ESCOLHIDA
 
   CONTRAPROVA: o modelo acima NAO e' a perda real. O datasheet publica Qoss em TABELA:
   [DS FET p.1, Table 1 'Key Performance Parameters' e p.4, Table 7] Qoss = 213 nC typ
-  [MEDIDO] E_oss = Qoss * Vds = 213 nC x 25.2 V = 5.37 uJ
-  [MEDIDO] P(E_oss) = 5.37 uJ x 20 kHz = 107.4 mW/FET -> 2.58 W no banco   [DS] -- energia que o MOSFET DESPERDICA por comutacao
-  [MEDIDO] P(E_oss) e' 12.68 % da estimativa de 0.85 W do modelo 0,5*Vds*I*tr
-  [MEDIDO] e' 124 % dos 0,133 W que o v4 §3 usava de parcela de comutacao
+  [MEDIDO] E_oss = 1/2 x Qoss x Vds = 213 nC x 25.2 V / 2 = 2.68 uJ
+  [MEDIDO] P(E_oss) = 2.68 uJ x 20 kHz = 53.7 mW/FET -> 1.29 W no banco   [DS] -- energia que o MOSFET DESPERDICA por comutacao
+  [MEDIDO] P(E_oss) e' 6.34 % da estimativa de 0.85 W do modelo 0,5*Vds*I*tr
+  [MEDIDO] o piso de Qoss e' 40 % da parcela de 0,133 W que o v4 §3 usava (0,133 W = 2.48x o piso)
   [DS FET p.4, Table 7] Qrr = 235 nC typ / 470 nC max a 100 A/us: recuperacao
         injetada no barramento a cada comutacao = 140 % do proprio Qg
-  L8b perda de comutacao por FET -- piso de datasheet (Qoss)| esp      0.583 W    | med     0.1074 W    | erro     -81.59 %
-                                              |   fonte: Qoss x Vds x f, com Qoss lido da Table 1 do datasheet; e' o unico numero de tabela disponivel, porque E_on/E_off nao sao publicados [MEDIDO]
+  L8b perda de comutacao por FET -- piso de datasheet (Qoss)| esp      0.583 W    | med    0.05368 W    | erro     -90.79 %
+                                              |   fonte: 0,5 x Qoss x Vds x f [FIX auditoria 11], com Qoss lido da Table 1 do datasheet; e' o unico numero de tabela disponivel, porque E_on/E_off nao sao publicados [MEDIDO]
   >>> VEREDITO HONESTO DE L8: os dois numeros medem coisas diferentes. O de 0,133 W do v4 e' um
       chute de projeto; o de Qoss e' energia de comutacao por natureza no FET, e' TABELA de
-      datasheet, e da' uma ordem de grandeza a menos. O numero de 9,77 W do
-      redimensionamento_gate_v5 era artefato do modelo 0,5*Vds*I*tr, que cresce com t_r sem
-      limite e nao descreve o dispositivo. O que de fato NAO esta determinado e E_off:
+      datasheet, e esta ~2 ordens de grandeza ABAIXO do modelo [FIX auditoria 11]: os 9,77 W
+      do redimensionamento_gate_v5 sao 182x o piso de Qoss com o 1/2 (53,7 mW), ou 91x sem
+      o 1/2 -- era artefato do modelo 0,5*Vds*I*tr, que cresce com t_r sem limite e nao
+      descreve o dispositivo. O que de fato NAO esta determinado e E_off:
       [N/D offline] -- nenhum dos PDFs em datasheets/ publica E_on/E_off.
 
 4. BOOTSTRAP  dV = Qg / Cboot
@@ -70,8 +71,10 @@ FASE 0 -- LIMITES CRITICOS (v6) -- combinacao MOSFET + driver ESCOLHIDA
                                               |   fonte: Qg = 168 nC / Cboot = 4.70 uF; 40 mV era o orcado com Qg = 40 nC
   [MEDIDO] Cboot minimo pela regra de 20*Qg = 3.36 uF (adotado: 4.70 uF, fator 1.40x)
   [MEDIDO] queda no pior caso (Qg max) = 45 mV = 0.37 % de 12 V
-  [MEDIDO] Cboot necessario para 0,5 % de queda com Qg max = 42.00 uF
-  >>> o Cboot de 1 uF do BOM original serva para a combinacao escolhida
+  [MEDIDO] Cboot necessario para 0,5 % de queda com Qg max = Qg/(0,005 x 12 V) = 3.50 uF
+  >>> o Cboot ADOTADO (2x 2,2 uF = 4.70 uF) SERVE para a combinacao escolhida (regra 20*Qg = 3.36 uF; queda typ 35.7 mV)
+  >>> [FIX auditoria 19] ATENCAO: o BOM lista 1x 2,2 uF POR HALF-BRIDGE -> 168 nC/2,2 uF = 76,4 mV > 40 mV (limite L2).
+      O BOM precisa de 2x 2,2 uF por canal OU o L2 precisa ser revisado -- o 35,7 mV acima e' a conta com 4,7 uF, NAO com 2,2 uF.
 
 5. CORRENTE NO TRILHO DE GATE
   L3 corrente no trilho de 12 V               | esp     0.0492 A    | med    0.08094 A    | erro     +64.51 %
@@ -100,10 +103,14 @@ FASE 0 -- LIMITES CRITICOS (v6) -- combinacao MOSFET + driver ESCOLHIDA
 7. RESISTOR DE GATE: amortecimento x velocidade (as duas contas nao cabem no mesmo resistor)
   L7 Rg minimo para comutar em 50 ns (com o driver escolhido)| esp         10 ohm  | med      2.271 ohm  | erro     -77.29 %
                                               |   fonte: Vtrilho/I_alvo - Rg_interno = 12 V / (168 nC / 50 ns) - 1.3 ohm; adotado = 10 ohm
-  [MEDIDO] Z0 da trilha de gate = sqrt(2 nH / 20000 pF) = 0.32 ohm
-  [MEDIDO] amortecimento exigido: Rg >= 2*Z0 = 0.6 ohm (adotado 10 ohm, OK)
+  [MEDIDO] Z0 da trilha de gate = sqrt(20 nH / 2000 pF) = 3.16 ohm
+  [MEDIDO] amortecimento exigido: Rg >= 2*Z0 = 6.3 ohm (adotado 10 ohm, OK)
   [MEDIDO] com Rg = 10 + 1.3 = 11.3 ohm e o driver corrente-limitado, quem manda e' o DRIVER: a corrente pedida seria 1.062 A contra 1.50 A disponiveis
   [MEDIDO] f_ring = 1/(2*pi*sqrt(LC)) = 25.2 MHz
+  [FIX auditoria 9] VEREDITO HONESTO DE L7: o Rg para 50 ns (2.27 ohm) e' MENOR que o piso de amortecimento (6.3 ohm).
+      A incompatibilidade amortecimento x velocidade CONTINUA (mesma conclusao do
+      redimensionamento_gate_v5 §4: sao duas exigencias que nao cabem no mesmo resistor).
+      O 'L7 OK' da saida anterior era artefato do LxC trocado (Z0 10x menor).
 
 8. CONDUCAO: o preco de trocar 1,7 mOhm por um Rds(on) maior
   Rds(on) do FET de referencia  = 1,7 mOhm [DS IPB017N10N5 p.4, Table 4, VGS=10 V, ID=100 A]
@@ -130,9 +137,9 @@ FASE 0 -- LIMITES CRITICOS (v6) -- combinacao MOSFET + driver ESCOLHIDA
   ADC: janela 2 us = 4.0 % do periodo de 50 us
 
 10. BALANCO NO CRUZEIRO (mesmo modelo do v4 §4)
-  Helice: 167 W | I_barra 7.5 A | I_fase pico 12.5 A
-  FETs (conducao no cruzeiro): 1.60 W
-  Conversores: 4.45 W (entrada) | TOTAL ~ 173 W (3.6 % acima do ideal de helice)
+  Helice: 167 W | I_barra 7.5 A | I_fase pico (por motor) 3.1 A
+  FETs (conducao no cruzeiro): 0.10 W
+  Conversores: 4.45 W (entrada) | TOTAL ~ 171 W (2.7 % acima do ideal de helice)
 
 ==============================================================================
 VEREDITO v6 -- 8 limites criticos
@@ -143,13 +150,14 @@ VEREDITO v6 -- 8 limites criticos
   L3   corrente no trilho de 12 V            0.6 A     0.08094 A      -86.51%  OK  
   L4   dead-time (turn-OFF)                518.8 ns        112 ns     -78.41%  OK  
   L6   slew de Vgs (turn-ON)                 0.3 V/ns    0.08929 V/ns     -70.24%  ESTOURADO
-  L7   Rg para comutar em 50 ns               10 ohm      2.271 ohm     -77.29%  OK  
+  L7   Rg para comutar em 50 ns               10 ohm      2.271 ohm     -77.29%  ESTOURADO
   L8   perda de comutacao por FET          0.583 W      0.8467 W      +45.23%  ESTOURADO
   L5  potencia de porta por FET        33.60 mW (nao e' limite termico: e' energia dissipada no Rg)
 
-  3 limite(s) continua(m) ESTOURADO(s) com a combinacao escolhida:
+  4 limite(s) continua(m) ESTOURADO(s) com a combinacao escolhida:
     L1 tempo de subida do gate: precisa 50 ns, medido 112 ns (+124.0 %)
     L6 slew de Vgs (turn-ON): precisa 0.3 V/ns, medido 0.08929 V/ns (-70.2 %)
+    L7 Rg para comutar em 50 ns: precisa 10 ohm, medido 2.271 ohm (-77.3 %)
     L8 perda de comutacao por FET: precisa 0.583 W, medido 0.8467 W (+45.2 %)
 
 ==============================================================================
