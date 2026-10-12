@@ -3,7 +3,7 @@
 """
 ses_import.py -- Le um .ses do FreeRouting e grava as trilhas no .kicad_pcb de entrada.
 
-Roda com:  /usr/bin/python3.9 ses_import.py entrada.kicad_pcb entrada.ses saida.kicad_pcb
+Roda com:  /usr/bin/python3.9 ses_import.py entrada.kicad_pcb ses1 [ses2 ...] saida.kicad_pcb
 
 ESCALA (medida, nao adivinhada): o DSN que o FreeRouting le esta em mm, mas o SES que
 ele escreve esta em micrometros -- `(place R1 4 6 ...)` no DSN vira `(place R1 4000 6000 ...)`
@@ -203,16 +203,34 @@ def via_diameter(ses_root, default_um=600.0):
 
 
 def main():
+    # [FIX 2026-10-12 — completar roteamento] aceita VARIOS SES na mesma
+    # execucao: pcb_in ses1 [ses2 ...] pcb_out — o ULTIMO argumento e' a
+    # saida, os do meio sao SESes aplicados em ordem. Caso do pipeline:
+    # o SES principal (133 nets) + o SES de completude (delta das que
+    # faltavam). Sem isto seria preciso re-importar em cima de board ja'
+    # roteado — o que a guarda anti-re-import proibe.
     ap = argparse.ArgumentParser()
     ap.add_argument("pcb_in")
-    ap.add_argument("ses")
-    ap.add_argument("pcb_out")
+    ap.add_argument("args", nargs="+",
+                    help="ses1 [ses2 ...] pcb_out (ultimo = saida)")
     a = ap.parse_args()
+    ses_files = a.args[:-1]
+    a.pcb_out = a.args[-1]
 
-    ses_text = open(a.ses).read()
-    toks = tokenize(ses_text)
-    root, _ = parse(toks, 0)
-    items = walk_ses(root)
+    items = []
+    d_via = None
+    for sf in ses_files:
+        ses_text = open(sf).read()
+        toks = tokenize(ses_text)
+        root, _ = parse(toks, 0)
+        items.extend(walk_ses(root))
+        dv = via_diameter(root)
+        if dv is not None:
+            d_via = dv
+    if d_via is None:
+        d_via = 600.0
+    print("SESes aplicados: %d | itens combinados: %d" % (len(ses_files),
+                                                          len(items)))
 
     board = pcbnew.LoadBoard(a.pcb_in)
     n_existing = len(list(board.GetTracks()))
@@ -241,8 +259,12 @@ def main():
         name = str(ni.GetNetItem(i).GetNetname())
         netcode[name] = code
 
-    d_via = via_diameter(root)
-    n_seg = n_via = n_nonet = 0
+    # [multi-SES] d_via ja' vem do loop acima (do SES que declarou padstack)
+    n_seg = n_via = n_nonet = n_dup = 0
+    vistos = set()     # [multi-SES] SES de completude re-exporta rotas fixas:
+                       # pular segmentos identicos (net/layer/width/coords) que
+                       # um SES anterior ja' gravou — 635 duplicatas medidas.
+    vistos_via = set()
     for it in items:
         code = netcode.get(it["net"], 0)
         if it["net"] not in netcode:
@@ -258,6 +280,15 @@ def main():
                 w = 150000
             for i in range(len(it["points"]) - 1):
                 (x1, y1), (x2, y2) = it["points"][i], it["points"][i + 1]
+                k = (it["net"], layer_id, w,
+                     min(round(x1, 4), round(x2, 4)),
+                     min(round(y1, 4), round(y2, 4)),
+                     max(round(x1, 4), round(x2, 4)),
+                     max(round(y1, 4), round(y2, 4)))
+                if k in vistos:
+                    n_dup += 1
+                    continue
+                vistos.add(k)
                 t = pcbnew.TRACK(board)   # [FIX] KiCad 5.1: TRACK, nao PCB_TRACK
                 t.SetStart(pcbnew.wxPointMM(x1, y1))
                 t.SetEnd(pcbnew.wxPointMM(x2, y2))
@@ -267,6 +298,11 @@ def main():
                 board.Add(t)
                 n_seg += 1
         else:
+            kv = (it["net"], round(it["x"], 4), round(it["y"], 4))
+            if kv in vistos_via:
+                n_dup += 1
+                continue
+            vistos_via.add(kv)
             v = pcbnew.VIA(board)     # [FIX] KiCad 5.1: VIA, nao PCB_VIA
             v.SetPosition(pcbnew.wxPointMM(it["x"], it["y"]))
             v.SetWidth(int(round(d_via * 1000.0)))
@@ -290,11 +326,12 @@ def main():
             vias += 1
         else:
             t += 1
-    print("SES: %s" % a.ses)
+    print("SESes: %s" % ", ".join(ses_files))
     print("  itens no SES      : %d" % len(items))
     print("  trilhas gravadas  : %d" % t)
     print("  vias gravadas     : %d" % vias)
     print("  nets sem match    : %d  (cairam na net 0)" % n_nonet)
+    print("  duplicados pulados: %d  (rotas re-exportadas por SES posterior)" % n_dup)
     print("  tracks antes      : %d" % n_existing)
     print("  GetTracks() total : %d" % total)
     print("  board salvo       : %s" % a.pcb_out)

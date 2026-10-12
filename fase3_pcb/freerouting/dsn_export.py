@@ -125,6 +125,9 @@ def pad_halfextents(pad):
 def build(board, only_net_prefix=None, max_modules=None):
     layers = copper_layers(board)
     lname = [str(x) for x in layers]
+    # [FIX 2026-10-12] GetLayer() devolve o indice KiCad (0..31), nao a
+    # posicao na lista de cobre — mapa id->nome para os wires do wiring.
+    lyrid2name = {board.GetLayerID(n): n for n in lname}
 
     # --- placements e nets ------------------------------------------------
     modules = list(board.GetModules())
@@ -406,7 +409,35 @@ def build(board, only_net_prefix=None, max_modules=None):
         routed += 1
         w('    (net %s (pins %s))' % (q(name), " ".join(pins)))
     w('  )')
-    w('  (wiring)')
+
+    # [FIX 2026-10-12 — completar roteamento] trilhas/vias de sinal JA
+    # EXISTENTES no board viram (wiring ...) com (type fix): o FreeRouting as
+    # trata como pre-rotas intocaveis (SYSTEM_FIXED, ver Wiring.calc_fixed)
+    # e rotea SOMENTE o que falta, ao redor delas. Board sem trilhas (a
+    # base) emite wiring vazio — mesmo DSN de antes. Sem isto, retomar o
+    # roteamento de um board parcial faria o FR rotear as 151 nets de novo
+    # as cegas, colidindo com as rotas ja importadas.
+    n_wire = n_via = 0
+    w('  (wiring')
+    for t in board.GetTracks():
+        nm = str(t.GetNetname())
+        if not nm or is_skipped_net(nm):
+            continue        # vias de stitch ficam nos keepouts, nao aqui
+        if t.Type() == pcbnew.PCB_VIA_T:
+            vx, vy = t.GetPosition().x / 1e6, t.GetPosition().y / 1e6
+            w('    (via VIA1 %s %s (net %s) (type fix))'
+              % (fnum(vx), fnum(vy), q(nm)))
+            n_via += 1
+        else:
+            s, e = t.GetStart(), t.GetEnd()
+            w('    (wire (polyline_path %s %s %s %s %s %s) (net %s) '
+              '(type fix))' % (lyrid2name[t.GetLayer()], fnum(t.GetWidth() / 1e6),
+                               fnum(s.x / 1e6), fnum(s.y / 1e6),
+                               fnum(e.x / 1e6), fnum(e.y / 1e6), q(nm)))
+            n_wire += 1
+    w('  )')
+    if n_wire or n_via:
+        print("wiring fixo exportado: %d wires + %d vias" % (n_wire, n_via))
     w(')')
     return ("\n".join(out) + "\n", len(placements), routed,
             sum(len(v) for v in net_pins.values()), skipped)

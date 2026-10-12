@@ -1,13 +1,17 @@
 # Drone — 4×ESC trifásico + ESP32-S3 na mesma PCB
 
-> ⚠️ **Estado real (2026-10-05):** a versão corrente do board é a **v10**
-> ([`fase3_pcb/v10/NOTA_V10.md`](fase3_pcb/v10/NOTA_V10.md)) — ela corrige os erros da
-> auditoria de 2026-10-04 ([`AUDITORIA_ERROS_2026-10-04.md`](AUDITORIA_ERROS_2026-10-04.md)):
-> footprints fora do contorno, typo de net BEMF, nets de potência sem cobre e a causa raiz do
-> bug do roteador (exportador DSN). A BOM corrente é a
+> ✅ **Estado real (2026-10-12):** o board corrente é a **v10 ROTEADA** —
+> [`fase3_pcb/v10/v10_roteada.kicad_pcb`](fase3_pcb/v10/v10_roteada.kicad_pcb) —
+> e passa em **TODOS os gates G1–G8** do verificador
+> ([`fase3_pcb/v10/verificacao_v10.txt`](fase3_pcb/v10/verificacao_v10.txt)):
+> **0 curtos** (o gate novo G8 pegou 354 violações que a roteagem anterior tinha),
+> 0 pads fora do contorno, 0 nets órfãs, 0 vias em keepout, 173/173 zonas preenchidas,
+> 0 pads GND/VBAT_PROT sem via de stitch, ocupação elétrica 23,4 %. O pipeline de
+> roteamento (FreeRouting 1.9.0) agora exporta o cobre das nets excluídas como
+> **keepouts** — a placa é fabricável. Registro central de erros e correções:
+> [`ERROS_CONHECIDOS.md`](ERROS_CONHECIDOS.md) (§9 = auditoria de 12/10). A BOM corrente é a
 > [`orcamento/BOM_FABRICACAO_v10.csv`](orcamento/BOM_FABRICACAO_v10.csv) (MOSFET
-> `NVMFS6H824NT1G`, 24 un — a BOM antiga mandava comprar o FET errado). Muito do texto
-> abaixo ainda descreve a v6/v7 (ver seção E-5/E-14 da auditoria) e será revisto.
+> `NVMFS6H824NT1G`, 24 un — a BOM antiga mandava comprar o FET errado).
 
 Projeto de **uma única PCB** que concentra: 4 inversores trifásicos (ESC), gate drivers,
 sensoriamento de corrente, MCU com WiFi (ESP32-S3), IMU, barômetro, USB e toda a regulação
@@ -15,12 +19,14 @@ de energia a partir de pack LiPo 6S (25,2 V máx / 19,8 V mín).
 
 Todo o projeto foi feito **100 % headless** nesta máquina (Linux aarch64, sem desktop):
 script + CLI + PNG, com KiCad 5.1.9 via `pcbnew` (Python), ngspice 34, Icarus Verilog 11,
-Yosys 0.9, gerbv 2.7.0 e matplotlib.
+Yosys 0.9, gerbv 2.7.0, FreeRouting 1.9.0 (Java 17 + Xvfb) e matplotlib.
 
 > **Regra de honestidade do projeto:** todo número afirmado nos relatórios vem de um arquivo
 > de log gerado de verdade por uma ferramenta executada nesta máquina, e cada afirmação tem
 > etiqueta de origem (`[MEDIDO]`, `[CALC]`, `[DATASHEET]`, `[PREMISSA]`, `[EST]`). Nada foi
-> estimado "no papel" e apresentado como medido.
+> estimado "no papel" e apresentado como medido. "Pronto" é propriedade do artefato:
+> [`verificacoes/verifica_projeto.py`](verificacoes/verifica_projeto.py) faz asserções duras
+> e exit 1 com a lista exata do que falta.
 
 ---
 
@@ -31,12 +37,15 @@ Yosys 0.9, gerbv 2.7.0 e matplotlib.
 | 0 | Especificação e dimensionamento | ✅ concluída |
 | 1 | Esquema elétrico (8 figuras) | ✅ concluída |
 | 2 | Simulação SPICE + PWM em Verilog | ✅ concluída |
-| 3 | PCB (4 camadas) + Gerber | ⚠️ **em andamento — roteamento não finalizado** |
+| 3 | PCB (6 camadas) + roteamento | ⚠️ **board v10 roteado, G1–G8 todos OK** — restam poucas nets de sinal sem rota (air-wires, listadas pelo harness) antes de fechar a Fase 3 |
 | 4 | Entrega: montagem, teste, riscos, regulatório | ✅ **documentação escrita** — os 4 documentos de `fase4_entrega/` existem e acompanham o envio (F14 = "já escrito", `plano/WP2_FABRICACAO.md` §1 item 11). O que falta é **executar** a bancada (G3), não escrevê-la |
 
-**Não fabrique esta placa ainda.** O layout da Fase 3 ainda tem nets não roteadas
-(ver `fase3_pcb/v6/verificacao_v6.txt`) e o roteador `fase3_pcb/rota_v7.py` não fechou.
-Os Gerbers presentes são **versões intermediárias de desenvolvimento**.
+**A placa v10 roteada está livre de curtos e gates verdes** — o estado
+de "pronto da Fase 3" é checado por asserções duras:
+[`verificacoes/verifica_projeto.py`](verificacoes/verifica_projeto.py) (SES com wires>0,
+nets 100 % roteadas, G1–G8 na base E no roteado, BOM com preço em toda linha comprável).
+Hoje ele reprova exatamente no que falta (nets ainda abertas e 1 preço pendente) —
+rodá-lo a qualquer momento diz onde o projeto está, sem impressão de sessão.
 
 Para a ordem de execução completa do projeto, do estado atual até o primeiro voo —
 o que falta para fabricar, o que falta para voar, a sequência de etapas, os gates e as
@@ -56,15 +65,18 @@ decisões pendentes — ver **[`PLANO_FINAL.md`](PLANO_FINAL.md)**.
 
 ```
 drone/
-├── PROMPT_AGENTE_DRONE.md          # briefing original do projeto
-├── datasheets/                     # datasheets usados (ESP32-S3-WROOM-1 etc.)
-├── fase0_especificacao/            # Fase 0 — especificação
-├── fase1_esquema/                  # Fase 1 — esquema elétrico (PNG + geradores Python)
-├── fase2_simulacao/                # Fase 2 — SPICE (ngspice) + Verilog (PWM/dead-time)
-├── fase3_pcb/                      # Fase 3 — PCB KiCad + Gerber (v1 … v7)
-├── fase4_entrega/                  # Fase 4 — documentação de entrega
-├── orcamento/                      # Orçamento de componentes (nacional e importação)
-└── plano/                          # Plano de execução — WP1..WP5, DO_PROJETO e scripts
+├── ERROS_CONHECIDOS.md              # registro central de erros (§9 = auditoria 12/10)
+├── AUDITORIA_ERROS_2026-10-04.md    # relatório da 1a auditoria (~110 erros)
+├── PROMPT_AGENTE_DRONE.md           # briefing original do projeto
+├── verificacoes/                    # asserções duras de projeto (verifica_projeto.py)
+├── datasheets/                      # datasheets usados (ESP32-S3-WROOM-1 etc.)
+├── fase0_especificacao/             # Fase 0 — especificação
+├── fase1_esquema/                   # Fase 1 — esquema elétrico (PNG + geradores Python)
+├── fase2_simulacao/                 # Fase 2 — SPICE (ngspice) + Verilog (PWM/dead-time)
+├── fase3_pcb/                       # Fase 3 — PCB KiCad + pipeline FreeRouting (v1 … v10)
+├── fase4_entrega/                   # Fase 4 — documentação de entrega
+├── orcamento/                       # Orçamento de componentes (nacional e importação)
+└── plano/                           # Plano de execução — WP1..WP5, DO_PROJETO e scripts
 ```
 
 ### Fase 0 — Especificação (`fase0_especificacao/`)
@@ -109,12 +121,20 @@ Scripts: `gera_fase1_a.py`, `gera_fase1_b.py`, `gera_fase1_c.py`, `gera_esq4.py`
 
 ### Fase 3 — PCB (`fase3_pcb/`)
 
-- `gera_pcb_v1.py` … `gera_pcb_v7.py` — geradores do board (o board é gerado por código).
-- `rota_v7.py` — roteador da versão 7 (**não finalizado**).
-- `calc_trilhas_vias.py` / `_saida.txt` — cálculo de largura de trilha e vias.
-- `verifica_fase3*.py` + `vN/verificacao_vN.txt` — verificação geométrica/elétrica.
-- `v1/` … `v7/` — cada versão com `vN_drone.kicad_pcb`, Gerber (F_Cu, B_Cu, In1_Cu, In2_Cu,
-  máscaras, silkages, Edge_Cuts), furos PTH/NPTH e renders PNG.
+- `gera_pcb_v1.py` … `gera_pcb_v10.py` — geradores do board (o board é gerado por código;
+  a linhagem viva é a v10 — as anteriores são registro histórico).
+- `freerouting/` — pipeline de roteamento real (FreeRouting 1.9.0):
+  - `dsn_export.py` — board → DSN, **com keepouts do cobre das nets excluídas** (§9.1)
+    e **wires fixos** das rotas existentes (para completar roteamento parcial);
+  - `ses_import.py` — SES → trilhas KiCad (com guarda anti-re-import);
+  - `SesFromFrb.java` — extrai o SES de um `.frb` intermediário sem GUI (§9.6);
+  - `fr_watchdog.py` — dispensa diálogos modais do FR dentro do Xvfb;
+  - `FONTE_FREEROUTING.md` — o runbook: tudo medido, não presumido.
+- `verifica_fase3_v10.py` → `v10/verificacao_v10.txt` — os **gates G1–G8**
+  (G8 = trilha×cobre de net excluída, o gate dos 354 curtos).
+- `v10/` — board base (`v10_drone.kicad_pcb`), **board roteado** (`v10_roteada.kicad_pcb`),
+  SES final, logs do run e verificação.
+- `verificacoes/verifica_projeto.py` (na raiz do repo) — asserções duras de projeto inteiro.
 - `kicad-cli` não existe nesta máquina: os Gerbers são gerados por script `pcbnew`.
 
 ### Fase 4 — Entrega (`fase4_entrega/`)
@@ -153,14 +173,23 @@ Nada aqui precisa de desktop. Exemplo:
 # simulação SPICE
 cd fase2_simulacao && ngspice -b buck12.cir
 
-# esquema (requer schemdraw + matplotlib)
-cd fase1_esquema && python3 gera_fase1_c.py
+# board base v10 (requer KiCad 5.1 com módulo pcbnew do sistema)
+cd fase3_pcb && python3.9 gera_pcb_v10.py
 
-# PCB / Gerber (requer KiCad 5.1 com módulo pcbnew do sistema)
-cd fase3_pcb && python3 gera_pcb_v7.py
+# pipeline de roteamento (FreeRouting 1.9.0 + Java 17 + Xvfb; ver FONTE_FREEROUTING.md)
+cd fase3_pcb/freerouting && cp freerouting.json /tmp/     # o FR lê do java.io.tmpdir!
+python3.9 dsn_export.py ../v10/v10_drone.kicad_pcb ../v10/freerouting_run/v10_dsn_input.dsn
+xvfb-run -a java -jar <caminho>/freerouting-1.9.0.jar \
+    -de ../v10/freerouting_run/v10_dsn_input.dsn -do ../v10/freerouting_run/v10_final.ses
+python3.9 ses_import.py ../v10/v10_drone.kicad_pcb \
+    ../v10/freerouting_run/v10_final.ses ../v10/v10_roteada.kicad_pcb
+
+# verificação (gates G1-G8) e asserções duras de projeto
+python3.9 fase3_pcb/verifica_fase3_v10.py fase3_pcb/v10/v10_roteada.kicad_pcb
+python3.9 verificacoes/verifica_projeto.py
 
 # orçamento
-cd orcamento && python3 orcamento.py
+cd orcamento && python3.9 orcamento.py
 ```
 
 ## Licença
