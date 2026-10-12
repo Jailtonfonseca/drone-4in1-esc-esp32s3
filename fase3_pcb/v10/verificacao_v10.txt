@@ -1,14 +1,14 @@
 ==============================================================================
 FASE 3 -- VERIFICACAO DA v10 (gates novos da auditoria 2026-10-04) [VERIF]
 ==============================================================================
-arquivo : /host/opt/jupyter/work/drone/fase3_pcb/v10/v10_drone.kicad_pcb
+arquivo : /host/opt/jupyter/work/drone/fase3_pcb/v10/v10_roteada.kicad_pcb
 pcbnew  : 5.1.9+dfsg1-1+deb11u1
 
 contorno Edge.Cuts: 190.10 x 145.10 mm  (-0.05, -0.05) .. (190.05, 145.05)
 
 inventario
   footprints / pads / nets-com-pad : 319 / 1093 / 179
-  trilhas / vias                   : 0 / 449
+  trilhas / vias                   : 3499 / 823
   zonas de cobre / keepouts        : 173 / 4
 
 G1  pads dentro do contorno
@@ -69,7 +69,7 @@ G7  ocupacao ELETRICA (pads + 0,15 mm; sem texto de silk)
 G8  trilha x cobre de net EXCLUIDA (pads+vias de GND/VBAT*/PHM*/SNM*)
     (distancia exata segmento x retangulo rotacionado; folga < 0.15 mm
      sob a regra de 0.20 mm = violacao)
-  vias de net excluida: 449 | pads: 363 | trilhas de sinal: 0
+  vias de net excluida: 449 | pads: 363 | trilhas de sinal: 3499
   violacoes (d < -0.15 mm): 0
 
 ------------------------------------------------------------------------------

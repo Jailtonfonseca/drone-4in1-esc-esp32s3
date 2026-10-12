@@ -1,0 +1,6 @@
+2026-10-12 20:31:04.493 [main] INFO  Freerouting v1.9.0 (build-date: 2023-10-30)
+2026-10-12 20:31:04.892 [main] INFO  Settings were loaded from freerouting.json
+2026-10-12 20:31:06.027 [main] INFO  Opening '/tmp/freerouting-dea8b4f2.frb'...
+2026-10-12 20:31:10.022 [ForkJoinPool.commonPool-worker-1] INFO  New version available: v2.5.0
+Fontconfig error: Cannot load default config file
+2026-10-12 20:31:25.943 [Thread-1] INFO  Starting auto-routing...

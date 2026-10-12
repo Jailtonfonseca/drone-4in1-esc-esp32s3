@@ -213,11 +213,37 @@ estava a 0,90 mm da via do `U_IMU.9`). Resultado: **resgatados 1, cobertos 1, re
 as 8 restantes estão em geradores históricos v1–v8 (`gera_pcb_v1..7.py`, `rota_v8.py`),
 mantidos **intocados por design** como registro histórico (a v9+ é a linhagem viva).
 
-### 9.6 — Estado do re-roteamento com keepouts
+### 9.6 — RE-ROTEAMENTO COM KEEPOUTS: RESULTADO FINAL (12/10)  `[PLACA FABRICAVEL]`
 
-DSN novo (3.167 keepouts) aberto **sem nenhum warning** (sem risco de modal); autorroteamento
-em execução. As 2 nets que a roteagem antiga deixou para trás (**IMU_CS, IMU_INT**) são o
-termômetro: se completarem, a cobertura vai a 151/151.
+**Veredito: TODOS OS GATES OK (G1–G8) no board ROTEADO** — primeira vez; a v10 roteada
+anterior reprovava em G6 (16) e G8 (354).
+
+| Métrica | Roteagem antiga (sem keepouts) | Re-roteagem com keepouts |
+|---|---|---|
+| wires no SES | 1.410 | 1.208 |
+| vias de rota no SES | 404 | 374 |
+| trilhas importadas | 3.909 | 3.499 |
+| nets roteadas | 149/151 | **133/151** |
+| curtos trilha×cobre-excluído (G8) | **354** | **0** |
+| pads GND/VBAT_PROT sem via (G6) | 16 | **0** |
+| veredito G1–G8 | FALHA | **TODOS OK** |
+
+**Como fechou (12/10, 17:30 BRT):** 5 passadas bancadas (3,6 h; .frb de 846 KB) + o
+utilitário novo **`freerouting/SesFromFrb.java`** — carrega o `.frb` serializado
+(`ObjectInputStream → RoutingBoard → SpecctraSesFileWriter.write`) e grava o SES do
+estado bancado **sem GUI e sem esperar mais passadas** (o autorroteador batch do FR
+só gravava SES no fim da convergência, e com 3.167 keepouts cada passada custa ~44 min
+contra ~6 min antes). Compilar: `javac -encoding UTF-8 -cp freerouting-1.9.0.jar
+SesFromFrb.java`; rodar: `java -cp .:freerouting-1.9.0.jar SesFromFrb in.frb out.ses`.
+
+**Estado restante — 18 air-wires** (nets duras; cada passada extra poderia fechar mais):
+`CC2, GLM103, HOM201, HOM302, HOM303, IMU_CS, IMU_INT, I_M101, I_M201, I_M301, I_M401,
+LOM101, LOM401, PWM_M203, UART_TX, VBM102, VBM201, VBUS_USB`.
+Opções: (a) mais passadas do FR (retomar do `.frb` — a placa não perde o que tem,
+cada passada ~44 min); (b) rotear as 18 à mão no KiCad (são mostly curtas);
+(c) dormir mais noites de batch. As 18 NÃO são curtos — são ausências (ratsnest aberto).
+
+O termômetro IMU_CS/IMU_INT segue aberto (a roteagem cega também não os fechava).
 
 ### 9.7 — Auditoria dos scripts `ses_import.py` e `orcamento.py` (2026-10-12)  `[CORRIGIDO]`
 
