@@ -35,8 +35,11 @@ MOQ_FACTOR = 1.15       # [EST] folga de compra minima / arredondamento de lote
 FRETE_INT_USD = 35.0    # [EST] frete internacional (LCSC/JLCPCB, DHL/4PX)
 II, DEDUCAO_USD, ICMS, IOF = 0.60, 30.0, 0.17, 0.035
 FRETE_NAC_BRL = 50.0    # [EST] frete nacional somado (Mercado Livre, varios vendedores)
-FAB_USD_MIN, FAB_USD_MAX = 70.0, 150.0   # [EST] 5 pcs, 4 camadas, 2 oz, 352 cm2 -- COTAR DE VERDADE
-JOINTS = 800            # [EST] juntas SMD (board v6: 889 pads, dos quais ~90 PTH)
+FAB_USD_MIN, FAB_USD_MAX = 70.0, 150.0   # [EST] 5 pcs, 4 camadas, 2 oz — faixa estimada
+                                         # para a area da v6 (352 cm2); a v10 mede
+                                         # 275,8 cm2 (190x145) e tende ao piso.
+                                         # RECOTAR com o Gerber da v10 de verdade.
+JOINTS = 1000           # [EST] juntas SMD (board v10: 1093 pads, ~90 PTH)
 SETUP_USD, STENCIL_USD, EXT_PART_USD, N_EXT_PARTS = 8.0, 1.5, 3.0, 10
 PIOR_CASO = 1.25        # [EST] reserva de engenharia (retrabalho, peca queimada, respin de stencil)
 
@@ -140,9 +143,6 @@ for l in linhas:
     b["usd"] += l["total_usd"]; b["brl_nac"] += l["brl_nac"]; b["itens"] += 1
 
 # ---------------------------------------------------------------- saidas
-def esc(s):
-    return str(s)
-
 with io.open(os.path.join(OUT, "orcamento_detalhado.csv"), "w", encoding="utf-8", newline="") as fh:
     w = csv.writer(fh, delimiter=";")
     w.writerow(["bloco","item","valor_especificacao","qtd","usd_unit","usd_total","brl_nacional","conf","fonte"])
@@ -236,9 +236,9 @@ P("```")
 P()
 P("## 5. O que NAO esta' cotado de verdade")
 P()
-P("1. **PCB nua** -- US$ %.0f-%.0f para 5 pcs e' estimativa; a cotacao real exige subir o" % (FAB_USD_MIN, FAB_USD_MAX))
-P("   Gerber de `fase3_pcb/v6/` no site do fabricante. Area medida hoje: 220,1 x 160,1 mm =")
-P("   352 cm2 em 4 camadas -- board grande e' o maior alavanca de custo (ver nota 6).")
+P("1. **PCB nua** -- US$ %.0f-%.0f para 5 pcs e' estimativa da era v6 (352 cm2); a v10 mede" % (FAB_USD_MIN, FAB_USD_MAX))
+P("   190x145 mm = 275,8 cm2 (gate G7) e tende ao piso da faixa. Cotacao real exige subir o")
+P("   Gerber de `fase3_pcb/v10/` no site do fabricante.")
 P("2. **Preco unitario de %d das %d linhas e' [EST]** -- ordem de grandeza, nao cotacao." % (n_est, len(linhas)))
 P("   LCSC e Mercado Livre bloqueiam leitura automatica daqui (LCSC/Akamai devolveu")
 P("   'Access Denied'; Mercado Livre devolveu pagina de erro). Script usado: `orcamento.py`,")
@@ -253,10 +253,11 @@ P("   ferro/hot-air, termopar), consumiveis (pasta, estanho, fluxo, malha).")
 P()
 P("## 6. Observacoes de engenharia que mexem no custo")
 P()
-P("- **Board de 220x160 mm e' 5 placas de 100x100 em area.** O layout v6 esta' espalhado")
-P("  (238 footprints, 367 nets ainda nao roteadas). Se a versao final couber em ~120x80 mm,")
-P("  a fabricacao cai de faixa de US$ 70-150 para poucos dolares por lote de 5. Antes de")
-P("  fechar compra, vale terminar o roteamento e recotar.")
+P("- **Board da v10: 190x145 mm (275,8 cm2, ocupacao eletrica 23,4%%).** A v6 media 220x160")
+P("  (352 cm2) e ainda nao tinha roteamento; a v10 roteou com os gates G1-G8 verdes e e'")
+P("  22%% menor em area. Se couber em ~120x80 mm numa v11, a fabricacao cai de faixa de")
+P("  US$ 70-150 para poucos dolares por lote de 5. Antes de fechar compra, recotar com o")
+P("  Gerber da v10.")
 P("- **BOM duplica indutores e capacitores de saida**: as linhas 'Buck 12/5/3,3 V' ja'")
 P("  incluem L e Cout na descricao, e as linhas 'Indutor de saida' (3x) e 'Capacitor de")
 P("  saida' (6x) repetem os mesmos componentes. Precifiquei o CI do buck e os passivos")
@@ -284,7 +285,7 @@ print("componentes (catalogo)    : US$ %.2f" % comp_usd)
 print("componentes (com MOQ x%s): US$ %.2f" % (MOQ_FACTOR, comp_usd_moq))
 print("CENARIO A nacional        : R$ %.0f   (banda R$ %.0f - R$ %.0f)" % (comp_brl_nac_total, banda_min, banda_max))
 print("CENARIO B importacao      : R$ %.0f   (US$ %.2f all-in)" % (comp_brl_imp, imp_usd))
-print("PCB 5 pcs 4L 2oz (est.)   : R$ %.0f - R$ %.0f  [EST, cotar com Gerber v6]" % (fab_brl_min, fab_brl_max))
+print("PCB 5 pcs 4L 2oz (est.)   : R$ %.0f - R$ %.0f  [EST, faixa da era v6; recotar com Gerber v10]" % (fab_brl_min, fab_brl_max))
 print("Montagem PCBA JLC (est.)  : US$ %.2f = R$ %.0f" % (mont_usd, mont_usd * DOLAR))
 print("precos COT/CALC           : %d / %d   (EST: %d)" % (n_cot, len(linhas), n_est))
 print("grafico                   :", grafico)

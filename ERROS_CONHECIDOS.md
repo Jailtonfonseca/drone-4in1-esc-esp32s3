@@ -52,8 +52,10 @@ nunca havia sido validado ponta a ponta antes disso.
 
 ## 3. BOM / orçamento
 
-1. **`BOM_FABRICACAO_atualizada.csv` tem só 4 linhas** (truncada no meio da atualização de preços).
-   A fonte válida é `BOM_FABRICACAO.csv` (43 itens). Regenerar a "_atualizada" antes de usar. `[ABERTO]`
+1. **`BOM_FABRICACAO_atualizada.csv` tinha só 4 linhas** (truncada no meio da atualização de preços —
+   armadilha: pedir por ela compraria 3 itens). **[CORRIGIDO 2026-10-12]: arquivo REMOVIDO**;
+   a fonte única de fabricação é `orcamento/BOM_FABRICACAO_v10.csv` (43 itens × 16 campos,
+   MOSFET vencedor). `BOM_FABRICACAO.csv` (43 itens) permanece como registro da fase 0.
 2. **`ORCAMENTO.md`: 38 marcadores `[EST]`** — 37/43 itens sem cotação real. Bloqueio medido: LCSC
    retorna Access Denied (Akamai) e o ML devolve páginas de erro; apenas 3 âncoras reais
    (ICM-42688-P US$ 4,91 DigiKey; ESP32-S3-WROOM-1 R$ 56,91 ML; XT60 R$ 9,59/par ML).
@@ -216,6 +218,34 @@ mantidos **intocados por design** como registro histórico (a v9+ é a linhagem 
 DSN novo (3.167 keepouts) aberto **sem nenhum warning** (sem risco de modal); autorroteamento
 em execução. As 2 nets que a roteagem antiga deixou para trás (**IMU_CS, IMU_INT**) são o
 termômetro: se completarem, a cobertura vai a 151/151.
+
+### 9.7 — Auditoria dos scripts `ses_import.py` e `orcamento.py` (2026-10-12)  `[CORRIGIDO]`
+
+**ses_import.py** (auditado ANTES do re-import da placa completa):
+1. `via_diameter()` usava regex + heurística de min/max: com o padstack VIA1 real do SES
+   (`(shape (circle F.Cu 600 0 0))` por camada) o delta max−min dava **0** e o código caía
+   no default **por coincidência** (600 é o valor do projeto). Se a via mudasse de tamanho,
+   o importador gravaria vias erradas em silêncio. Agora lê o diâmetro da árvore
+   s-expression já parseada (`library_out → padstack VIA1 → shape → circle`).
+   Prova: import de teste grava via 0,600/0,300 mm ✓.
+2. **Sem guarda contra re-import**: o importador ADICIONA trilhas ao board de entrada —
+   rodando com um `pcb_in` já roteado, duplicava cada trilha (curto garantido no fill).
+   Agora aborta (exit 2) se a entrada tiver trilha de sinal: prova no v10_roteada
+   ("ERRO: a entrada já tem 3909 trilha(s)"). A contagem oficial do import de teste:
+   3.909 trilhas + 853 vias (449 stitch + 404 de rota), 0 nets sem match.
+
+**orcamento.py**:
+3. O `ORCAMENTO.md` gerado ainda descrevia a **placa v6** (220×160 mm, "367 nets não
+   roteadas", "cotar com Gerber v6", joints=800 para 889 pads). A v10 mede 190×145 mm
+   (275,8 cm², gate G7) com 1093 pads e roteamento G1–G8. Textos e `JOINTS` (800→1000)
+   corrigidos; montagem PCBA recalculada: US$ 40,86 → **US$ 41,20** (R$ 211).
+4. `esc()` era código morto (definido, nunca chamado) — removido.
+5. §3.1 fechado: `BOM_FABRICACAO_atualizada.csv` (4 linhas, truncada) **removida**;
+   `BOM_FABRICACAO_v10.csv` é a fonte única.
+
+Gráfico `custo_por_bloco.png`: a regeneração falhou SÓ no ambiente desta auditoria
+(matplotlib sem libs de fonte no namespace); no host o script renderiza normalmente
+(arquivo commitado intacto). Não é defeito do script.
 
 ### 8.2 — CRÍTICOS que exigem decisão humana  `[ABERTO]`
 

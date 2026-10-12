@@ -169,27 +169,37 @@ def parse_via(v, net_name):
     return {"kind": "via", "layer": None, "x": x, "y": y, "net": net_name}
 
 
-def via_diameter(ses_text, default_um=600.0):
-    """Le o diametro do padstack de via do (library_out ...) do SES, em um.
+def via_diameter(ses_root, default_um=600.0):
+    """Diametro do padstack de via do (library_out ...), em micrometros.
 
-    [FIX auditoria C9] default era 800 um; a regra do board e' via 0,6/0,3
-    (setup ...) — e agora o (library_out) do SES tem o padstack da via (antes
-    era vazio: o DSN nao declarava (via VIA1)). A linha re.search(...) morta
-    (aplicava o padrao a uma string vazia e o resultado nao era usado) foi
-    removida.
+    [FIX auditoria 2026-10-12] a versao anterior usava regex + heuristica de
+    min/max de numeros do bloco: com o padstack VIA1 real do SES
+    ((shape (circle F.Cu 600 0 0)) por camada) o delta max-min dava 0 e o
+    codigo caia NO DEFAULT por coincidencia (600 e' de fato o valor do
+    projeto). Se a via mudasse de tamanho, o importador gravaria vias
+    erradas em silencio. Agora a arvore s-expression JA PARSEADA e' usada:
+    (library_out (padstack VIA1 (shape (circle LAYER D x y)) ...)).
     """
-    # procura o primeiro polygon de (library_out (padstack ...)
-    blocks = re.findall(r'\(padstack[^\n]*\n((?:.*\n)*?)\s*\)', ses_text)
-    best = default_um
-    for b in blocks:
-        nums = [float(v) for v in re.findall(r'-?\d+\.?\d*', b)]
-        pts = [n for n in nums if n > 0.05]
-        if pts:
-            d = (max(pts) - min(pts))
-            if 0.1 < d < 5.0:
-                best = d * 1000.0
-                break
-    return best
+    def _s(tok):
+        return tok[1] if isinstance(tok, tuple) else tok
+
+    for item in ses_root:
+        if not isinstance(item, list) or not item or _s(item[0]) != "library_out":
+            continue
+        for sub in item:
+            if not isinstance(sub, list) or not sub or _s(sub[0]) != "padstack":
+                continue
+            for sh in sub:
+                if not isinstance(sh, list) or not sh or _s(sh[0]) != "shape":
+                    continue
+                for c in sh:
+                    if isinstance(c, list) and c and _s(c[0]) == "circle":
+                        nums = [x for x in c[1:] if is_num(x)]
+                        if nums:
+                            d = float(nums[0])
+                            if 100.0 <= d <= 3000.0:   # um plausiveis de pad de via
+                                return d
+    return default_um
 
 
 def main():
@@ -207,6 +217,19 @@ def main():
     board = pcbnew.LoadBoard(a.pcb_in)
     n_existing = len(list(board.GetTracks()))
 
+    # [FIX auditoria 2026-10-12] guarda contra RE-IMPORT: este importador
+    # ADICIONA trilhas ao board de entrada. Rodando duas vezes (ou apontando
+    # pcb_in para um board ja' roteado) duplica cada trilha — curto garantido
+    # no proximo fill. A entrada tem que ser a base NAO roteada (vias de
+    # stitch sao permitidas: sao PCB_VIA_T, nao trilhas).
+    n_trilhas_in = sum(1 for t in board.GetTracks()
+                       if t.Type() != pcbnew.PCB_VIA_T)
+    if n_trilhas_in > 0:
+        print("ERRO: a entrada ja' tem %d trilha(s) de sinal — o importador "
+              "adiciona por cima e duplicaria tudo." % n_trilhas_in)
+        print("      Use a base NAO roteada (v10_drone.kicad_pcb) como pcb_in.")
+        return 2
+
     # mapa nome-de-net -> netcode do kicad
     # [FIX 2026-10-04] NETINFO_ITEM nao tem GetNetCode() no pcbnew 5.1.9
     # (AttributeError na primeira execucao real deste importador) — o netcode
@@ -218,7 +241,7 @@ def main():
         name = str(ni.GetNetItem(i).GetNetname())
         netcode[name] = code
 
-    d_via = via_diameter(ses_text)
+    d_via = via_diameter(root)
     n_seg = n_via = n_nonet = 0
     for it in items:
         code = netcode.get(it["net"], 0)

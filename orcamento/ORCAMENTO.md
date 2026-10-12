@@ -13,7 +13,7 @@ Gerado por `orcamento.py` em 11/09/2026. Quantidades vindas de
 | A -- banda honesta | k de markup entre 2.7 e 3.7 | R$ 1448 a R$ 1965 |
 | B -- importacao direta | LCSC + frete + II 60% (menos US$30) + ICMS 17% + IOF 3,5% | **R$ 1354** |
 | Cenario A + PCB | 5 placas nuas, 4 camadas, 2 oz (220x160 mm) | + R$ 359 a R$ 770 |
-| Cenario B + montagem | PCBA JLCPCB (setup + joints + stencil + partes extendidas) | + R$ 210 (US$ 41) |
+| Cenario B + montagem | PCBA JLCPCB (setup + joints + stencil + partes extendidas) | + R$ 211 (US$ 41) |
 
 - Componentes, valor de catalogo (US$ LCSC-equivalente): **US$ 100.88**
 - Com folga de lote/MOQ (x1.15): **US$ 116.01**
@@ -98,14 +98,14 @@ Importacao: base = componentes(US$ 116.01) + frete(US$ 35) = US$ 151.01
             IOF   = 3,5% sobre (base+II+ICMS) = US$ 8.92
             total = US$ 263.88 -> R$ 1354
 Nacional:   componentes x US$ 5.1312 x k(3,2) + frete R$50 = R$ 1706
-Montagem:   setup US$8 + 800 joints x US$0,0017 + stencil US$1.50 + 10 partes extendidas x US$3 = US$ 40.86
+Montagem:   setup US$8 + 1000 joints x US$0,0017 + stencil US$1.50 + 10 partes extendidas x US$3 = US$ 41.20
 ```
 
 ## 5. O que NAO esta' cotado de verdade
 
-1. **PCB nua** -- US$ 70-150 para 5 pcs e' estimativa; a cotacao real exige subir o
-   Gerber de `fase3_pcb/v6/` no site do fabricante. Area medida hoje: 220,1 x 160,1 mm =
-   352 cm2 em 4 camadas -- board grande e' o maior alavanca de custo (ver nota 6).
+1. **PCB nua** -- US$ 70-150 para 5 pcs e' estimativa da era v6 (352 cm2); a v10 mede
+   190x145 mm = 275,8 cm2 (gate G7) e tende ao piso da faixa. Cotacao real exige subir o
+   Gerber de `fase3_pcb/v10/` no site do fabricante.
 2. **Preco unitario de 37 das 43 linhas e' [EST]** -- ordem de grandeza, nao cotacao.
    LCSC e Mercado Livre bloqueiam leitura automatica daqui (LCSC/Akamai devolveu
    'Access Denied'; Mercado Livre devolveu pagina de erro). Script usado: `orcamento.py`,
@@ -120,10 +120,11 @@ Montagem:   setup US$8 + 800 joints x US$0,0017 + stencil US$1.50 + 10 partes ex
 
 ## 6. Observacoes de engenharia que mexem no custo
 
-- **Board de 220x160 mm e' 5 placas de 100x100 em area.** O layout v6 esta' espalhado
-  (238 footprints, 367 nets ainda nao roteadas). Se a versao final couber em ~120x80 mm,
-  a fabricacao cai de faixa de US$ 70-150 para poucos dolares por lote de 5. Antes de
-  fechar compra, vale terminar o roteamento e recotar.
+- **Board da v10: 190x145 mm (275,8 cm2, ocupacao eletrica 23,4%%).** A v6 media 220x160
+  (352 cm2) e ainda nao tinha roteamento; a v10 roteou com os gates G1-G8 verdes e e'
+  22%% menor em area. Se couber em ~120x80 mm numa v11, a fabricacao cai de faixa de
+  US$ 70-150 para poucos dolares por lote de 5. Antes de fechar compra, recotar com o
+  Gerber da v10.
 - **BOM duplica indutores e capacitores de saida**: as linhas 'Buck 12/5/3,3 V' ja'
   incluem L e Cout na descricao, e as linhas 'Indutor de saida' (3x) e 'Capacitor de
   saida' (6x) repetem os mesmos componentes. Precifiquei o CI do buck e os passivos
