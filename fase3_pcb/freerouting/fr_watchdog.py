@@ -86,8 +86,11 @@ def main():
                 try:
                     if wid.get_attributes().map_state == 2:
                         mapped.append((wid, wname(wid)))
-                except Exception:
-                    pass
+                except Exception as e:
+                    # [lint S110] janela sumiu no meio da enumeracao (race com
+                    # o fechamento de um dialogo) -- logar, nao engolir.
+                    print("watchdog: janela evanescente na enumeracao: %r" % e,
+                          flush=True)
             board_frames = [w for (w, n) in mapped
                             if "Board Layout" in n or "MainApplication" in n]
             focus_is_board = any(focus_id == w.id for w in board_frames)
@@ -110,8 +113,10 @@ def main():
             print("watchdog: erro %r (continuando)" % e, flush=True)
         try:
             d.close()
-        except Exception:
-            pass
+        except Exception as e:
+            # [lint S110] fechar o display pode falhar quando o Xvfb ja' caiu
+            # -- logar para diagnostico em vez de engolir em silencio.
+            print("watchdog: close do display falhou: %r" % e, flush=True)
         time.sleep(a.interval)
     print("watchdog: encerrado (limite de dispensas)", flush=True)
     return 0

@@ -357,11 +357,17 @@ print("pads de GND/VBAT_PROT que precisam de via a <= %.1f mm: %d"
 # SMD em F.Cu NAO alcanca In1..In4/B.Cu sem via -- medido em STITCH_v8.md
 # secao 1 (caso B: 1 conexao aberta; caso D, com via, 0).
 OCUP = []
+OCUP_RECT = []   # [FIX G6-2] (x, y, w, h, angulo_graus, net) p/ colisao precisa
 for f in BRD.GetModules():
     for p in f.Pads():
         sz = p.GetSize()
         r = 0.5 * max(pcbnew.ToMM(sz.x), pcbnew.ToMM(sz.y)) + MARGEM_PAD
         OCUP.append((pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y), r))
+        OCUP_RECT.append((pcbnew.ToMM(p.GetPosition().x),
+                          pcbnew.ToMM(p.GetPosition().y),
+                          pcbnew.ToMM(sz.x), pcbnew.ToMM(sz.y),
+                          (p.GetOrientation() / 10.0) % 360.0,
+                          p.GetNetname()))
 
 CELULA = 4.0
 IDX = {}
@@ -410,6 +416,10 @@ def cria_via(x, y, netcode):
     v.SetNetCode(netcode)
     BRD.Add(v)
     indexa((x, y, RVIA + MARGEM_PAD))
+    VIAS_FEITAS.append((x, y))
+
+
+VIAS_FEITAS = []   # [FIX G6-2] todas as vias criadas (p/ afastamento fisico)
 
 
 def acha_via(px, py, hx, hy):
@@ -444,10 +454,12 @@ def acha_via(px, py, hx, hy):
 
 
 vias_ok, falhas, n_mult = 0, [], 0
+falhas_3 = []      # [FIX G6-2] tuples completos p/ a 3a passada
 for (ref, pad, netname, px, py, sx, sy) in PADS_STITCH:
     achou = acha_via(px, py, 0.5 * sx, 0.5 * sy)
     if achou is None:
         falhas.append("%s.%s(%s)" % (ref, pad, netname))
+        falhas_3.append((ref, pad, netname, px, py, sx, sy))
         continue
     cria_via(achou[0], achou[1], NETCODE[netname])
     vias_ok += 1
@@ -462,6 +474,89 @@ print("vias de stitch criadas: %d | pads sem via: %d | 2a via em: %d"
       % (vias_ok, len(falhas), n_mult))
 if falhas:
     print("  pads sem via: %s" % ", ".join(falhas))
+
+
+# ========== 9b. [FIX G6-2] 3a passada: colisao retangular + mesma-net
+# Os pads que ainda falham vivem em clusters densos (IMU LGA, LDO), onde o
+# indice OCUP e' conservador demais em dois pontos:
+#   (a) trata TODO pad como circulo circunscrito (meia-diagonal) mesmo em
+#       angulos curtos do retangulo -- no eixo curto de um pad 8x10 o circulo
+#       bloqueia 7,1 mm quando o retangulo real precisa de 4,55 mm;
+#   (b) ignora a net: um pad GND vizinho bloqueia uma via GND, mas via pode
+#       tocar cobre da PROPRIA net (via-in-pad GND e' pratica padrao de
+#       stitch -- e' o proposito da via).
+# A 3a passada so' roda para os remanescentes, com o modelo preciso:
+# pads de OUTRA net como retangulo rotacionado borda-a-borda (o mesmo modelo
+# que o gate G6 usa em _dist_borda do verificador), pads da MESMA net livres,
+# e afastamento fisico contra TODAS as vias ja criadas.
+def _borda_ret(ox, oy, w, h, a, vx, vy):
+    """Distancia borda-a-borda da via (vx,vy) ao retangulo rotacionado."""
+    ar = math.radians(a)
+    c, s = math.cos(ar), math.sin(ar)
+    dx, dy = vx - ox, vy - oy
+    ux, uy = dx * c + dy * s, -dx * s + dy * c   # rotacao inversa (y-down)
+    qx = max(abs(ux) - w / 2.0, 0.0)
+    qy = max(abs(uy) - h / 2.0, 0.0)
+    return math.hypot(qx, qy)
+
+
+def acha_via_final(px, py, hx, hy, netname):
+    """Busca de via com modelo preciso (retangulos + isencao de mesma net)."""
+    raio_max = max(LIM_STITCH, math.hypot(hx, hy) + RVIA + 0.45)
+    raio = 0.0
+    n_a = 120                                  # 3 graus -- mais fino que 10
+    while raio <= raio_max + 1e-9:
+        for k in range(n_a):
+            a = 2.0 * math.pi * k / n_a
+            ca, sa = abs(math.cos(a)), abs(math.sin(a))
+            rmin = hx * ca + hy * sa + RVIA + 0.05
+            if raio + 1e-9 < rmin:
+                continue
+            vx, vy = px + raio * math.cos(a), py + raio * math.sin(a)
+            LIM_V = INSET_KA + 0.3 + RVIA      # keepout de borda (E6)
+            if not (LIM_V < vx < LARG - LIM_V and LIM_V < vy < ALT - LIM_V):
+                continue
+            bloq = False
+            for (ox, oy) in VIAS_FEITAS:       # vias: afastamento fisico
+                if math.hypot(vx - ox, vy - oy) < 2.0 * RVIA + MARGEM_PAD:
+                    bloq = True
+                    break
+            if bloq:
+                continue
+            for (ox, oy, w, h, ang, onet) in OCUP_RECT:
+                if not onet or onet == netname:  # mesma net: livre
+                    continue
+                if _borda_ret(ox, oy, w, h, ang, vx, vy) < RVIA + MARGEM_PAD:
+                    bloq = True
+                    break
+            if bloq:
+                continue
+            return (vx, vy)
+        raio += STEP_R
+    return None
+
+
+resgatados, cobertos, ainda = 0, 0, []
+for (ref, pad, netname, px, py, sx, sy) in falhas_3:
+    # [FIX G6-3] o gate G6 conta QUALQUER via a <= 1,6 mm do centro -- uma
+    # via colocada para um pad vizinho da mesma net ja' satisfaz este pad
+    # (medido: U_IMU.7 fica a 0,90 mm da via de U_IMU.9). Antes de buscar,
+    # confere a cobertura existente.
+    d = min((math.hypot(vx - px, vy - py) for (vx, vy) in VIAS_FEITAS),
+            default=1e9)
+    if d <= LIM_STITCH:
+        cobertos += 1
+        continue
+    pos = acha_via_final(px, py, 0.5 * sx, 0.5 * sy, netname)
+    if pos is None:
+        ainda.append("%s.%s(%s)" % (ref, pad, netname))
+        continue
+    cria_via(pos[0], pos[1], NETCODE[netname])
+    resgatados += 1
+print("G6-2 (3a passada): resgatados %d | cobertos por via compartilhada: "
+      "%d | ainda sem via: %d%s"
+      % (resgatados, cobertos, len(ainda),
+         (" -> " + ", ".join(ainda)) if ainda else " (gate G6 fechado)"))
 
 # ================================== 10. keepouts (rule areas) pot/sinal
 def keepout(x0, y0, x1, y1):

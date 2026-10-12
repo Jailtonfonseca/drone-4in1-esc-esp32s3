@@ -296,6 +296,57 @@ def build(board, only_net_prefix=None, max_modules=None):
     # set_via_padstacks nunca roda e o board fica SEM NENHUMA via (prova:
     # (library_out) vazio nos SES antigos) — impossivel mudar de camada.
     w('    (via VIA1)')
+
+    # [FIX auditoria 2026-10-12 — track x cobre de net EXCLUIDA]
+    # As nets de potencia ficam fora do (network ...) (as zonas de cobre
+    # cuidam delas), mas o cobre SOLIDO dessas nets existe no board:
+    # 449 vias de stitch + ~291 pads. O FreeRouting nao as enxerga e a
+    # roteagem v10 roeu por cima: 517 violacoes trilha×via (259 curtos
+    # duros) + 532 trilha×pad (418 curtos) — board infabricavel.
+    # Cada pad/via de net excluida agora vira KEEPOUT (cobre + clearance
+    # 0.2 mm) nas camadas que ocupa: SMD so no lado, THT/via em todas.
+    # Sintaxe conferida no parser: Structure.java:870 le (keepout <shape>)
+    # com (rectangle LAYER x1 y1 x2 y2) — Shape.read_rectangle_scope.
+    n_keep = 0
+    for f in board.GetModules():
+        for p in f.Pads():
+            nm = str(p.GetNetname())
+            if not nm or not is_skipped_net(nm):
+                continue
+            sz = p.GetSize()
+            cx, cy = p.GetPosition().x / 1e6, p.GetPosition().y / 1e6
+            ang = math.radians((p.GetOrientation() / 10.0) % 360.0)
+            ca, sa = math.cos(ang), math.sin(ang)
+            xs, ys = [], []
+            for (ux, uy) in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+                xs.append(cx + ux * sz.x / 2e6 * ca - uy * sz.y / 2e6 * sa)
+                ys.append(cy + ux * sz.x / 2e6 * sa + uy * sz.y / 2e6 * ca)
+            x1, x2 = min(xs) - DEFAULT_CLEAR, max(xs) + DEFAULT_CLEAR
+            y1, y2 = min(ys) - DEFAULT_CLEAR, max(ys) + DEFAULT_CLEAR
+            if p.IsOnLayer(pcbnew.B_Cu) and p.IsOnLayer(pcbnew.F_Cu):
+                escopos = lname                      # THT: todas as camadas
+            elif p.IsOnLayer(pcbnew.B_Cu):
+                escopos = [lname[-1]]                # SMD traseiro
+            else:
+                escopos = [lname[0]]                 # SMD frontal
+            for ln_ in escopos:
+                w('    (keepout (rectangle %s %s %s %s %s))' % (
+                    ln_, fnum(x1), fnum(y1), fnum(x2), fnum(y2)))
+                n_keep += 1
+    for t in board.GetTracks():
+        if t.Type() != pcbnew.PCB_VIA_T:
+            continue
+        nm = str(t.GetNetname())
+        if not nm or not is_skipped_net(nm):
+            continue
+        vx, vy = t.GetPosition().x / 1e6, t.GetPosition().y / 1e6
+        rr = t.GetWidth() / 2e6 + DEFAULT_CLEAR
+        for ln_ in lname:                             # via atravessa tudo
+            w('    (keepout (rectangle %s %s %s %s %s))' % (
+                ln_, fnum(vx - rr), fnum(vy - rr),
+                fnum(vx + rr), fnum(vy + rr)))
+            n_keep += 1
+    print("keepouts de cobre excluido: %d scopes" % n_keep)
     w('  )')
 
     # placement

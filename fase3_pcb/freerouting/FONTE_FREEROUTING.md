@@ -93,7 +93,34 @@ O recorte de teste (`teste/corte_v9.*`, 16 módulos, 9 nets) roda **ponta a
 ponta com exit=0**: leitura sem warnings, roteamento 0,82 s, otimização 0,07 s,
 SES gravado.
 
-**Problema ABERTO (8º erro, ainda sem correção):** o SES sai com **0 wires** —
-as rotas existem no estágio intermediário (`.frb`, 126 KB) mas não chegam à
-exportação. Suspeitos: via atravessando layer `power`, ou matching de
-pin/padstack na saída. Próximo passo do diagnóstico antes da placa completa.
+**[SUPERSEDED 2026-10-05]** O "SES com 0 wires" (8º erro) foi fechado na v10:
+causa raiz no próprio `dsn_export.py` (P1: `0 == False` fazia todo pad virar
+círculo Ø=max(w,h) — blobs selados; P2: `(via VIA1)` nunca declarada; P3:
+rotação dupla; P4: pins duplicados). Prova E2E da placa completa naquele
+momento: 1.410 wires, 404 vias, 149/151 nets, 3.909 trilhas importadas.
+Ver `ERROS_CONHECIDOS.md` §8.1 item 4.
+
+## Keepouts de cobre excluído (2026-10-12) — leia antes de rodar
+
+O DSN exclui as nets de potência do `(network ...)`, mas o **cobre sólido**
+delas existe no board: as **449 vias de stitch** + **363 pads** de
+GND/VBAT/VBAT_F/VBAT_PROT/PHM*/SNM*. O FreeRouting **não enxerga** pin sem
+net e roteou trilhas por cima desse cobre — a roteagem de 04–05/10 saiu com
+**354 curtos/violações** medidos (d até −0,93 mm; ver `ERROS_CONHECIDOS.md`
+§9.1 e o gate G8).
+
+O `dsn_export.py` agora emite **cada pad e via de net excluída como
+`(keepout (rectangle LAYER x1 y1 x2 y2))`** na `(structure ...)`:
+
+- **pad SMD**: 1 keepout na camada do lado; **pad THT e via**: 1 keepout em
+  cada uma das 6 camadas de cobre;
+- tamanho = bbox rotacionado do pad (ou Ø da via) **+ clearance 0,20 mm**;
+- sintaxe conferida no parser do FR 1.9.0: `Structure.java:870` lê
+  `(keepout <shape>)`; `Shape.read_rectangle_scope` lê `(rectangle
+  LAYER x1 y1 x2 y2)` — leitura sem nenhum warning (o modal 1.a não volta);
+- volume: **3.167 scopes** para a v10 (o DSN vai de ~40 KB para ~228 KB);
+- consequência: o roteador mantém ~0,4 mm de cobre-excluído→trilha (keepout
+  + regra clear) — conservador de propósito.
+
+A prova permanente é o **gate G8** (`verifica_fase3_v10.py`): 0 violações
+trilha×cobre-excluído, com distância exata segmento×retângulo rotacionado.

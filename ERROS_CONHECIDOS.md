@@ -145,6 +145,78 @@ arquivo:linha em [`AUDITORIA_ERROS_2026-10-04.md`](AUDITORIA_ERROS_2026-10-04.md
 | 7 | `ses_import.py` nunca tinha completado 1 execução | `GetNetCode()` inexistente; classes `PCB_TRACK/PCB_VIA` (KiCad 6); `walk_net` não descia ao escopo `(net NOME …)` | API 5.1 correta + parser do formato real | 83 trilhas + 8 vias gravadas no KiCad |
 | 8 | Roteamento da placa completa saía vazio | consequência do item 4 | pipeline corrigido + 50 min de roteamento real | **placa completa: 1.410 wires, 404 vias, 149/151 nets, 3.909 trilhas importadas** (`fase3_pcb/v10/freerouting_run/` + `v10_roteada.kicad_pcb`) |
 
+---
+
+## 9. AUDITORIA 2026-10-12 — 3 achados críticos + gate novo G8 + harness
+
+Auditoria independente nº 2 (ferramentas idênticas às do agente: pcbnew 5.1.9, fonte do
+FreeRouting, execução real do pipeline). Arquivo-fonte dos achados: execução desta sessão.
+
+### 9.1 — CRÍTICO novo: board roteado com 354 curtos trilha×cobre-excluído  `[CORRIGIDO — re-roteamento em andamento]`
+
+**Sintoma:** a roteagem v10 "passou" na prova E2E (contagens de importação) mas o DSN
+exclui 28 nets de potência (GND, VBAT, VBAT_F, VBAT_PROT, 12×PHM, 12×SNM) **com todo o seu
+cobre sólido**: 398 vias de stitch + 363 pads. O FreeRouting não os via e roteou trilhas
+**por cima** — medição exata (distância segmento×retângulo rotacionado, folga 0,15 mm):
+**354 violações** (d até −0,93 mm), ex.: `12V × via (87.75,58.62) d=-0.425`,
+`VBM101 × via (149.05,65.60) d=-0.238`. Nenhum gate cobria track×cobre-excluído.
+
+**Causa raiz:** `dsn_export.py` emitia pins de TODOS os componentes no `(library ...)` mas
+as nets excluídas não entravam no `(network ...)` — no Specctra, pin sem net não é obstáculo.
+
+**Correção:** `dsn_export.py` agora exporta **cada pad e via de net excluída como
+`(keepout (rectangle LAYER x1 y1 x2 y2))`** (cobre + clearance 0,2; SMD no lado, THT/via em
+todas as 6 camadas) — **3.167 keepouts**. Parser conferido no fonte (`Structure.java:870`,
+`Shape.read_rectangle_scope`). Nova roteagem completa disparada com o DSN novo.
+
+**Prova:** gate novo **G8** em `verifica_fase3_v10.py` (0 violações exigidas, matemática
+exata segmento×retângulo rotacionado). No board antigo: G8 = **354 violações [FALHA]**.
+
+### 9.2 — CRÍTICO: o board v10 commitado estava STALE em relação ao próprio gerador  `[CORRIGIDO]`
+
+**Sintoma:** a verificação commitada (`f58c376`, 05/10) mostra G6 com **18 pads sem via**,
+mas o `gera_pcb_v10.py` commitado NO MESMO COMMIT já continha o fix `[FIX auditoria G6]`
+(raio estendido) e produz apenas **2** pads sem via.
+
+**Causa raiz:** o fix do gerador foi commitado **sem re-rodar** o gerador/verificador —
+o board + verificação em `f58c376` são da execução ANTERIOR. Regenerado: +51 vias.
+
+**Correção:** regeneração executada; verificação nova: **TODOS OS GATES OK (G1–G7)**.
+
+### 9.3 — MODERADO: os 2 últimos pads sem via (G6) — modelo de colisão cego para net  `[CORRIGIDO]`
+
+`U_IMU.7` e `U_LDO.GND` falhavam mesmo com o raio estendido, porque o índice de ocupação
+trata TODO pad como **círculo circunscrito** e ignora a **net**: um pad GND vizinho bloqueava
+uma via GND (via pode tocar cobre da própria net — via-in-pad GND é prática padrão de stitch).
+Correção: **3ª passada** no gerador com (a) colisão retangular borda-a-borda para pads de
+outra net (o mesmo modelo do gate), (b) isenção de mesma-net, (c) conferência de **via
+compartilhada** ≤1,6 mm antes de buscar (o gate conta qualquer via próxima — `U_IMU.7` já
+estava a 0,90 mm da via do `U_IMU.9`). Resultado: **resgatados 1, cobertos 1, restam 0**.
+
+### 9.4 — Gate novo G8 + harness `verifica_projeto.py` (o "Próximo passo" §fim, nunca construído)  `[IMPLEMENTADO]`
+
+- **G8** (`verifica_fase3_v10.py`): trilha×cobre de net excluída = **0 violações**, com
+  distância exata segmento×retângulo rotacionado (projeção alternada) — o gate que teria
+  pego os 354 curtos da 9.1.
+- **`verificacoes/verifica_projeto.py`**: o harness de asserções duras pedido no
+  "Próximo passo" — SES (wires/vias/cobertura 100% das nets), gates G1–G8 na base E no
+  roteado, cobertura de rota das nets de sinal, BOM (43 itens, vencedor único, preço em
+  100% das linhas **compráveis**, zero `[EST]`). Exit 1 com lista exata do que falta.
+  Estado atual que ele expõe (antes do re-roteamento terminar): IMU_CS/IMU_INT sem rota,
+  G6/G8 no board antigo, 1 linha comprável sem preço (ADC/MCP3208).
+
+### 9.5 — Lint (relatório `concise`, não commitado): 10× S110 try-except-pass  `[CORRIGIDO nos vivos]`
+
+2 ocorrências em código vivo (`fr_watchdog.py`) corrigidas (logam em vez de engolir);
+as 8 restantes estão em geradores históricos v1–v8 (`gera_pcb_v1..7.py`, `rota_v8.py`),
+mantidos **intocados por design** como registro histórico (a v9+ é a linhagem viva).
+
+### 9.6 — Estado do re-roteamento com keepouts
+
+DSN novo (3.167 keepouts) aberto **sem nenhum warning** (sem risco de modal); autorroteamento
+em execução. As 2 nets que a roteagem antiga deixou para trás (**IMU_CS, IMU_INT**) são o
+termômetro: se completarem, a cobertura vai a 151/151.
+
 ### 8.2 — CRÍTICOS que exigem decisão humana  `[ABERTO]`
 
 1. **Margem do MOSFET vencedor**: 25,2 V + spike 60 V = **85,2 V > 80 V** pelo critério interno

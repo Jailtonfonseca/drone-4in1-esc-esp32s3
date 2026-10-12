@@ -320,6 +320,145 @@ w("  soma das areas eletricas: %.1f mm2 de %.1f mm2 = %.2f %%"
   % (area, AREA_UTIL, ocup))
 g7_ok = ocup <= 65.0
 
+# ---------------------------------------- G8: trilha x cobre de net EXCLUIDA
+# [auditoria 2026-10-12] O DSN exclui as nets de potencia (RAIL + HI_CURRENT)
+# do roteamento -- o cobre delas vem de zonas. Mas o cobre SOLIDO (pads e
+# 449 vias de stitch) existe no board e o autorroteador NAO o via: a 1a
+# roteagem da v10 cruzou trilhas por cima (517 x via + 532 x pad no calculo
+# conservador; exemplos medidos: d=-0.93, -1.47 mm). Corrigido exportando
+# cada pad/via de net excluida como KEEPOUT no DSN (dsn_export.py, 3.167
+# scopes). Este gate e' a prova permanente: 0 violacoes.
+w("")
+w("G8  trilha x cobre de net EXCLUIDA (pads+vias de GND/VBAT*/PHM*/SNM*)")
+w("    (distancia exata segmento x retangulo rotacionado; folga < 0.15 mm")
+w("     sob a regra de 0.20 mm = violacao)")
+import re as _re
+_RAILS = {"GND", "VBAT", "VBAT_F", "VBAT_PROT"}
+_HI = _re.compile(r"^(PHM|SNM)\d{3}$")
+
+
+def _excl(nm):
+    return nm in _RAILS or bool(_HI.match(nm))
+
+
+_G8_SLACK = 0.15
+
+
+def _dist_seg_pt(x1, y1, x2, y2, px, py):
+    dx, dy = x2 - x1, y2 - y1
+    L2 = dx * dx + dy * dy
+    if L2 < 1e-12:
+        return math.hypot(px - x1, py - y1)
+    t = max(0.0, min(1.0, ((px - x1) * dx + (py - y1) * dy) / L2))
+    return math.hypot(px - (x1 + t * dx), py - (y1 + t * dy))
+
+
+def _pt_in_ret(p, cx, cy, w, h, a):
+    ar = math.radians(a)
+    c, s = math.cos(ar), math.sin(ar)
+    dx, dy = p[0] - cx, p[1] - cy
+    ux, uy = dx * c + dy * s, -dx * s + dy * c
+    return abs(ux) <= w / 2.0 and abs(uy) <= h / 2.0
+
+
+def _cantos_ret(cx, cy, w, h, a):
+    ar = math.radians(a)
+    c, s = math.cos(ar), math.sin(ar)
+    hw, hh = w / 2.0, h / 2.0
+    out = []
+    for (ux, uy) in ((-hw, -hh), (hw, -hh), (hw, hh), (-hw, hh)):
+        out.append((cx + ux * c - uy * s, cy + ux * s + uy * c))
+    return out
+
+
+def _proj_seg(a, b, pt):
+    """Parametro t do ponto mais proximo de pt no segmento [a,b]."""
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    L2 = dx * dx + dy * dy
+    if L2 <= 1e-15:
+        return 0.0
+    return max(0.0, min(1.0, ((pt[0] - a[0]) * dx + (pt[1] - a[1]) * dy) / L2))
+
+
+def _dist_seg_seg(p1, p2, q1, q2):
+    """Distancia exata entre segmentos por projecao alternada (8 passos)."""
+    best = min(
+        _dist_seg_pt(q1[0], q1[1], q2[0], q2[1], p1[0], p1[1]),
+        _dist_seg_pt(q1[0], q1[1], q2[0], q2[1], p2[0], p2[1]),
+        _dist_seg_pt(p1[0], p1[1], p2[0], p2[1], q1[0], q1[1]),
+        _dist_seg_pt(p1[0], p1[1], p2[0], p2[1], q2[0], q2[1]))
+    s, t = 0.0, 0.0
+    for _ in range(8):
+        px, py = p1[0] + s * (p2[0] - p1[0]), p1[1] + s * (p2[1] - p1[1])
+        t = _proj_seg(q1, q2, (px, py))
+        qx, qy = q1[0] + t * (q2[0] - q1[0]), q1[1] + t * (q2[1] - q1[1])
+        s = _proj_seg(p1, p2, (qx, qy))
+    px, py = p1[0] + s * (p2[0] - p1[0]), p1[1] + s * (p2[1] - p1[1])
+    qx, qy = q1[0] + t * (q2[0] - q1[0]), q1[1] + t * (q2[1] - q1[1])
+    return min(best, math.hypot(px - qx, py - qy))
+
+
+def _dist_seg_ret(x1, y1, x2, y2, p):
+    """Distancia exata do segmento ao retangulo rotacionado do pad."""
+    cx, cy, wd, ht, ang = p["x"], p["y"], p["w"], p["h"], p["a"]
+    if _pt_in_ret((x1, y1), cx, cy, wd, ht, ang):
+        return 0.0
+    if _pt_in_ret((x2, y2), cx, cy, wd, ht, ang):
+        return 0.0
+    cs = _cantos_ret(cx, cy, wd, ht, ang)
+    dmin = 1e9
+    for i in range(4):
+        q1, q2 = cs[i], cs[(i + 1) % 4]
+        dmin = min(dmin, _dist_seg_seg((x1, y1), (x2, y2), q1, q2))
+    return dmin
+
+
+vias_excl = [(t.GetPosition().x / MM, t.GetPosition().y / MM)
+             for t in BRD.GetTracks()
+             if t.Type() == pcbnew.PCB_VIA_T and _excl(str(t.GetNetname()))]
+pads_excl = [p for p in pads_todos if _excl(p["net"])]
+trilhas_sig = []
+for t in BRD.GetTracks():
+    if t.Type() == pcbnew.PCB_VIA_T:
+        continue
+    nm = str(t.GetNetname())
+    if not nm or _excl(nm):
+        continue
+    s, e = t.GetStart(), t.GetEnd()
+    trilhas_sig.append((s.x / MM, s.y / MM, e.x / MM, e.y / MM,
+                        t.GetWidth() / MM, nm))
+g8_viol = []
+# --- trilha x via (circulo r=0.3): grid espacial
+_gv = {}
+for i, q in enumerate(vias_excl):
+    _gv.setdefault((int(q[0] // 4), int(q[1] // 4)), []).append(i)
+for (x1, y1, x2, y2, wd, nm) in trilhas_sig:
+    cand = set()
+    for gx in range(int(min(x1, x2) // 4) - 1, int(max(x1, x2) // 4) + 2):
+        for gy in range(int(min(y1, y2) // 4) - 1, int(max(y1, y2) // 4) + 2):
+            cand.update(_gv.get((gx, gy), ()))
+    for ci in cand:
+        (vx, vy) = vias_excl[ci]
+        d = _dist_seg_pt(x1, y1, x2, y2, vx, vy) - 0.5 * wd - 0.3
+        if d < -_G8_SLACK:
+            g8_viol.append("%s x via (%.2f,%.2f) d=%.3f" % (nm, vx, vy, d))
+# --- trilha x pad (retangulo exato): varredura direta com bbox de poda
+for (x1, y1, x2, y2, wd, nm) in trilhas_sig:
+    for p in pads_excl:
+        rmax = 0.5 * math.hypot(p["w"], p["h"]) + 0.5 * wd + _G8_SLACK
+        if _dist_seg_pt(x1, y1, x2, y2, p["x"], p["y"]) > rmax + 0.5 * wd:
+            continue
+        d = _dist_seg_ret(x1, y1, x2, y2, p) - 0.5 * wd
+        if d < -_G8_SLACK:
+            g8_viol.append("%s x %s(%.2f,%.2f) d=%.3f"
+                           % (nm, p["ref"], p["x"], p["y"], d))
+w("  vias de net excluida: %d | pads: %d | trilhas de sinal: %d"
+  % (len(vias_excl), len(pads_excl), len(trilhas_sig)))
+w("  violacoes (d < -0.15 mm): %d" % len(g8_viol))
+for v8 in g8_viol[:12]:
+    w("    %s" % v8)
+g8_ok = len(g8_viol) == 0
+
 # ------------------------------------------------ veredito
 w("")
 w("-" * 78)
@@ -334,7 +473,8 @@ ver("G5 zonas preenchidas", g5_ok, "%d vazias de %d" % (len(g5_vazias),
                                                         len(zonas_cobre)), "0")
 ver("G6 A4 stitch GND/VBAT_PROT", g6_ok, "%d pads sem via" % len(sem_via), "0")
 ver("G7 ocupacao eletrica", g7_ok, "%.2f %%" % ocup, "<= 65 %")
-todas_ok = all([g1_ok, g2_ok, g3_ok, g4_ok, g5_ok, g6_ok, g7_ok])
+ver("G8 trilha x cobre de net excluida", g8_ok, "%d violacoes" % len(g8_viol), "0")
+todas_ok = all([g1_ok, g2_ok, g3_ok, g4_ok, g5_ok, g6_ok, g7_ok, g8_ok])
 w("")
 w("  VEREDITO: %s" % ("TODOS OS GATES OK" if todas_ok
                       else "HA GATES EM FALHA (ver acima)"))
