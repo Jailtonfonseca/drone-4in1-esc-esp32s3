@@ -37,15 +37,17 @@ Yosys 0.9, gerbv 2.7.0, FreeRouting 1.9.0 (Java 17 + Xvfb) e matplotlib.
 | 0 | Especificação e dimensionamento | ✅ concluída |
 | 1 | Esquema elétrico (8 figuras) | ✅ concluída |
 | 2 | Simulação SPICE + PWM em Verilog | ✅ concluída |
-| 3 | PCB (6 camadas) + roteamento | ⚠️ **board v10 roteado, G1–G8 todos OK** — restam poucas nets de sinal sem rota (air-wires, listadas pelo harness) antes de fechar a Fase 3 |
+| 3 | PCB (6 camadas) + roteamento | ⚠️ **board v10 roteado, G1–G8 todos OK, 0 curtos** — **134/151** nets de sinal roteadas; 17 air-wires restantes (o núcleo congestionado de potência: `I_M###`, `HOM###`, `VBM###`, `LOM###`, `IMU_CS/INT`, `CC2`, `GLM103`, `UART_TX`, `VBUS_USB`) |
 | 4 | Entrega: montagem, teste, riscos, regulatório | ✅ **documentação escrita** — os 4 documentos de `fase4_entrega/` existem e acompanham o envio (F14 = "já escrito", `plano/WP2_FABRICACAO.md` §1 item 11). O que falta é **executar** a bancada (G3), não escrevê-la |
 
 **A placa v10 roteada está livre de curtos e gates verdes** — o estado
 de "pronto da Fase 3" é checado por asserções duras:
 [`verificacoes/verifica_projeto.py`](verificacoes/verifica_projeto.py) (SES com wires>0,
 nets 100 % roteadas, G1–G8 na base E no roteado, BOM com preço em toda linha comprável).
-Hoje ele reprova exatamente no que falta (nets ainda abertas e 1 preço pendente) —
-rodá-lo a qualquer momento diz onde o projeto está, sem impressão de sessão.
+Ele reprova exatamente no que falta — hoje: **as 17 air-wires** do núcleo de potência
+(ganho marginal do autorroteador é ~1 net/30 min nesse regime; recomendação:
+roteamento manual no KiCad ou revisão v11 do layout para aliviar a congestão).
+Rodá-lo a qualquer momento diz onde o projeto está, sem impressão de sessão.
 
 Para a ordem de execução completa do projeto, do estado atual até o primeiro voo —
 o que falta para fabricar, o que falta para voar, a sequência de etapas, os gates e as

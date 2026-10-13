@@ -58,13 +58,21 @@ print("=" * 78)
 
 # ---------------------------------------------------------------- A. SES final
 print("[A] SES final do pipeline FreeRouting")
+# [multi-SES 2026-10-12] a cobertura vive em TODOS os SESes do run: o principal
+# (v10_final.ses) + os de completude (v10_completion*.ses). Conta a UNIAO.
+import glob as _glob
 SES = os.path.join(RAIZ, "fase3_pcb/v10/freerouting_run/v10_final.ses")
 DSN = os.path.join(RAIZ, "fase3_pcb/v10/freerouting_run/v10_dsn_input.dsn")
 if chk("SES existe", os.path.isfile(SES), SES):
-    ses_txt = open(SES, encoding="utf-8", errors="replace").read()
-    n_wires = len(re.findall(r"\(wire\b", ses_txt))
-    n_vias = len(re.findall(r"\(via\b", ses_txt))
-    n_ses = set(re.findall(r"\(net ([^\s)]+)", ses_txt))
+    todos_ses = [SES] + sorted(
+        _glob.glob(os.path.join(os.path.dirname(SES), "v10_completion*.ses")))
+    n_wires = n_vias = 0
+    n_ses = set()
+    for um_ses in todos_ses:
+        txt_s = open(um_ses, encoding="utf-8", errors="replace").read()
+        n_wires += len(re.findall(r"\(wire\b", txt_s))
+        n_vias += len(re.findall(r"\(via\b", txt_s))
+        n_ses |= set(re.findall(r"\(net ([^\s)]+)", txt_s))
     chk("SES wires > 0", n_wires > 0, "wires=%d" % n_wires)
     chk("SES vias de rota > 0", n_vias > 0, "vias=%d" % n_vias)
     if os.path.isfile(DSN):
